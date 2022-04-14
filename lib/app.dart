@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import './screens/messages_group.dart';
+import 'screens/messages/messages_group.dart';
 
 class App extends StatelessWidget {
+  static const String title = "craigslist";
 
  const App({Key? key}) : super(key: key);
 
@@ -9,7 +10,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
           title: 'Craigslist',
-          home: MessagesGroup()
+          home: MessagesGroup(title: title)
       );
   }
 }
