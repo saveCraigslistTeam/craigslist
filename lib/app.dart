@@ -1,14 +1,16 @@
+import 'package:craigslist/views/start.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
-
- const App({Key? key}) : super(key: key);
+  const App({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-          title: 'Craigslist',
-          home: Text("Hello World")
-      );
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      routes: {
+        '/': (context) => const Start(),
+      },
+    );
   }
 }
