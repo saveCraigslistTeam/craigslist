@@ -18,11 +18,14 @@ class MessagesGroup extends StatelessWidget{
           itemCount: 5,
           itemBuilder: (_, index) => 
             ListTile(
-              title: Text(getDummyData().messageData[index].receiverId),
-              trailing: Text(
-                getDummyData().messageData[index].messageText.length > 40 ? 
-                  getDummyData().messageData[index].messageText.substring(0,40): 
-                  getDummyData().messageData[index].messageText)),
+              leading: getMessageUsername(index),
+              title: Text(
+                getDummyData().messageData[index].messageText.length > 30 ? 
+                  getDummyData().messageData[index].messageText.substring(0,30): 
+                  getDummyData().messageData[index].messageText),
+              trailing: const Text(">"),
+              selectedColor: Colors.blue,),
+              
           )
       )
     );
@@ -37,6 +40,12 @@ Widget appBarTitle(String title) {
       backgroundColor: Colors.white,
       fontSize: 30),
       );
+}
+
+Widget getMessageUsername(int index) {
+  return (
+    Text(getDummyData().messageData[index].receiverId)
+  );
 }
 
 DummyData getDummyData() {
