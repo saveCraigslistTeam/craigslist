@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './screens/messages_group.dart';
 
 class App extends StatelessWidget {
 
@@ -8,7 +9,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
           title: 'Craigslist',
-          home: Text("Hello World")
+          home: MessagesGroup()
       );
   }
 }
