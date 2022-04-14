@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'messages_group.dart';
+
 class Start extends StatefulWidget {
   const Start({Key? key}) : super(key: key);
 
@@ -85,72 +87,30 @@ class _StartState extends State<Start> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              primary: Theme.of(context).colorScheme.secondary,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 22.5, vertical: 12.5),
-            ),
-            child: Text(
-              'Login',
-              style: TextStyle(
-                color: darken(Theme.of(context).backgroundColor, 70),
+              style: ElevatedButton.styleFrom(
+                primary: Theme.of(context).colorScheme.secondary,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 22.5, vertical: 12.5),
               ),
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          //     ElevatedButton(
-          //       style: ElevatedButton.styleFrom(
-          //         primary: Theme.of(context).colorScheme.secondary,
-          //         padding:
-          //             const EdgeInsets.symmetric(horizontal: 22.5, vertical: 12.6),
-          //       ),
-          //       child: Text(
-          //         '  Save  ',
-          //         style: TextStyle(
-          //           color: darken(Theme.of(context).backgroundColor, 70),
-          //         ),
-          //       ),
-          //       onPressed: () async {
-          //         if (_formKey.currentState!.validate()) {
-          //           _formKey.currentState!.save();
-
-          //           // DateTime now = DateTime.now();
-          //           // String dt =
-          //           //     "${now.day.toString()}-${now.month.toString()}-${now.year.toString()}";
-          //           // setState(() => journal?.dte = dt);
-
-          //           //final databaseManager = DatabaseManager.getInstance();
-          //           //databaseManager.saveJournalEntry(dto: journalEntryValues);
-          //           //Navigator.of(context).pop();
-          //           //print(journalEntryValues);
-          //           //Navigator.popAndPushNamed(context, 'jrnlList');
-          //         }
-          //       },
-          //     ),
+              child: Text(
+                'Login',
+                style: TextStyle(
+                  color: darken(Theme.of(context).backgroundColor, 70),
+                ),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const MessagesGroup(
+                            title: 'craigslist',
+                          )),
+                );
+              }),
         ],
       ),
     ];
   }
-
-  // Widget _buildWideContainer() {
-  //   return Center(
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //       children: <Widget>[
-  //         Container(
-  //           height: 100.0,
-  //           width: 100.0,
-  //           color: Colors.red,
-  //         ),
-  //         Container(
-  //           height: 100.0,
-  //           width: 100.0,
-  //           color: Colors.yellow,
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Color darken(Color c, [int percent = 10]) {
     assert(1 <= percent && percent <= 100);
