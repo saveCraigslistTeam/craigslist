@@ -17,9 +17,12 @@ class MessagesGroup extends StatelessWidget{
           backgroundColor: Colors.white,
           centerTitle: true,
           ),
-        body: ListView.builder(
-          itemCount: getDummyData().messageLength,
-          itemBuilder: (_, index) => getListTile(index))
+        body: Padding(padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
+          child: ListView.builder(
+            itemCount: getDummyData().messageLength,
+            itemBuilder: (_, index) => getListTile(index)
+          )
+        )
       )
     );
   }
@@ -37,20 +40,24 @@ Widget appBarTitle(String title) {
 
 Widget getMessageUsername(int index) {
   return (
-    Text(
-      getDummyData().messageData[index].receiverId.length > 10 ?
-      getDummyData().messageData[index].receiverId.substring(0,10):
-      getDummyData().messageData[index].receiverId,
-      style: const TextStyle(color: Color(0xff5887FF),
-                      fontSize: 20))
+    SizedBox(
+      width: 90,
+      child: Text(
+        getDummyData().messageData[index].receiverId.length > 8 ?
+        getDummyData().messageData[index].receiverId.substring(0,8):
+        getDummyData().messageData[index].receiverId,
+        style: const TextStyle(color: Color(0xff5887FF),
+                        fontSize: 20)
+        )
+      )
   );
 }
 
 Widget getMessageText(int index) {
   return (
     Row(children: [Text(
-      getDummyData().messageData[index].messageText.length > 30 ? 
-      getDummyData().messageData[index].messageText.substring(0,30): 
+      getDummyData().messageData[index].messageText.length > 25 ? 
+      getDummyData().messageData[index].messageText.substring(0,25): 
       getDummyData().messageData[index].messageText),
       ],)
   );
@@ -58,13 +65,20 @@ Widget getMessageText(int index) {
 
 Widget getListTile(int index) {
   return (
-    ListTile(
-              leading: getMessageUsername(index),
-              title: getMessageText(index),
-              trailing: const Text(">"),
-              selectedColor: Colors.blue,
-              onTap: () => null)
-  );
+    Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
+      child: ListTile(
+          shape: RoundedRectangleBorder(side: 
+            const BorderSide(color: Colors.blue, width: 1),
+              borderRadius: BorderRadius.circular(5)
+              ),
+          leading: getMessageUsername(index),
+          title: getMessageText(index),
+          trailing: const Text(">"),
+          focusColor: Colors.blue,
+          onTap: () => {})
+        )
+    );
 }
 
 DummyData getDummyData() {
