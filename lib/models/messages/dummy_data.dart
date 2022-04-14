@@ -32,4 +32,8 @@ class DummyData {
 
      return message;
    }
+
+   int get messageLength {
+     return messageData.length;
+   }
 }
