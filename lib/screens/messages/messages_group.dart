@@ -56,10 +56,14 @@ Widget getMessageUsername(int index) {
 
 Widget getMessageText(int index) {
   return (
-    Row(children: [Text(
-      getDummyData().messageData[index].messageText.length > 25 ? 
-      getDummyData().messageData[index].messageText.substring(0,25): 
-      getDummyData().messageData[index].messageText),
+    Column(children: [Text(
+        getDummyData().messageData[index].messageText.length > 25 ? 
+        getDummyData().messageData[index].messageText.substring(0,25): 
+        getDummyData().messageData[index].messageText),
+      Text(
+        getDummyData().messageData[index].dateData.length > 25 ? 
+        getDummyData().messageData[index].dateData.substring(0,25): 
+        getDummyData().messageData[index].dateData)
       ],)
   );
 }
