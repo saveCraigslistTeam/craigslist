@@ -1,12 +1,14 @@
 // dart async library we will refer to when setting up real time updates
 import 'dart:async';
 import 'dart:core';
-import 'package:amplify_core/src/types/temporal/temporal_datetime.dart';
+
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
+import 'package:amplify_api/amplify_api.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 // amplify configuration and models that should have been generated for you
 import '../amplifyconfiguration.dart';
 import '../models/sale/ModelProvider.dart';
@@ -30,6 +32,8 @@ class _MySalesState extends State<MySales> {
   // amplify plugins
   final AmplifyDataStore _dataStorePlugin =
       AmplifyDataStore(modelProvider: ModelProvider.instance);
+  final AmplifyAPI _apiPlugin = AmplifyAPI();
+  final AmplifyAuthCognito _authPlugin = AmplifyAuthCognito();
 
   @override
   void initState() {
@@ -68,8 +72,7 @@ class _MySalesState extends State<MySales> {
   Future<void> _configureAmplify() async {
     try {
       // add Amplify plugins
-      await Amplify.addPlugins([_dataStorePlugin]);
-
+      await Amplify.addPlugins([_dataStorePlugin, _apiPlugin, _authPlugin]);
       // configure Amplify
       //
       // note that Amplify cannot be configured more than once!
@@ -197,7 +200,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
   final _conditionController = TextEditingController();
   final _zipcodeController = TextEditingController();
   final _priceController = TextEditingController();
-  final _postDateController = TextEditingController();
+  // final _postDateController = TextEditingController();
 
   Future<void> _saveSale() async {
     // get the current text field contents
@@ -206,16 +209,17 @@ class _AddSaleFormState extends State<AddSaleForm> {
     String condition = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     String price = _priceController.text;
-    String postDate = _postDateController.text;
+    // String postDate = _postDateController.text;
 
     // create a new Sale from the form values
     Sale newSale = Sale(
-        title: title,
-        description: description.isNotEmpty ? description : null,
-        condition: condition.isNotEmpty ? condition : null,
-        zipcode: zipcode.isNotEmpty ? zipcode : null,
-        price: price.isNotEmpty ? price : null,
-        postDate: TemporalDateTime(DateTime.now()));
+      title: title,
+      description: description.isNotEmpty ? description : null,
+      condition: condition.isNotEmpty ? condition : null,
+      zipcode: zipcode.isNotEmpty ? zipcode : null,
+      price: price.isNotEmpty ? price : null,
+      // postDate: TemporalDateTime(DateTime.now())
+    );
 
     try {
       // to write data to DataStore, we simply pass an instance of a model to

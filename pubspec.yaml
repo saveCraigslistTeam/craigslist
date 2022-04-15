@@ -16,6 +16,8 @@ dependencies:
   http: ^0.13.4
   amplify_flutter: ^0.4.0
   amplify_datastore: ^0.4.0
+  amplify_api: ^0.4.0
+  amplify_auth_cognito: ^0.4.0
   
 dev_dependencies:
   # For testing widgets

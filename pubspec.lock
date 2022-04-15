@@ -15,10 +15,38 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.5"
+  amplify_api:
+    dependency: "direct main"
+    description:
+      name: amplify_api
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.5"
   amplify_api_plugin_interface:
     dependency: transitive
     description:
       name: amplify_api_plugin_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.5"
+  amplify_auth_cognito:
+    dependency: "direct main"
+    description:
+      name: amplify_auth_cognito
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.5"
+  amplify_auth_cognito_android:
+    dependency: transitive
+    description:
+      name: amplify_auth_cognito_android
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.5"
+  amplify_auth_cognito_ios:
+    dependency: transitive
+    description:
+      name: amplify_auth_cognito_ios
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.5"

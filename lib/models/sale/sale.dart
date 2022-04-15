@@ -32,7 +32,7 @@ class Sale extends Model {
   final String? _condition;
   final String? _zipcode;
   final String? _price;
-  final TemporalDateTime? _postDate;
+  // final TemporalDateTime? _postDate;
   final TemporalDateTime? _createdAt;
   final TemporalDateTime? _updatedAt;
 
@@ -64,9 +64,9 @@ class Sale extends Model {
     return _price;
   }
 
-  TemporalDateTime? get postDate {
-    return _postDate;
-  }
+  // TemporalDateTime? get postDate {
+  //   return _postDate;
+  // }
 
   TemporalDateTime? get createdAt {
     return _createdAt;
@@ -83,7 +83,7 @@ class Sale extends Model {
       condition,
       zipcode,
       price,
-      postDate,
+      // postDate,
       createdAt,
       updatedAt})
       : _title = title,
@@ -91,26 +91,28 @@ class Sale extends Model {
         _condition = condition,
         _zipcode = zipcode,
         _price = price,
-        _postDate = postDate,
+        // _postDate = postDate,
         _createdAt = createdAt,
         _updatedAt = updatedAt;
 
-  factory Sale(
-      {String? id,
-      String? title,
-      String? description,
-      String? condition,
-      String? zipcode,
-      String? price,
-      TemporalDateTime? postDate}) {
+  factory Sale({
+    String? id,
+    String? title,
+    String? description,
+    String? condition,
+    String? zipcode,
+    String? price,
+    // TemporalDateTime? postDate
+  }) {
     return Sale._internal(
-        id: id == null ? UUID.getUUID() : id,
-        title: title,
-        description: description,
-        condition: condition,
-        zipcode: zipcode,
-        price: price,
-        postDate: postDate);
+      id: id == null ? UUID.getUUID() : id,
+      title: title,
+      description: description,
+      condition: condition,
+      zipcode: zipcode,
+      price: price,
+      // postDate: postDate
+    );
   }
 
   bool equals(Object other) {
@@ -126,8 +128,8 @@ class Sale extends Model {
         _description == other._description &&
         _condition == other._condition &&
         _zipcode == other._zipcode &&
-        _price == other._price &&
-        _postDate == other._postDate;
+        _price == other._price;
+    // _postDate == other._postDate;
   }
 
   @override
@@ -144,9 +146,9 @@ class Sale extends Model {
     buffer.write("condition=" + "$_condition" + ", ");
     buffer.write("zipcode=" + "$_zipcode" + ", ");
     buffer.write("price=" + "$_price" + ", ");
-    buffer.write("postDate=" +
-        (_postDate != null ? _postDate!.format() : "null") +
-        ", ");
+    // buffer.write("postDate=" +
+    //     (_postDate != null ? _postDate!.format() : "null") +
+    //     ", ");
     buffer.write("createdAt=" +
         (_createdAt != null ? _createdAt!.format() : "null") +
         ", ");
@@ -157,22 +159,24 @@ class Sale extends Model {
     return buffer.toString();
   }
 
-  Sale copyWith(
-      {String? id,
-      String? title,
-      String? description,
-      String? condition,
-      String? zipcode,
-      String? price,
-      TemporalDateTime? postDate}) {
+  Sale copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? condition,
+    String? zipcode,
+    String? price,
+    // TemporalDateTime? postDate
+  }) {
     return Sale._internal(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        description: description ?? this.description,
-        condition: condition ?? this.condition,
-        zipcode: zipcode ?? this.zipcode,
-        price: price ?? this.price,
-        postDate: postDate ?? this.postDate);
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      condition: condition ?? this.condition,
+      zipcode: zipcode ?? this.zipcode,
+      price: price ?? this.price,
+      // postDate: postDate ?? this.postDate
+    );
   }
 
   Sale.fromJson(Map<String, dynamic> json)
@@ -182,9 +186,9 @@ class Sale extends Model {
         _condition = json['condition'],
         _zipcode = json['zipcode'],
         _price = json['price'],
-        _postDate = json['postDate'] != null
-            ? TemporalDateTime.fromString(json['postDate'])
-            : null,
+        // _postDate = json['postDate'] != null
+        //     ? TemporalDateTime.fromString(json['postDate'])
+        //     : null,
         _createdAt = json['createdAt'] != null
             ? TemporalDateTime.fromString(json['createdAt'])
             : null,
@@ -199,7 +203,7 @@ class Sale extends Model {
         'condition': _condition,
         'zipcode': _zipcode,
         'price': _price,
-        'postDate': _postDate?.format(),
+        // 'postDate': _postDate?.format(),
         'createdAt': _createdAt?.format(),
         'updatedAt': _updatedAt?.format()
       };
@@ -210,7 +214,7 @@ class Sale extends Model {
   static final QueryField CONDITION = QueryField(fieldName: "condition");
   static final QueryField ZIPCODE = QueryField(fieldName: "zipcode");
   static final QueryField PRICE = QueryField(fieldName: "price");
-  static final QueryField POSTDATE = QueryField(fieldName: "postDate");
+  // static final QueryField POSTDATE = QueryField(fieldName: "postDate");
   static var schema =
       Model.defineSchema(define: (ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "Sale";
@@ -252,10 +256,10 @@ class Sale extends Model {
         isRequired: false,
         ofType: ModelFieldType(ModelFieldTypeEnum.string)));
 
-    modelSchemaDefinition.addField(ModelFieldDefinition.field(
-        key: Sale.POSTDATE,
-        isRequired: false,
-        ofType: ModelFieldType(ModelFieldTypeEnum.dateTime)));
+    // modelSchemaDefinition.addField(ModelFieldDefinition.field(
+    //     key: Sale.POSTDATE,
+    //     isRequired: false,
+    //     ofType: ModelFieldType(ModelFieldTypeEnum.dateTime)));
 
     modelSchemaDefinition.addField(ModelFieldDefinition.nonQueryField(
         fieldName: 'createdAt',
