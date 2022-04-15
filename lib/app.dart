@@ -1,4 +1,5 @@
 import 'package:craigslist/views/start.dart';
+import 'package:craigslist/views/my_sales.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
@@ -10,7 +11,8 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       routes: {
-        '/': (context) => const Start(),
+        // '/': (context) => const Start(),
+        '/': (context) => MySales(),
       },
     );
   }
