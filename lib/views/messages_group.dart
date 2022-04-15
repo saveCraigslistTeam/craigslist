@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/dummy_data.dart';
+import '../models/messages/dummy_data.dart';
 
 class MessagesGroup extends StatelessWidget {
   /* 
@@ -45,11 +45,14 @@ Widget getMessageUsername(int index) {
 }
 
 Widget getMessageText(int index) {
-  return (Row(
+  return (Column(
     children: [
       Text(getDummyData().messageData[index].messageText.length > 25
           ? getDummyData().messageData[index].messageText.substring(0, 25)
           : getDummyData().messageData[index].messageText),
+      Text(getDummyData().messageData[index].dateDataDate.length > 25
+          ? getDummyData().messageData[index].dateDataDate.substring(0, 25)
+          : getDummyData().messageData[index].dateDataDate),
     ],
   ));
 }

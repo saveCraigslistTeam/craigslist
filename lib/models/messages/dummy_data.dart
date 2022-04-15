@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class MessageNode {
   final String userId;
   final String receiverId;
@@ -21,8 +23,12 @@ class MessageNode {
     return receiverId;
   }
 
-  String get dateData {
-    return date.toString();
+  String get dateDataTime {
+    return DateFormat.jm().format(date);
+  }
+
+  String get dateDataDate {
+    return DateFormat.yMMMd().format(date);
   }
 }
 
