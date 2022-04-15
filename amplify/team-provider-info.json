@@ -1,0 +1,20 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-craigslist-staging-174444-authRole",
+      "UnauthRoleArn": "arn:aws:iam::314832383311:role/amplify-craigslist-staging-174444-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::314832383311:role/amplify-craigslist-staging-174444-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-craigslist-staging-174444-deployment",
+      "UnauthRoleName": "amplify-craigslist-staging-174444-unauthRole",
+      "StackName": "amplify-craigslist-staging-174444",
+      "StackId": "arn:aws:cloudformation:us-east-1:314832383311:stack/amplify-craigslist-staging-174444/bc52e4f0-bce3-11ec-970f-0e35e849f84b",
+      "AmplifyAppId": "d2s6v6rawhdoo7"
+    },
+    "categories": {
+      "auth": {
+        "craigslist": {}
+      }
+    }
+  }
+}

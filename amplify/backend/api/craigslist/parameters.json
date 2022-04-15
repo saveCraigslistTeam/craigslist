@@ -1,0 +1,6 @@
+{
+  "AppSyncApiName": "craigslist",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthModeLastUpdated": "2022-04-15T18:07:53.604Z"
+}
