@@ -1,9 +1,15 @@
+import 'package:intl/intl.dart';
+
 class MessageNode {
   final String userId;
   final String receiverId;
   final String messageText;
+  final DateTime date;
 
-  MessageNode(this.userId, this.receiverId, this.messageText);
+  MessageNode({required this.userId, 
+               required this.receiverId, 
+               required this.messageText, 
+               required this.date});
 
   String get messageData {
     return messageText;
@@ -15,6 +21,14 @@ class MessageNode {
 
   String get receiverIdData {
     return receiverId;
+  }
+
+  String get dateDataTime {
+    return DateFormat.jm().format(date);
+  }
+
+  String get dateDataDate {
+    return DateFormat.yMMMd().format(date);
   }
 }
 
@@ -34,7 +48,11 @@ class DummyData {
      List<MessageNode> message = [];
 
      for(int i = 0; i < userIds.length; i++){
-       message.add(MessageNode(userIds[i], receiverIds[i], messages[i]));
+       message.add(MessageNode(
+         userId: userIds[i], 
+         receiverId: receiverIds[i], 
+         messageText: messages[i], 
+         date: DateTime.now()));
      }
 
      return message;
