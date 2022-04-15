@@ -8,6 +8,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "31.0.0"
+  amplify_analytics_pinpoint:
+    dependency: "direct main"
+    description:
+      name: amplify_analytics_pinpoint
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.5"
+  amplify_analytics_pinpoint_android:
+    dependency: transitive
+    description:
+      name: amplify_analytics_pinpoint_android
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.5"
+  amplify_analytics_pinpoint_ios:
+    dependency: transitive
+    description:
+      name: amplify_analytics_pinpoint_ios
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.5"
   amplify_analytics_plugin_interface:
     dependency: transitive
     description:
@@ -58,7 +79,7 @@ packages:
     source: hosted
     version: "0.4.5"
   amplify_core:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: amplify_core
       url: "https://pub.dartlang.org"

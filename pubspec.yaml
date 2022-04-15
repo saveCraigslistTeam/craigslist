@@ -14,9 +14,11 @@ dependencies:
 
   cupertino_icons: ^1.0.2
   http: ^0.13.4
+  amplify_core: ^0.4.5
   amplify_flutter: ^0.4.0
   amplify_datastore: ^0.4.0
   amplify_api: ^0.4.0
+  amplify_analytics_pinpoint: ^0.4.5
   amplify_auth_cognito: ^0.4.0
   intl: ^0.17.0
   

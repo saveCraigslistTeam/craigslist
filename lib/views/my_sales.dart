@@ -35,6 +35,8 @@ class _MySalesState extends State<MySales> {
   final AmplifyAPI _apiPlugin = AmplifyAPI();
   final AmplifyAuthCognito _authPlugin = AmplifyAuthCognito();
 
+  String? get amplifyconfig => null;
+
   @override
   void initState() {
     // kick off app initialization
@@ -76,10 +78,11 @@ class _MySalesState extends State<MySales> {
       // configure Amplify
       //
       // note that Amplify cannot be configured more than once!
-      await Amplify.configure(amplifyconfig);
+      await Amplify.configure(amplifyconfig!);
     } catch (e) {
       // error handling can be improved for sure!
       // but this will be sufficient for the purposes of this tutorial
+      // ignore: avoid_print
       print('An error occurred while configuring Amplify: $e');
     }
   }
