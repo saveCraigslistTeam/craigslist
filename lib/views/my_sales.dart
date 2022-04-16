@@ -10,7 +10,7 @@ import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 // amplify configuration and models that should have been generated for you
-import '../amplifyconfiguration.dart';
+//import '../amplifyconfiguration.dart';
 import '../models/sale/ModelProvider.dart';
 import '../models/sale/Sale.dart';
 
