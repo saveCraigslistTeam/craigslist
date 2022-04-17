@@ -4,7 +4,6 @@ import '../models/messages/dummy_data.dart';
 
 class MessagesGroup extends StatelessWidget {
   /* 
-   * todo: Add date as subtitle to message box 
    * Message group shows all available chat logs for the user.
    */
   final String title;
