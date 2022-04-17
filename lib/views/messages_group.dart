@@ -7,6 +7,8 @@ class MessagesGroup extends StatelessWidget {
    * Message group shows all available chat logs for the user.
    */
   final String title;
+  static const String routeName = 'messagesGroup';
+  
   const MessagesGroup({Key? key, required this.title}) : super(key: key);
 
   @override
@@ -59,15 +61,20 @@ Widget getMessageText(int index) {
 Widget getListTile(int index) {
   return (Padding(
       padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
-      child: ListTile(
-          shape: RoundedRectangleBorder(
-              side: const BorderSide(color: Colors.blue, width: 1),
-              borderRadius: BorderRadius.circular(5)),
-          leading: getMessageUsername(index),
-          title: getMessageText(index),
-          trailing: const Text(">"),
-          focusColor: Colors.blue,
-          onTap: () => {})));
+      child: GestureDetector(
+        onTap: () => {
+          // Add route to messages Detail
+        },
+        child: ListTile(
+            shape: RoundedRectangleBorder(
+                side: const BorderSide(color: Colors.blue, width: 1),
+                borderRadius: BorderRadius.circular(5)),
+            leading: getMessageUsername(index),
+            title: getMessageText(index),
+            trailing: const Text(">"),
+            focusColor: Colors.blue,
+            onTap: () => {}),
+      )));
 }
 
 DummyData getDummyData() {
