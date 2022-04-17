@@ -1,9 +1,15 @@
+import 'package:craigslist/models/messages/dummy_conversation.dart';
 import 'package:flutter/material.dart';
+import '../models/messages/dummy_conversation.dart';
 
 class MessageDetail extends StatelessWidget {
 
   final String title;
-  const MessageDetail({Key? key, required this.title}) : super(key: key);
+  static const String routeName = 'messageDetail';
+
+  Conversation data = Conversation();
+
+  MessageDetail({Key? key, required this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +28,8 @@ class MessageDetail extends StatelessWidget {
                       )
                       )
                     ),
-      body: const Text("sup")
+      body: Text(data.messageData[0].messageText)
       )
     );
   }
-  
 }

@@ -1,5 +1,7 @@
+import 'package:craigslist/views/messages_detail.dart';
 import 'package:craigslist/views/start.dart';
 import 'package:craigslist/views/my_sales.dart';
+import './views/messages_group.dart';
 import './views/messages_group.dart';
 import 'package:flutter/material.dart';
 
@@ -14,6 +16,7 @@ class App extends StatelessWidget {
 
     final routes = {
       MessagesGroup.routeName : (context) => const MessagesGroup(title: title),
+      MessageDetail.routeName : (context) => MessageDetail(title: title)
       // '/': (context) => const Start(),
       //'/': (context) => MySales(),
     };
@@ -21,7 +24,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       routes: routes,
-      initialRoute: MessagesGroup.routeName,
+      initialRoute: MessageDetail.routeName,
     );
   }
 }

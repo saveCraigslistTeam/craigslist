@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './messages_detail.dart';
 
 import '../models/messages/dummy_data.dart';
 
@@ -23,7 +24,7 @@ class MessagesGroup extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
             child: ListView.builder(
                 itemCount: getDummyData().messageLength,
-                itemBuilder: (_, index) => getListTile(index)))));
+                itemBuilder: (_, index) => getListTile(index, context)))));
   }
 }
 
@@ -58,14 +59,10 @@ Widget getMessageText(int index) {
   ));
 }
 
-Widget getListTile(int index) {
+Widget getListTile(int index, BuildContext context) {
   return (Padding(
       padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
-      child: GestureDetector(
-        onTap: () => {
-          // Add route to messages Detail
-        },
-        child: ListTile(
+      child: ListTile(
             shape: RoundedRectangleBorder(
                 side: const BorderSide(color: Colors.blue, width: 1),
                 borderRadius: BorderRadius.circular(5)),
@@ -73,10 +70,12 @@ Widget getListTile(int index) {
             title: getMessageText(index),
             trailing: const Text(">"),
             focusColor: Colors.blue,
-            onTap: () => {}),
-      )));
+            onTap: () => {
+              Navigator.pushNamed(context, MessageDetail.routeName)
+            }),
+      ));
 }
 
-DummyData getDummyData() {
-  return DummyData();
+Messages getDummyData() {
+  return Messages();
 }

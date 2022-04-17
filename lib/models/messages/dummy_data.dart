@@ -32,7 +32,7 @@ class MessageNode {
   }
 }
 
-class DummyData {
+class Messages {
    final List<String> userIds = ['12345', '43214','47463','10092','32461',
                                  '12345', '43214','47463','10092','32461',
                                  '12345', '43214','47463','10092','32461'];
