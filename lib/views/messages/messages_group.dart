@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-
-import '../models/messages/dummy_data.dart';
+import 'messages_detail.dart';
+import '../../models/messages/dummy_data.dart';
 
 class MessagesGroup extends StatelessWidget {
   /* 
-   * todo: Add date as subtitle to message box 
    * Message group shows all available chat logs for the user.
    */
   final String title;
+  static const String routeName = 'messagesGroup';
+  
   const MessagesGroup({Key? key, required this.title}) : super(key: key);
 
   @override
@@ -22,7 +23,7 @@ class MessagesGroup extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
             child: ListView.builder(
                 itemCount: getDummyData().messageLength,
-                itemBuilder: (_, index) => getListTile(index)))));
+                itemBuilder: (_, index) => getListTile(index, context)))));
   }
 }
 
@@ -57,20 +58,23 @@ Widget getMessageText(int index) {
   ));
 }
 
-Widget getListTile(int index) {
+Widget getListTile(int index, BuildContext context) {
   return (Padding(
       padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
       child: ListTile(
-          shape: RoundedRectangleBorder(
-              side: const BorderSide(color: Colors.blue, width: 1),
-              borderRadius: BorderRadius.circular(5)),
-          leading: getMessageUsername(index),
-          title: getMessageText(index),
-          trailing: const Text(">"),
-          focusColor: Colors.blue,
-          onTap: () => {})));
+            shape: RoundedRectangleBorder(
+                side: const BorderSide(color: Colors.blue, width: 1),
+                borderRadius: BorderRadius.circular(5)),
+            leading: getMessageUsername(index),
+            title: getMessageText(index),
+            trailing: const Text(">"),
+            focusColor: Colors.blue,
+            onTap: () => {
+              Navigator.pushNamed(context, MessageDetail.routeName, arguments: getDummyData().messageData[index].userId)
+            }),
+      ));
 }
 
-DummyData getDummyData() {
-  return DummyData();
+Messages getDummyData() {
+  return Messages();
 }
