@@ -1,8 +1,8 @@
-import 'package:craigslist/views/messages_detail.dart';
+import 'package:craigslist/views/messages/messages_detail.dart';
 import 'package:craigslist/views/start.dart';
 import 'package:craigslist/views/my_sales.dart';
-import './views/messages_group.dart';
-import './views/messages_group.dart';
+import 'views/messages/messages_group.dart';
+import 'views/messages/messages_group.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {

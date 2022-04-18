@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import './messages_detail.dart';
-
-import '../models/messages/dummy_data.dart';
+import 'messages_detail.dart';
+import '../../models/messages/dummy_data.dart';
 
 class MessagesGroup extends StatelessWidget {
   /* 

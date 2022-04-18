@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'messages_group.dart';
+import 'messages/messages_group.dart';
 
 class Start extends StatefulWidget {
   const Start({Key? key}) : super(key: key);

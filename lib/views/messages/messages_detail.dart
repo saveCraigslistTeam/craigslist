@@ -1,6 +1,6 @@
 import 'package:craigslist/models/messages/dummy_conversation.dart';
 import 'package:flutter/material.dart';
-import '../models/messages/dummy_conversation.dart';
+import '../../models/messages/dummy_conversation.dart';
 
 class MessageDetail extends StatelessWidget {
 
