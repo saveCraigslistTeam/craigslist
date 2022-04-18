@@ -1,21 +1,21 @@
 import 'package:craigslist/models/messages/dummy_conversation.dart';
 import 'package:flutter/material.dart';
 import '../../models/messages/dummy_conversation.dart';
+import './message_form.dart';
 
 class MessageDetail extends StatelessWidget {
 
   final String title;
   static const String routeName = 'messageDetail';
 
-  Conversation data = Conversation();
-
   MessageDetail({Key? key, required this.title}) : super(key: key);
+
+  Conversation data = Conversation();
+  final String userName = "user1";
 
   @override
   Widget build(BuildContext context) {
     //final userName = ModalRoute.of(context)?.settings.arguments as String;
-    final String userName = "user1";
-
     return (
       Scaffold(
       appBar: AppBar(title: Text(title),
@@ -29,13 +29,23 @@ class MessageDetail extends StatelessWidget {
                         style: TextStyle(fontSize: 30)))
                       )
                     ),
-      body: ListView.builder(
-        itemCount: data.listLength,
-        itemBuilder: (_, index) => getListTile(index, data, context, userName))
+      body: SafeArea(
+        child: Column(
+          children: [
+            ListView.builder(
+                    itemCount: data.listLength,
+                    itemBuilder: (_, index) => getListTile(index, data, context, userName),
+                    addAutomaticKeepAlives: false,
+                    shrinkWrap: true),
+            const MessageForm()
+          ],
+        ),
+      ),
       )
     );
   }
 }
+
 
 Widget getListTile(int index, Conversation data, BuildContext context, String userName) {
   if (data.messageData[index].userId == userName) {
@@ -45,7 +55,8 @@ Widget getListTile(int index, Conversation data, BuildContext context, String us
         child: ColoredBox(
           color: Colors.lightBlue.shade200, 
           text: data.messageData[index].message,
-          alignment: MainAxisAlignment.end)
+          alignment: MainAxisAlignment.end,
+          textAlignment: TextAlign.start)
       )
     );
   } else {
@@ -55,7 +66,8 @@ Widget getListTile(int index, Conversation data, BuildContext context, String us
         child: ColoredBox(
           color: Colors.grey.shade200, 
           text: data.messageData[index].message,
-          alignment: MainAxisAlignment.start)
+          alignment: MainAxisAlignment.start,
+          textAlignment: TextAlign.start)
       )
     );
   }
@@ -65,12 +77,14 @@ class ColoredBox extends StatelessWidget {
   final String text;
   final Color color;
   final MainAxisAlignment alignment;
+  final TextAlign textAlignment;
 
   const ColoredBox({
     Key? key, 
     required this.text, 
     required this.color,
-    required this.alignment}) : super(key: key);
+    required this.alignment,
+    required this.textAlignment}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -82,19 +96,21 @@ class ColoredBox extends StatelessWidget {
           SafeArea(
             child: Container(
               constraints: const BoxConstraints(
-                minWidth: 200, 
+                minWidth: 10, 
                 maxWidth: 250,
-                minHeight: 50,
+                minHeight: 10,
                 maxHeight: double.infinity),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: color,
                 borderRadius: BorderRadius.circular(10)
               ),
-              child: Text(text)
+              child: Text(text, textAlign: textAlignment)
             ),
           ),       
         ],)
     );
   }
 }
+
+
