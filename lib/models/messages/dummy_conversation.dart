@@ -50,10 +50,10 @@ class Conversation {
   final Message message5 = Message(
     userId: "hank123", 
     receiverId: "user1", 
-    messageText: "But, my kid has cancer!");
+    messageText: "But, my kid has cancer! You don't understand how much this Playstation 5 will mean to him!");
   
   final Message message6 = Message(
-    userId: "", 
+    userId: "user1", 
     receiverId: "hank123", 
     messageText: "What does that have to do with it?");
   
@@ -81,8 +81,12 @@ class Conversation {
   }
 
   List<Message> get messageData {
-    addMessages();
     return stream;
+  }
+
+  int get listLength {
+    addMessages();
+    return stream.length;
   }
 
 }

@@ -70,7 +70,7 @@ Widget getListTile(int index, BuildContext context) {
             trailing: const Text(">"),
             focusColor: Colors.blue,
             onTap: () => {
-              Navigator.pushNamed(context, MessageDetail.routeName)
+              Navigator.pushNamed(context, MessageDetail.routeName, arguments: getDummyData().messageData[index].userId)
             }),
       ));
 }
