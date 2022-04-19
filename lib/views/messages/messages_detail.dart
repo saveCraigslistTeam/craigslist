@@ -19,6 +19,7 @@ class MessageDetail extends StatelessWidget {
     //final userName = ModalRoute.of(context)?.settings.arguments as String;
     return (
       Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(title: Text(title),
                     leading: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -33,12 +34,18 @@ class MessageDetail extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            ListView.builder(
-                    itemCount: data.listLength,
-                    itemBuilder: (_, index) => getListTile(index, data, context, userId),
-                    addAutomaticKeepAlives: false,
-                    shrinkWrap: true),
-            MessageForm(userId: userId, receiverId: receiverId)
+            SizedBox(
+              height: 500,
+              child: ListView.builder(
+                      key: new Key('asdf'),
+                      itemCount: data.listLength,
+                      itemBuilder: (_, index) => getListTile(index, data, context, userId),
+                      addAutomaticKeepAlives: false,
+                      shrinkWrap: true),
+            ),
+            SizedBox(
+              height: 100,
+              child: MessageForm(userId: userId, receiverId: receiverId)), 
           ],
         ),
       ),
