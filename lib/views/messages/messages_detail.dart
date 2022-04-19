@@ -10,8 +10,9 @@ class MessageDetail extends StatelessWidget {
 
   MessageDetail({Key? key, required this.title}) : super(key: key);
 
-  Conversation data = Conversation();
-  final String userName = "user1";
+  final Conversation data = Conversation();
+  final String userId = "user1";
+  final String receiverId = "hank123";
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +35,10 @@ class MessageDetail extends StatelessWidget {
           children: [
             ListView.builder(
                     itemCount: data.listLength,
-                    itemBuilder: (_, index) => getListTile(index, data, context, userName),
+                    itemBuilder: (_, index) => getListTile(index, data, context, userId),
                     addAutomaticKeepAlives: false,
                     shrinkWrap: true),
-            const MessageForm()
+            MessageForm(userId: userId, receiverId: receiverId)
           ],
         ),
       ),
