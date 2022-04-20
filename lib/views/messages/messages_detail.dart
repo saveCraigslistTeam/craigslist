@@ -10,8 +10,9 @@ class MessageDetail extends StatelessWidget {
 
   MessageDetail({Key? key, required this.title}) : super(key: key);
 
-  Conversation data = Conversation();
-  final String userName = "user1";
+  final Conversation data = Conversation();
+  final String userId = "user1";
+  final String receiverId = "hank123";
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +33,18 @@ class MessageDetail extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            ListView.builder(
-                    itemCount: data.listLength,
-                    itemBuilder: (_, index) => getListTile(index, data, context, userName),
-                    addAutomaticKeepAlives: false,
-                    shrinkWrap: true),
-            const MessageForm()
+                Expanded(
+                  flex: 8,
+                  child: ListView.builder(
+                          padding: const EdgeInsets.all(10),
+                          itemCount: data.listLength,
+                          itemBuilder: (_, index) => getListTile(index, data, context, userId),
+                          addAutomaticKeepAlives: true,
+                          shrinkWrap: true),
+                ),
+               Expanded(
+                 flex: 2,
+                 child: MessageForm(userId: userId, receiverId: receiverId))
           ],
         ),
       ),
@@ -50,25 +57,19 @@ class MessageDetail extends StatelessWidget {
 Widget getListTile(int index, Conversation data, BuildContext context, String userName) {
   if (data.messageData[index].userId == userName) {
     return ListTile(
-      title: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
-        child: ColoredBox(
+      title: ColoredBox(
           color: Colors.lightBlue.shade200, 
           text: data.messageData[index].message,
           alignment: MainAxisAlignment.end,
           textAlignment: TextAlign.start)
-      )
     );
   } else {
     return ListTile(
-      title: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: ColoredBox(
+      title: ColoredBox(
           color: Colors.grey.shade200, 
           text: data.messageData[index].message,
           alignment: MainAxisAlignment.start,
           textAlignment: TextAlign.start)
-      )
     );
   }
 }

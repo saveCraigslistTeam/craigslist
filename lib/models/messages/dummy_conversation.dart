@@ -66,6 +66,16 @@ class Conversation {
     userId: "user1", 
     receiverId: "hank123", 
     messageText: "What?");
+  
+  final Message message9 = Message(
+    userId: "hank123", 
+    receiverId: "user1", 
+    messageText: "afdsasdf?");
+  
+  final Message message10 = Message(
+    userId: "user1", 
+    receiverId: "hank123", 
+    messageText: "What?");
 
   final List<Message> stream = <Message>[];
   
@@ -78,6 +88,8 @@ class Conversation {
       stream.add(message6);
       stream.add(message7);
       stream.add(message8);
+      stream.add(message9);
+      stream.add(message10);
   }
 
   List<Message> get messageData {
