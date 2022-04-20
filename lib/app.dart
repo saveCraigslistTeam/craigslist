@@ -16,8 +16,8 @@ class App extends StatelessWidget {
     final routes = {
       MessagesGroup.routeName: (context) => const MessagesGroup(title: title),
       MessageDetail.routeName: (context) => MessageDetail(title: title),
-      '/': (context) => const Start(),
-      //'/': (context) => MySales(),
+      // '/': (context) => const Start(),
+      '/': (context) => MySales(),
     };
 
     return MaterialApp(

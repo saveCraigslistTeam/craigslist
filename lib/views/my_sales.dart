@@ -10,7 +10,7 @@ import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 // amplify configuration and models that should have been generated for you
-//import '../amplifyconfiguration.dart';
+import '../amplifyconfiguration.dart';
 import '../models/sale/ModelProvider.dart';
 import '../models/sale/Sale.dart';
 
@@ -34,8 +34,6 @@ class _MySalesState extends State<MySales> {
       AmplifyDataStore(modelProvider: ModelProvider.instance);
   final AmplifyAPI _apiPlugin = AmplifyAPI();
   final AmplifyAuthCognito _authPlugin = AmplifyAuthCognito();
-
-  String? get amplifyconfig => null;
 
   @override
   void initState() {
@@ -78,11 +76,10 @@ class _MySalesState extends State<MySales> {
       // configure Amplify
       //
       // note that Amplify cannot be configured more than once!
-      await Amplify.configure(amplifyconfig!);
+      await Amplify.configure(amplifyconfig);
     } catch (e) {
       // error handling can be improved for sure!
       // but this will be sufficient for the purposes of this tutorial
-      // ignore: avoid_print
       print('An error occurred while configuring Amplify: $e');
     }
   }

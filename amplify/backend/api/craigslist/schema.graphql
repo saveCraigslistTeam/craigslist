@@ -5,5 +5,4 @@ type Sale @model @auth(rules: [{allow: public}]) {
   condition: String
   zipcode: String
   price: String
-}
- 
+} 
