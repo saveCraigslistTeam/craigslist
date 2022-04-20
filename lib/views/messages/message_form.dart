@@ -20,55 +20,68 @@ class _MessageFormState extends State<MessageForm> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      maintainBottomViewPadding: true,
-      child: 
-            Form(
-              key: formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 300,
-                      child: TextFormField(
-                        decoration: 
-                          const InputDecoration(labelText: 'New Message',
-                                border: OutlineInputBorder()),
-                        maxLines: 2,
-                        minLines: 1,
-                        textInputAction: TextInputAction.done,
-                        keyboardType: TextInputType.text,
-                        onSaved: (value) {
-                          String? text = value;
-                        },
-                        validator: (value){
-                          if (value == null || value.isEmpty){
-                            return 'Please enter a message';
-                          } else {
-                            return null;
-                          }
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(3),
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.0))
-                          )),
-                        onPressed: () { },
-                        child: Icon(Icons.send),
-                      ),
-                    ),
-                  ],
-                ),
+    return (
+      form(formKey, context)
+    );            
+  }
+}
+
+Widget form(GlobalKey<FormState> formKey, BuildContext context) {
+  return (
+    Form(
+      key: formKey, 
+        child: Row(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: paddingSides(context),
+                vertical: paddingTopAndBottom(context)),
+              child: Container(
+                width: 300,
+                child: textEntry(),
               ),
             ),
-            
-    );
+            send()
+          ],
+      ),
+    )
+  );
+}
+
+Widget textEntry(){
+  return (
+    TextFormField(
+        decoration: 
+          const InputDecoration(
+            labelText: 'New Message',
+            border: OutlineInputBorder()),
+        maxLines: 2,
+        minLines: 1,
+        textInputAction: TextInputAction.done,
+        keyboardType: TextInputType.text,
+        onSaved: (value) {
+          String? text = value;
+        },
+        validator: (value){
+          if (value == null || value.isEmpty){
+            return 'Please enter a message';
+          } else {
+            return null;
+          }
+    }));
   }
+
+Widget send(){
+  return (
+    ElevatedButton(
+      style: ButtonStyle(
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.0))
+        )),
+      onPressed: () { },
+      child: Icon(Icons.send),
+    )
+  );
 }
 
 void sendMessage(NewMessage message, String userId, String receiverId, String text){
@@ -81,6 +94,10 @@ void sendMessage(NewMessage message, String userId, String receiverId, String te
   print('${message.userId}, ${message.userId}, ${message.userId}, ${message.userId}');
 }
 
-double padding(BuildContext context) {
-    return MediaQuery.of(context).size.width * 0.3;
+double paddingSides(BuildContext context) {
+  return MediaQuery.of(context).size.width * 0.03;
+}
+
+double paddingTopAndBottom(BuildContext context){
+  return MediaQuery.of(context).size.height * 0.01;
 }

@@ -19,7 +19,6 @@ class MessageDetail extends StatelessWidget {
     //final userName = ModalRoute.of(context)?.settings.arguments as String;
     return (
       Scaffold(
-      resizeToAvoidBottomInset: true,
       appBar: AppBar(title: Text(title),
                     leading: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -34,18 +33,18 @@ class MessageDetail extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(
-              height: 500,
-              child: ListView.builder(
-                      key: new Key('asdf'),
-                      itemCount: data.listLength,
-                      itemBuilder: (_, index) => getListTile(index, data, context, userId),
-                      addAutomaticKeepAlives: false,
-                      shrinkWrap: true),
-            ),
-            SizedBox(
-              height: 100,
-              child: MessageForm(userId: userId, receiverId: receiverId)), 
+                Expanded(
+                  flex: 8,
+                  child: ListView.builder(
+                          padding: const EdgeInsets.all(10),
+                          itemCount: data.listLength,
+                          itemBuilder: (_, index) => getListTile(index, data, context, userId),
+                          addAutomaticKeepAlives: true,
+                          shrinkWrap: true),
+                ),
+               Expanded(
+                 flex: 2,
+                 child: MessageForm(userId: userId, receiverId: receiverId))
           ],
         ),
       ),
@@ -58,25 +57,19 @@ class MessageDetail extends StatelessWidget {
 Widget getListTile(int index, Conversation data, BuildContext context, String userName) {
   if (data.messageData[index].userId == userName) {
     return ListTile(
-      title: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
-        child: ColoredBox(
+      title: ColoredBox(
           color: Colors.lightBlue.shade200, 
           text: data.messageData[index].message,
           alignment: MainAxisAlignment.end,
           textAlignment: TextAlign.start)
-      )
     );
   } else {
     return ListTile(
-      title: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: ColoredBox(
+      title: ColoredBox(
           color: Colors.grey.shade200, 
           text: data.messageData[index].message,
           alignment: MainAxisAlignment.start,
           textAlignment: TextAlign.start)
-      )
     );
   }
 }
