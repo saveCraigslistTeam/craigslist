@@ -21,6 +21,8 @@ dependencies:
   amplify_analytics_pinpoint: ^0.4.5
   amplify_auth_cognito: ^0.4.0
   intl: ^0.17.0
+  provider: ^6.0.2
+  shared_preferences: ^0.5.5
   
 dev_dependencies:
   # For testing widgets

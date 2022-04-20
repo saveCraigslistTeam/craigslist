@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'package:craigslist/theme/theme_manager.dart';
 import 'messages/messages_group.dart';
 
 class Start extends StatefulWidget {
@@ -11,10 +12,25 @@ class Start extends StatefulWidget {
 
 class _StartState extends State<Start> {
   final _formKey = GlobalKey<FormState>();
+
+  //final bool isDark = false;
+
+  //_StartState(this.isDark);
+
+  //get isDark => null;
   @override
   Widget build(BuildContext context) {
+    //bool isDark = ThemeMode.light as bool;
     return Scaffold(
-      appBar: AppBar(title: const Text('Craigslist')),
+      appBar: AppBar(
+        title: const Text('Craigslist'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.dark_mode),
+            onPressed: () => context.read<ThemeManager>().toggleTheme(),
+          )
+        ],
+      ),
       key: _formKey,
       body: Form(
         child: SingleChildScrollView(
