@@ -24,8 +24,8 @@ class App extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       themeMode: context.read<ThemeManager>().themeMode,
       routes: routes,
-      //initialRoute: MessageDetail.routeName,
-      initialRoute: '/',
+      initialRoute: MessagesGroup.routeName,
+      //initialRoute: '/',
     );
   }
 }
