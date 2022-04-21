@@ -1,7 +1,7 @@
 // dart async library we will refer to when setting up real time updates
 import 'dart:async';
 import 'dart:core';
-
+import 'dart:io';
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
@@ -9,10 +9,13 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
-import '../amplifyconfiguration.dart';
-import '../models/sale/ModelProvider.dart';
-import '../models/sale/Sale.dart';
+import '../../amplifyconfiguration.dart';
+import '../../models/sale/ModelProvider.dart';
+import '../../models/sale/Sale.dart';
+import 'upload_image.dart';
 
 class MySales extends StatefulWidget {
   @override
@@ -34,6 +37,7 @@ class _MySalesState extends State<MySales> {
       AmplifyDataStore(modelProvider: ModelProvider.instance);
   final AmplifyAPI _apiPlugin = AmplifyAPI();
   final AmplifyAuthCognito _authPlugin = AmplifyAuthCognito();
+  final AmplifyStorageS3 storage = AmplifyStorageS3();
 
   @override
   void initState() {
@@ -72,7 +76,8 @@ class _MySalesState extends State<MySales> {
   Future<void> _configureAmplify() async {
     try {
       // add Amplify plugins
-      await Amplify.addPlugins([_dataStorePlugin, _apiPlugin, _authPlugin]);
+      await Amplify.addPlugins(
+          [_dataStorePlugin, _apiPlugin, _authPlugin, storage]);
       // configure Amplify
       //
       // note that Amplify cannot be configured more than once!
@@ -90,6 +95,7 @@ class _MySalesState extends State<MySales> {
       appBar: AppBar(
         title: Text('My Sales List'),
       ),
+
       // body: Center(child: CircularProgressIndicator()),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -141,17 +147,6 @@ class SaleItem extends StatelessWidget {
       print('An error occurred while deleting Todo: $e');
     }
   }
-  // Future<void> _toggleIsComplete() async {
-  //   // copy the Todo we wish to update, but with updated properties
-  //   Todo updatedTodo = todo.copyWith(isComplete: !todo.isComplete);
-  //   try {
-  //     // to update data in DataStore, we again pass an instance of a model to
-  //     // Amplify.DataStore.save()
-  //     await Amplify.DataStore.save(updatedTodo);
-  //   } catch (e) {
-  //     print('An error occurred while saving Todo: $e');
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -195,6 +190,33 @@ class AddSaleForm extends StatefulWidget {
 }
 
 class _AddSaleFormState extends State<AddSaleForm> {
+  final picker = ImagePicker();
+
+  Future<void> uploadImage() async {
+    // Select image from user's gallery
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) {
+      print('No image selected');
+      return;
+    }
+
+    // Upload image with the current time as the key
+    final key = DateTime.now().toString();
+    final file = File(pickedFile.path);
+    try {
+      final UploadFileResult result = await Amplify.Storage.uploadFile(
+          local: file,
+          key: key,
+          onProgress: (progress) {
+            print("Fraction completed: " +
+                progress.getFractionCompleted().toString());
+          });
+      print('Successfully uploaded image: ${result.key}');
+    } on StorageException catch (e) {
+      print('Error uploading image: $e');
+    }
+  }
+
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _conditionController = TextEditingController();
@@ -225,7 +247,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
       // to write data to DataStore, we simply pass an instance of a model to
       // Amplify.DataStore.save()
       await Amplify.DataStore.save(newSale);
-
+      uploadImage();
       // after creating a new Todo, close the form
       Navigator.of(context).pop();
     } catch (e) {
@@ -265,7 +287,9 @@ class _AddSaleFormState extends State<AddSaleForm> {
                   controller: _priceController,
                   decoration:
                       InputDecoration(filled: true, labelText: 'Price')),
-              ElevatedButton(onPressed: _saveSale, child: Text('Save'))
+              ElevatedButton(onPressed: _saveSale, child: Text('Save')),
+              ElevatedButton(
+                  onPressed: uploadImage, child: Text('Upload Image')),
             ],
           ),
         ),
