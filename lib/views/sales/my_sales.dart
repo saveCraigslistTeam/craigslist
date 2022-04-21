@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:core';
 import 'dart:io';
+import 'dart:developer';
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
@@ -192,6 +193,17 @@ class AddSaleForm extends StatefulWidget {
 class _AddSaleFormState extends State<AddSaleForm> {
   final picker = ImagePicker();
 
+  Future<void> getDownloadUrl(key) async {
+    try {
+      final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
+      // NOTE: This code is only for demonstration
+      // Your debug console may truncate the printed url string
+      print('Got URL: ${result.url}');
+    } on StorageException catch (e) {
+      print('Error getting download URL: $e');
+    }
+  }
+
   Future<void> uploadImage() async {
     // Select image from user's gallery
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -212,6 +224,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
                 progress.getFractionCompleted().toString());
           });
       print('Successfully uploaded image: ${result.key}');
+      getDownloadUrl(key);
     } on StorageException catch (e) {
       print('Error uploading image: $e');
     }
