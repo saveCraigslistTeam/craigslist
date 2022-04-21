@@ -14,9 +14,9 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../amplifyconfiguration.dart';
-import '../../models/sale/ModelProvider.dart';
-import '../../models/sale/Sale.dart';
-import 'upload_image.dart';
+import '../../models/ModelProvider.dart';
+// import '../../models/sale/Sale.dart';
+// import 'upload_image.dart';
 
 class MySales extends StatefulWidget {
   @override
@@ -191,16 +191,27 @@ class AddSaleForm extends StatefulWidget {
 }
 
 class _AddSaleFormState extends State<AddSaleForm> {
+  String? imageURL;
   final picker = ImagePicker();
 
-  Future<void> getDownloadUrl(key) async {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<String?> getDownloadUrl(key) async {
     try {
       final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
       // NOTE: This code is only for demonstration
       // Your debug console may truncate the printed url string
       print('Got URL: ${result.url}');
+      setState(() {
+        imageURL = result.url;
+      });
+      return result.url;
     } on StorageException catch (e) {
       print('Error getting download URL: $e');
+      return null;
     }
   }
 
@@ -235,7 +246,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
   final _conditionController = TextEditingController();
   final _zipcodeController = TextEditingController();
   final _priceController = TextEditingController();
-  // final _postDateController = TextEditingController();
 
   Future<void> _saveSale() async {
     // get the current text field contents
@@ -244,7 +254,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
     String condition = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     String price = _priceController.text;
-    // String postDate = _postDateController.text;
 
     // create a new Sale from the form values
     Sale newSale = Sale(
@@ -253,15 +262,16 @@ class _AddSaleFormState extends State<AddSaleForm> {
       condition: condition.isNotEmpty ? condition : null,
       zipcode: zipcode.isNotEmpty ? zipcode : null,
       price: price.isNotEmpty ? price : null,
-      // postDate: TemporalDateTime(DateTime.now())
     );
 
     try {
-      // to write data to DataStore, we simply pass an instance of a model to
-      // Amplify.DataStore.save()
       await Amplify.DataStore.save(newSale);
-      uploadImage();
-      // after creating a new Todo, close the form
+
+      await Amplify.DataStore.save(SaleImage(
+        imageURL: imageURL,
+        saleID: newSale.getId(),
+      ));
+      // Close the form
       Navigator.of(context).pop();
     } catch (e) {
       print('An error occurred while saving Sale: $e');
@@ -273,6 +283,9 @@ class _AddSaleFormState extends State<AddSaleForm> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Sale'),
+        actions: <Widget>[
+          ElevatedButton(onPressed: _saveSale, child: Text('Save')),
+        ],
       ),
       body: Container(
         padding: EdgeInsets.all(8.0),
@@ -300,7 +313,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
                   controller: _priceController,
                   decoration:
                       InputDecoration(filled: true, labelText: 'Price')),
-              ElevatedButton(onPressed: _saveSale, child: Text('Save')),
               ElevatedButton(
                   onPressed: uploadImage, child: Text('Upload Image')),
             ],

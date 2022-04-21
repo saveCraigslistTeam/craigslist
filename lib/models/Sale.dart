@@ -19,7 +19,9 @@
 
 // ignore_for_file: public_member_api_docs, file_names, unnecessary_new, prefer_if_null_operators, prefer_const_constructors, slash_for_doc_comments, annotate_overrides, non_constant_identifier_names, unnecessary_string_interpolations, prefer_adjacent_string_concatenation, unnecessary_const, dead_code
 
+import 'ModelProvider.dart';
 import 'package:amplify_core/amplify_core.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
 
@@ -33,6 +35,7 @@ class Sale extends Model {
   final String? _condition;
   final String? _zipcode;
   final String? _price;
+  final List<SaleImage>? _SaleImages;
   final TemporalDateTime? _createdAt;
   final TemporalDateTime? _updatedAt;
 
@@ -64,6 +67,10 @@ class Sale extends Model {
     return _price;
   }
   
+  List<SaleImage>? get SaleImages {
+    return _SaleImages;
+  }
+  
   TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -72,16 +79,17 @@ class Sale extends Model {
     return _updatedAt;
   }
   
-  const Sale._internal({required this.id, title, description, condition, zipcode, price, createdAt, updatedAt}): _title = title, _description = description, _condition = condition, _zipcode = zipcode, _price = price, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Sale._internal({required this.id, title, description, condition, zipcode, price, SaleImages, createdAt, updatedAt}): _title = title, _description = description, _condition = condition, _zipcode = zipcode, _price = price, _SaleImages = SaleImages, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Sale({String? id, String? title, String? description, String? condition, String? zipcode, String? price}) {
+  factory Sale({String? id, String? title, String? description, String? condition, String? zipcode, String? price, List<SaleImage>? SaleImages}) {
     return Sale._internal(
       id: id == null ? UUID.getUUID() : id,
       title: title,
       description: description,
       condition: condition,
       zipcode: zipcode,
-      price: price);
+      price: price,
+      SaleImages: SaleImages != null ? List<SaleImage>.unmodifiable(SaleImages) : SaleImages);
   }
   
   bool equals(Object other) {
@@ -97,7 +105,8 @@ class Sale extends Model {
       _description == other._description &&
       _condition == other._condition &&
       _zipcode == other._zipcode &&
-      _price == other._price;
+      _price == other._price &&
+      DeepCollectionEquality().equals(_SaleImages, other._SaleImages);
   }
   
   @override
@@ -121,14 +130,15 @@ class Sale extends Model {
     return buffer.toString();
   }
   
-  Sale copyWith({String? id, String? title, String? description, String? condition, String? zipcode, String? price}) {
+  Sale copyWith({String? id, String? title, String? description, String? condition, String? zipcode, String? price, List<SaleImage>? SaleImages}) {
     return Sale._internal(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       condition: condition ?? this.condition,
       zipcode: zipcode ?? this.zipcode,
-      price: price ?? this.price);
+      price: price ?? this.price,
+      SaleImages: SaleImages ?? this.SaleImages);
   }
   
   Sale.fromJson(Map<String, dynamic> json)  
@@ -138,11 +148,17 @@ class Sale extends Model {
       _condition = json['condition'],
       _zipcode = json['zipcode'],
       _price = json['price'],
+      _SaleImages = json['SaleImages'] is List
+        ? (json['SaleImages'] as List)
+          .where((e) => e?['serializedData'] != null)
+          .map((e) => SaleImage.fromJson(new Map<String, dynamic>.from(e['serializedData'])))
+          .toList()
+        : null,
       _createdAt = json['createdAt'] != null ? TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'title': _title, 'description': _description, 'condition': _condition, 'zipcode': _zipcode, 'price': _price, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'title': _title, 'description': _description, 'condition': _condition, 'zipcode': _zipcode, 'price': _price, 'SaleImages': _SaleImages?.map((SaleImage? e) => e?.toJson()).toList(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
 
   static final QueryField ID = QueryField(fieldName: "sale.id");
@@ -151,6 +167,9 @@ class Sale extends Model {
   static final QueryField CONDITION = QueryField(fieldName: "condition");
   static final QueryField ZIPCODE = QueryField(fieldName: "zipcode");
   static final QueryField PRICE = QueryField(fieldName: "price");
+  static final QueryField SALEIMAGES = QueryField(
+    fieldName: "SaleImages",
+    fieldType: ModelFieldType(ModelFieldTypeEnum.model, ofModelName: (SaleImage).toString()));
   static var schema = Model.defineSchema(define: (ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "Sale";
     modelSchemaDefinition.pluralName = "Sales";
@@ -196,6 +215,13 @@ class Sale extends Model {
       key: Sale.PRICE,
       isRequired: false,
       ofType: ModelFieldType(ModelFieldTypeEnum.string)
+    ));
+    
+    modelSchemaDefinition.addField(ModelFieldDefinition.hasMany(
+      key: Sale.SALEIMAGES,
+      isRequired: false,
+      ofModelName: (SaleImage).toString(),
+      associatedKey: SaleImage.SALEID
     ));
     
     modelSchemaDefinition.addField(ModelFieldDefinition.nonQueryField(
