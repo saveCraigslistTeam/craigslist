@@ -55,5 +55,12 @@
         ]
       }
     }
+  },
+  "storage": {
+    "s3craigsliststorageimages": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": []
+    }
   }
 }

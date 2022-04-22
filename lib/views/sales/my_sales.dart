@@ -1,7 +1,8 @@
 // dart async library we will refer to when setting up real time updates
 import 'dart:async';
 import 'dart:core';
-
+import 'dart:io';
+import 'dart:developer';
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
@@ -9,12 +10,25 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
-//import '../amplifyconfiguration.dart';
-import '../models/sale/ModelProvider.dart';
-import '../models/sale/Sale.dart';
+import '../../amplifyconfiguration.dart';
+import '../../models/ModelProvider.dart';
+// import '../../models/sale/Sale.dart';
+// import 'upload_image.dart';
 
 class MySales extends StatefulWidget {
+  MySales(
+      {Key? key,
+      required this.DataStore,
+      required this.Storage,
+      required this.Auth})
+      : super(key: key);
+  final AmplifyDataStore DataStore;
+  final AmplifyStorageS3 Storage;
+  final AmplifyAuthCognito Auth;
+
   @override
   _MySalesState createState() => _MySalesState();
 }
@@ -29,32 +43,14 @@ class _MySalesState extends State<MySales> {
   // list of Todos - initially empty
   List<Sale> _sales = [];
 
-  // amplify plugins
-  final AmplifyDataStore _dataStorePlugin =
-      AmplifyDataStore(modelProvider: ModelProvider.instance);
-  final AmplifyAPI _apiPlugin = AmplifyAPI();
-  final AmplifyAuthCognito _authPlugin = AmplifyAuthCognito();
-
-  String? get amplifyconfig => null;
-
   @override
   void initState() {
     // kick off app initialization
     _initializeApp();
-
     super.initState();
   }
 
-  @override
-  void dispose() {
-    // to be filled in a later step
-    super.dispose();
-  }
-
   Future<void> _initializeApp() async {
-    // configure Amplify
-    await _configureAmplify();
-
     // Query and Observe updates to Todo models. DataStore.observeQuery() will
     // emit an initial QuerySnapshot with a list of Todo models in the local store,
     // and will emit subsequent snapshots as updates are made
@@ -62,7 +58,8 @@ class _MySalesState extends State<MySales> {
     // each time a snapshot is received, the following will happen:
     // _isLoading is set to false if it is not already false
     // _todos is set to the value in the latest snapshot
-    _subscription = Amplify.DataStore.observeQuery(Sale.classType)
+    _subscription = widget.DataStore.observeQuery(Sale.classType)
+        // _subscription = Amplify.DataStore.observeQuery(Sale.classType)
         .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
@@ -71,28 +68,13 @@ class _MySalesState extends State<MySales> {
     });
   }
 
-  Future<void> _configureAmplify() async {
-    try {
-      // add Amplify plugins
-      await Amplify.addPlugins([_dataStorePlugin, _apiPlugin, _authPlugin]);
-      // configure Amplify
-      //
-      // note that Amplify cannot be configured more than once!
-      await Amplify.configure(amplifyconfig!);
-    } catch (e) {
-      // error handling can be improved for sure!
-      // but this will be sufficient for the purposes of this tutorial
-      // ignore: avoid_print
-      print('An error occurred while configuring Amplify: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('My Sales List'),
       ),
+
       // body: Center(child: CircularProgressIndicator()),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -144,17 +126,6 @@ class SaleItem extends StatelessWidget {
       print('An error occurred while deleting Todo: $e');
     }
   }
-  // Future<void> _toggleIsComplete() async {
-  //   // copy the Todo we wish to update, but with updated properties
-  //   Todo updatedTodo = todo.copyWith(isComplete: !todo.isComplete);
-  //   try {
-  //     // to update data in DataStore, we again pass an instance of a model to
-  //     // Amplify.DataStore.save()
-  //     await Amplify.DataStore.save(updatedTodo);
-  //   } catch (e) {
-  //     print('An error occurred while saving Todo: $e');
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -198,12 +169,61 @@ class AddSaleForm extends StatefulWidget {
 }
 
 class _AddSaleFormState extends State<AddSaleForm> {
+  String? imageURL;
+  final picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<String?> getDownloadUrl(key) async {
+    try {
+      final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
+      // NOTE: This code is only for demonstration
+      // Your debug console may truncate the printed url string
+      print('Got URL: ${result.url}');
+      setState(() {
+        imageURL = result.url;
+      });
+      return result.url;
+    } on StorageException catch (e) {
+      print('Error getting download URL: $e');
+      return null;
+    }
+  }
+
+  Future<void> uploadImage() async {
+    // Select image from user's gallery
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) {
+      print('No image selected');
+      return;
+    }
+
+    // Upload image with the current time as the key
+    final key = DateTime.now().toString();
+    final file = File(pickedFile.path);
+    try {
+      final UploadFileResult result = await Amplify.Storage.uploadFile(
+          local: file,
+          key: key,
+          onProgress: (progress) {
+            print("Fraction completed: " +
+                progress.getFractionCompleted().toString());
+          });
+      print('Successfully uploaded image: ${result.key}');
+      getDownloadUrl(key);
+    } on StorageException catch (e) {
+      print('Error uploading image: $e');
+    }
+  }
+
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _conditionController = TextEditingController();
   final _zipcodeController = TextEditingController();
   final _priceController = TextEditingController();
-  // final _postDateController = TextEditingController();
 
   Future<void> _saveSale() async {
     // get the current text field contents
@@ -212,7 +232,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
     String condition = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     String price = _priceController.text;
-    // String postDate = _postDateController.text;
 
     // create a new Sale from the form values
     Sale newSale = Sale(
@@ -221,15 +240,16 @@ class _AddSaleFormState extends State<AddSaleForm> {
       condition: condition.isNotEmpty ? condition : null,
       zipcode: zipcode.isNotEmpty ? zipcode : null,
       price: price.isNotEmpty ? price : null,
-      // postDate: TemporalDateTime(DateTime.now())
     );
 
     try {
-      // to write data to DataStore, we simply pass an instance of a model to
-      // Amplify.DataStore.save()
       await Amplify.DataStore.save(newSale);
 
-      // after creating a new Todo, close the form
+      await Amplify.DataStore.save(SaleImage(
+        imageURL: imageURL,
+        saleID: newSale.getId(),
+      ));
+      // Close the form
       Navigator.of(context).pop();
     } catch (e) {
       print('An error occurred while saving Sale: $e');
@@ -241,6 +261,9 @@ class _AddSaleFormState extends State<AddSaleForm> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Sale'),
+        actions: <Widget>[
+          ElevatedButton(onPressed: _saveSale, child: Text('Save')),
+        ],
       ),
       body: Container(
         padding: EdgeInsets.all(8.0),
@@ -268,7 +291,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
                   controller: _priceController,
                   decoration:
                       InputDecoration(filled: true, labelText: 'Price')),
-              ElevatedButton(onPressed: _saveSale, child: Text('Save'))
+              ElevatedButton(
+                  onPressed: uploadImage, child: Text('Upload Image')),
             ],
           ),
         ),
