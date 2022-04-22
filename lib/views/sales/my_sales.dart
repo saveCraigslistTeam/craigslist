@@ -19,6 +19,16 @@ import '../../models/ModelProvider.dart';
 // import 'upload_image.dart';
 
 class MySales extends StatefulWidget {
+  MySales(
+      {Key? key,
+      required this.DataStore,
+      required this.Storage,
+      required this.Auth})
+      : super(key: key);
+  final AmplifyDataStore DataStore;
+  final AmplifyStorageS3 Storage;
+  final AmplifyAuthCognito Auth;
+
   @override
   _MySalesState createState() => _MySalesState();
 }
@@ -33,31 +43,14 @@ class _MySalesState extends State<MySales> {
   // list of Todos - initially empty
   List<Sale> _sales = [];
 
-  // amplify plugins
-  final AmplifyDataStore _dataStorePlugin =
-      AmplifyDataStore(modelProvider: ModelProvider.instance);
-  final AmplifyAPI _apiPlugin = AmplifyAPI();
-  final AmplifyAuthCognito _authPlugin = AmplifyAuthCognito();
-  final AmplifyStorageS3 storage = AmplifyStorageS3();
-
   @override
   void initState() {
     // kick off app initialization
     _initializeApp();
-
     super.initState();
   }
 
-  @override
-  void dispose() {
-    // to be filled in a later step
-    super.dispose();
-  }
-
   Future<void> _initializeApp() async {
-    // configure Amplify
-    await _configureAmplify();
-
     // Query and Observe updates to Todo models. DataStore.observeQuery() will
     // emit an initial QuerySnapshot with a list of Todo models in the local store,
     // and will emit subsequent snapshots as updates are made
@@ -65,29 +58,14 @@ class _MySalesState extends State<MySales> {
     // each time a snapshot is received, the following will happen:
     // _isLoading is set to false if it is not already false
     // _todos is set to the value in the latest snapshot
-    _subscription = Amplify.DataStore.observeQuery(Sale.classType)
+    _subscription = widget.DataStore.observeQuery(Sale.classType)
+        // _subscription = Amplify.DataStore.observeQuery(Sale.classType)
         .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
         _sales = snapshot.items;
       });
     });
-  }
-
-  Future<void> _configureAmplify() async {
-    try {
-      // add Amplify plugins
-      await Amplify.addPlugins(
-          [_dataStorePlugin, _apiPlugin, _authPlugin, storage]);
-      // configure Amplify
-      //
-      // note that Amplify cannot be configured more than once!
-      await Amplify.configure(amplifyconfig);
-    } catch (e) {
-      // error handling can be improved for sure!
-      // but this will be sufficient for the purposes of this tutorial
-      print('An error occurred while configuring Amplify: $e');
-    }
   }
 
   @override
