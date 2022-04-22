@@ -3,7 +3,7 @@
   "serviceConfiguration": {
     "apiName": "craigslist",
     "serviceName": "AppSync",
-    "gqlSchemaPath": "/tmp/amplify-350db25c-2fed-4204-90da-07e8c4e06c26/amplify/backend/api/craigslist/schema.graphql",
+    "gqlSchemaPath": "/tmp/amplify-67cc56a9-3a65-4b68-84c8-b2017188d31a/amplify/backend/api/craigslist/schema.graphql",
     "defaultAuthType": {
       "mode": "API_KEY",
       "keyDescription": "api key description",
