@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:craigslist/theme/theme_manager.dart';
-import 'messages/messages_group.dart';
+import 'messages/inbox.dart';
 
 class Start extends StatefulWidget {
   const Start({Key? key}) : super(key: key);
@@ -118,7 +118,7 @@ class _StartState extends State<Start> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const MessagesGroup(
+                      builder: (context) => const Inbox(
                             title: 'craigslist',
                           )),
                 );

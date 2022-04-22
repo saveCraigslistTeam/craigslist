@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'messages_detail.dart';
 import '../../models/messages/dummy_data.dart';
 
-class MessagesGroup extends StatelessWidget {
+class Inbox extends StatelessWidget {
   /* 
    * Message group shows all available chat logs for the user.
    */
   final String title;
   static const String routeName = 'messagesGroup';
   
-  const MessagesGroup({Key? key, required this.title}) : super(key: key);
+  const Inbox({Key? key, required this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
