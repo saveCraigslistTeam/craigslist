@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'messages_detail.dart';
 import '../../models/messages/dummy_data.dart';
 
-class MessagesGroup extends StatelessWidget {
+class Inbox extends StatelessWidget {
   /* 
    * Message group shows all available chat logs for the user.
    */
   final String title;
   static const String routeName = 'messagesGroup';
   
-  const MessagesGroup({Key? key, required this.title}) : super(key: key);
+  const Inbox({Key? key, required this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +19,20 @@ class MessagesGroup extends StatelessWidget {
           backgroundColor: Colors.white,
           centerTitle: true,
         ),
-        body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
-            child: ListView.builder(
-                itemCount: getDummyData().messageLength,
-                itemBuilder: (_, index) => getListTile(index, context)))));
+        body: Column(
+          children: [
+            Expanded(
+                  flex: 7,
+                  child: ListView.builder(
+                      itemCount: getDummyData().messageLength,
+                      itemBuilder: (_, index) => getListTile(index, context)),
+                ),
+            Expanded(flex: 1,
+            child: Container(
+              color: Colors.white,
+            ))
+          ],
+        )));
   }
 }
 
@@ -36,13 +45,11 @@ Widget appBarTitle(String title) {
 }
 
 Widget getMessageUsername(int index) {
-  return (SizedBox(
-      width: 90,
-      child: Text(
+  return ( Text(
           getDummyData().messageData[index].receiverId.length > 8
               ? getDummyData().messageData[index].receiverId.substring(0, 8)
               : getDummyData().messageData[index].receiverId,
-          style: const TextStyle(color: Color(0xff5887FF), fontSize: 20))));
+          style: const TextStyle(color: Color(0xff5887FF), fontSize: 20)));
 }
 
 Widget getMessageText(int index) {
@@ -59,9 +66,7 @@ Widget getMessageText(int index) {
 }
 
 Widget getListTile(int index, BuildContext context) {
-  return (Padding(
-      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
-      child: ListTile(
+  return (ListTile(
             shape: RoundedRectangleBorder(
                 side: const BorderSide(color: Colors.blue, width: 1),
                 borderRadius: BorderRadius.circular(5)),
@@ -71,8 +76,8 @@ Widget getListTile(int index, BuildContext context) {
             focusColor: Colors.blue,
             onTap: () => {
               Navigator.pushNamed(context, MessageDetail.routeName, arguments: getDummyData().messageData[index].userId)
-            }),
-      ));
+            })
+      );
 }
 
 Messages getDummyData() {

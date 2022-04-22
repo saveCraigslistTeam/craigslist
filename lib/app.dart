@@ -3,7 +3,7 @@ import 'package:craigslist/views/messages/messages_detail.dart';
 import 'package:craigslist/views/start.dart';
 import 'package:craigslist/views/sales/my_sales.dart';
 import 'package:provider/provider.dart';
-import 'views/messages/messages_group.dart';
+import 'views/messages/inbox.dart';
 import 'package:flutter/material.dart';
 import 'dart:core';
 // amplify packages we will need to use
@@ -58,7 +58,7 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     final routes = {
-      MessagesGroup.routeName: (context) =>
+      Inbox.routeName: (context) =>
           const MessagesGroup(title: App.title),
       MessageDetail.routeName: (context) => MessageDetail(title: App.title),
       // '/': (context) => const Start(),
@@ -70,8 +70,8 @@ class _AppState extends State<App> {
       debugShowCheckedModeBanner: false,
       themeMode: context.read<ThemeManager>().themeMode,
       routes: routes,
-      //initialRoute: MessageDetail.routeName,
-      initialRoute: '/',
+      initialRoute: Inbox.routeName,
+      //initialRoute: '/',
     );
   }
 }
