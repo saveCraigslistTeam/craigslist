@@ -1,4 +1,5 @@
 import 'package:craigslist/theme/theme_manager.dart';
+import 'package:craigslist/views/home.dart';
 import 'package:craigslist/views/messages/messages_detail.dart';
 import 'package:craigslist/views/start.dart';
 import 'package:craigslist/views/sales/my_sales.dart';
@@ -15,6 +16,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 // amplify configuration and models that should have been generated for you
 import '../../amplifyconfiguration.dart';
 import '../../models/ModelProvider.dart';
+import 'views/messages/message_form.dart';
 
 class App extends StatefulWidget {
   static const String title = "craigslist";
@@ -34,6 +36,8 @@ class _AppState extends State<App> {
   bool configured = false;
   bool authenticated = false;
 
+  late String amplifyconfig;
+
   @override
   initState() {
     super.initState();
@@ -51,27 +55,30 @@ class _AppState extends State<App> {
         configured = true;
       });
     } catch (e) {
-      print('An error occurred while configuring Amplify: $e');
+      debugPrint('An error occurred while configuring Amplify: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final routes = {
-      Inbox.routeName: (context) =>
-          const MessagesGroup(title: App.title),
-      MessageDetail.routeName: (context) => MessageDetail(title: App.title),
-      // '/': (context) => const Start(),
-      '/': (context) => MySales(
+      '/': (context) => const Start(),
+      '/home': (context) => Home(),
+      '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
+      '/msgDetail': (context) => MessageDetail(title: App.title),
+      '/msgForm': (context) => MessageForm(
+            userId: '',
+            receiverId: '',
+          ),
+      '/inbox': (context) => const Inbox(title: App.title),
     };
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: context.read<ThemeManager>().themeMode,
+      initialRoute: '/',
       routes: routes,
-      initialRoute: Inbox.routeName,
-      //initialRoute: '/',
     );
   }
 }

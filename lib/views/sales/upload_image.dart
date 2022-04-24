@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
@@ -10,7 +11,7 @@ Future<void> uploadImage() async {
   final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
   if (pickedFile == null) {
-    print('No image selected');
+    debugPrint('No image selected');
     return;
   }
 
@@ -22,11 +23,11 @@ Future<void> uploadImage() async {
         local: file,
         key: key,
         onProgress: (progress) {
-          print("Fraction completed: " +
+          debugPrint("Fraction completed: " +
               progress.getFractionCompleted().toString());
         });
-    print('Successfully uploaded image: ${result.key}');
+    debugPrint('Successfully uploaded image: ${result.key}');
   } on StorageException catch (e) {
-    print('Error uploading image: $e');
+    debugPrint('Error uploading image: $e');
   }
 }
