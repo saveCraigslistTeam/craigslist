@@ -24,6 +24,7 @@ class _StartState extends State<Start> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Craigslist'),
+        backgroundColor: const Color(0xffA682FF),
         actions: [
           IconButton(
             icon: const Icon(Icons.dark_mode),
@@ -49,17 +50,17 @@ class _StartState extends State<Start> {
     return [
       TextFormField(
         autofocus: true,
-        // cursorColor: Theme.of(context).accentColor,
-        decoration: InputDecoration(
+        cursorColor: const Color(0xffA682FF),
+        decoration: const InputDecoration(
           floatingLabelBehavior: FloatingLabelBehavior.auto,
           labelText: 'Email',
           labelStyle: TextStyle(
-            color: Theme.of(context).colorScheme.secondary,
+            color: Color(0xffA682FF),
           ),
-          border: const OutlineInputBorder(),
+          border: OutlineInputBorder(),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: Theme.of(context).colorScheme.secondary,
+              color: Color(0xffA682FF),
             ),
           ),
         ),
@@ -75,17 +76,22 @@ class _StartState extends State<Start> {
       const SizedBox(height: 10),
       TextFormField(
         autofocus: true,
-        cursorColor: Theme.of(context).colorScheme.secondary,
-        decoration: InputDecoration(
+        //cursorColor: Theme.of(context).colorScheme.secondary,
+        cursorColor: const Color(0xffA682FF),
+        decoration: const InputDecoration(
           floatingLabelBehavior: FloatingLabelBehavior.auto,
           labelText: 'Password',
+          // labelStyle: TextStyle(
+          //   color: Theme.of(context).colorScheme.secondary,
+          // ),
           labelStyle: TextStyle(
-            color: Theme.of(context).colorScheme.secondary,
+            color: Color(0xffA682FF),
           ),
-          border: const OutlineInputBorder(),
+          border: OutlineInputBorder(),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: Theme.of(context).colorScheme.secondary,
+              //color: Theme.of(context).colorScheme.secondary,
+              color: Color(0xffA682FF),
             ),
           ),
         ),
@@ -104,7 +110,8 @@ class _StartState extends State<Start> {
         children: <Widget>[
           ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Theme.of(context).colorScheme.secondary,
+                primary: const Color(0xffA682FF),
+                //primary: Theme.of(context).colorScheme.primary,
                 padding: const EdgeInsets.symmetric(
                     horizontal: 22.5, vertical: 12.5),
               ),
@@ -115,13 +122,7 @@ class _StartState extends State<Start> {
                 ),
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const Inbox(
-                            title: 'craigslist',
-                          )),
-                );
+                Navigator.pushNamed(context, '/home');
               }),
         ],
       ),
