@@ -37,6 +37,11 @@ PODS:
     - Flutter
     - SwiftFormat/CLI
     - SwiftLint
+  - amplify_storage_s3_ios (0.0.1):
+    - Amplify (= 1.23.0)
+    - amplify_core
+    - AmplifyPlugins/AWSS3StoragePlugin (= 1.23.0)
+    - Flutter
   - AmplifyPlugins/AWSAPIPlugin (1.23.0):
     - AppSyncRealTimeClient (~> 1.8)
     - AWSCore (~> 2.27.0)
@@ -56,6 +61,10 @@ PODS:
     - AWSCore (~> 2.27.0)
     - AWSPinpoint (~> 2.27.0)
     - AWSPluginsCore (= 1.23.0)
+  - AmplifyPlugins/AWSS3StoragePlugin (1.23.0):
+    - AWSCore (~> 2.27.0)
+    - AWSPluginsCore (= 1.23.0)
+    - AWSS3 (~> 2.27.0)
   - AppSyncRealTimeClient (1.9.1):
     - Starscream (~> 4.0.4)
   - AWSAuthCore (2.27.6):
@@ -76,7 +85,11 @@ PODS:
   - AWSPluginsCore (1.23.0):
     - Amplify (= 1.23.0)
     - AWSCore (~> 2.27.0)
+  - AWSS3 (2.27.6):
+    - AWSCore (= 2.27.6)
   - Flutter (1.0.0)
+  - image_picker_ios (0.0.1):
+    - Flutter
   - ObjectMapper (4.2.0)
   - shared_preferences (0.0.1):
     - Flutter
@@ -94,7 +107,9 @@ DEPENDENCIES:
   - amplify_core (from `.symlinks/plugins/amplify_core/ios`)
   - amplify_datastore (from `.symlinks/plugins/amplify_datastore/ios`)
   - amplify_flutter (from `.symlinks/plugins/amplify_flutter/ios`)
+  - amplify_storage_s3_ios (from `.symlinks/plugins/amplify_storage_s3_ios/ios`)
   - Flutter (from `Flutter`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
 
 SPEC REPOS:
@@ -109,6 +124,7 @@ SPEC REPOS:
     - AWSMobileClient
     - AWSPinpoint
     - AWSPluginsCore
+    - AWSS3
     - ObjectMapper
     - SQLite.swift
     - Starscream
@@ -128,8 +144,12 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/amplify_datastore/ios"
   amplify_flutter:
     :path: ".symlinks/plugins/amplify_flutter/ios"
+  amplify_storage_s3_ios:
+    :path: ".symlinks/plugins/amplify_storage_s3_ios/ios"
   Flutter:
     :path: Flutter
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
 
@@ -141,6 +161,7 @@ SPEC CHECKSUMS:
   amplify_core: e67fe0c53845db08aced670bfc7370b1329d2798
   amplify_datastore: 8c35a89e553716222b33cc8cc587ea978a982244
   amplify_flutter: 0cfb67a9864be1605c6659635c2b98700fe8c34d
+  amplify_storage_s3_ios: 9f909ed387be893ee4a26b040ad1fb7212b9e14d
   AmplifyPlugins: d939707cf36dfcd53c5fd6533e842e323a2287ab
   AppSyncRealTimeClient: cdee78ab78249cb87a71d975e1436e692813a606
   AWSAuthCore: 09226ae8dfc63d1338f503f53a38af2d3156267e
@@ -150,7 +171,9 @@ SPEC CHECKSUMS:
   AWSMobileClient: e0ad3787f793d14c593379c2dba006e3bdad8bf1
   AWSPinpoint: a77cf6d288855cdb07334998910ff6023cfbeeb7
   AWSPluginsCore: 120cfa265293694921b6595fe00d1cb5ab558847
+  AWSS3: 2b8d31de4ae07b8dc00ab26e805f389b328b20a3
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb
   ObjectMapper: 1eb41f610210777375fa806bf161dc39fb832b81
   shared_preferences: 430726339841afefe5142b9c1f50cb6bd7793e01
   SQLite.swift: 4fc2be46c36392e3b87afe6fe7f1801c1daa07ef

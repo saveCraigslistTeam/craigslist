@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'messages_detail.dart';
-import '../../models/messages/dummy_data.dart';
+import '../../models/messages/messages_models.dart';
 
 class Inbox extends StatelessWidget {
   /* 
@@ -9,10 +9,24 @@ class Inbox extends StatelessWidget {
   final String title;
   static const String routeName = 'messagesGroup';
 
-  const Inbox({Key? key, required this.title}) : super(key: key);
+  Inbox({Key? key, required this.title}) : super(key: key);
+
+  final Conversation data = Conversation();
+  final Message message = Message("saleId", "sender", "customerId", "sender", "receiver", "Hello World");
+  final Message message2 = Message("saleId", "sender", "customerId",  "receiver", "sender", "Goodbye World");
+  final Message message3 = Message("saleId2", "sender", "customerId1", "sender", "receiver1", "Message two");
+  final Message message4 = Message("saleId2", "sender", "customerId1",  "receiver1", "sender", "Super long message incoming let me break your flutter app aaaaaarggghhh!");
 
   @override
   Widget build(BuildContext context) {
+
+    data.addMessage(message);
+    data.addMessage(message2);
+    data.addMessage(message3);
+    data.addMessage(message4);
+
+    Conversation formattedData = removeDuplicates(data);
+
     return (Scaffold(
         appBar: AppBar(
           leading: const BackButton(color: Color.fromARGB(255, 166, 130, 255)),
@@ -25,8 +39,8 @@ class Inbox extends StatelessWidget {
             Expanded(
               flex: 7,
               child: ListView.builder(
-                  itemCount: getDummyData().messageLength,
-                  itemBuilder: (_, index) => getListTile(index, context)),
+                  itemCount: formattedData.listLength,
+                  itemBuilder: (_, index) => getListTile(index, context, formattedData)),
             ),
             Expanded(
                 flex: 1,
@@ -46,42 +60,64 @@ Widget appBarTitle(String title) {
   );
 }
 
-Widget getMessageUsername(int index) {
+Widget getMessageUsername(int index, Conversation data) {
   return (Text(
-      getDummyData().messageData[index].receiverId.length > 8
-          ? getDummyData().messageData[index].receiverId.substring(0, 8)
-          : getDummyData().messageData[index].receiverId,
+      data.conversations[index].customer.length > 8
+          ? data.conversations[index].customer.substring(0, 8)
+          : data.conversations[index].customer,
       style: const TextStyle(color: Color(0xff5887FF), fontSize: 20)));
 }
 
-Widget getMessageText(int index) {
+Widget getMessageText(int index, Conversation data) {
   return (Column(
     children: [
-      Text(getDummyData().messageData[index].messageText.length > 25
-          ? getDummyData().messageData[index].messageText.substring(0, 25)
-          : getDummyData().messageData[index].messageText),
-      Text(getDummyData().messageData[index].dateDataDate.length > 25
-          ? getDummyData().messageData[index].dateDataDate.substring(0, 25)
-          : getDummyData().messageData[index].dateDataDate),
+      Text(data.conversations[index].text.length > 25
+          ? data.conversations[index].text.substring(0, 25)
+          : data.conversations[index].text),
+      Text(data.conversations[index].formattedDate.length > 25
+          ? data.conversations[index].formattedDate.substring(0, 25)
+          : data.conversations[index].formattedDate),
     ],
   ));
 }
 
-Widget getListTile(int index, BuildContext context) {
+Widget getListTile(int index, BuildContext context, Conversation data) {
   return (ListTile(
       shape: RoundedRectangleBorder(
           side: const BorderSide(color: Colors.blue, width: 1),
           borderRadius: BorderRadius.circular(5)),
-      leading: getMessageUsername(index),
-      title: getMessageText(index),
+      leading: getMessageUsername(index, data),
+      title: getMessageText(index, data),
       trailing: const Text(">"),
       focusColor: Colors.blue,
       onTap: () => {
             Navigator.pushNamed(context, '/msgDetail',
-                arguments: getDummyData().messageData[index].userId)
+                arguments: data)
           }));
 }
 
-Messages getDummyData() {
-  return Messages();
+Conversation removeDuplicates(Conversation data) {
+  Conversation formattedConversation = Conversation();
+  bool flag = false;
+
+  for(int i = 0; i < data.listLength; i++){
+    flag = false;
+    for(int j = 0; j < formattedConversation.listLength; j++){
+      if(data.conversations[i].customer == formattedConversation.conversations[j].customer){
+        if(data.conversations[i].sale == formattedConversation.conversations[j].sale) {
+          if(data.conversations[i].date.isAfter(formattedConversation.conversations[j].date)){
+            formattedConversation.conversations[j] = data.conversations[i];
+            flag = true;
+          }
+        }
+      }
+    }
+    if(flag){
+      flag = false;
+    } else {
+      formattedConversation.addMessage(data.conversations[i]);
+    }
+  }
+
+  return formattedConversation;
 }

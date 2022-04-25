@@ -63,7 +63,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final routes = {
       '/': (context) => const Start(),
-      '/home': (context) => Home(),
+      '/home': (context) => const Home(),
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
       '/msgDetail': (context) => MessageDetail(title: App.title),
@@ -71,7 +71,7 @@ class _AppState extends State<App> {
             userId: '',
             receiverId: '',
           ),
-      '/inbox': (context) => const Inbox(title: App.title),
+      '/inbox': (context) => Inbox(title: App.title),
     };
 
     return MaterialApp(

@@ -20,17 +20,19 @@
 // ignore_for_file: public_member_api_docs, file_names, unnecessary_new, prefer_if_null_operators, prefer_const_constructors, slash_for_doc_comments, annotate_overrides, non_constant_identifier_names, unnecessary_string_interpolations, prefer_adjacent_string_concatenation, unnecessary_const, dead_code
 
 import 'package:amplify_core/amplify_core.dart';
+import 'Messages.dart';
 import 'Sale.dart';
 import 'SaleImage.dart';
 
+export 'Messages.dart';
 export 'Sale.dart';
 export 'SaleImage.dart';
 
 class ModelProvider implements ModelProviderInterface {
   @override
-  String version = "668119a38ff1cf519038efba76a2ccf3";
+  String version = "12b87e085566b65f631f016529497065";
   @override
-  List<ModelSchema> modelSchemas = [Sale.schema, SaleImage.schema];
+  List<ModelSchema> modelSchemas = [Messages.schema, Sale.schema, SaleImage.schema];
   static final ModelProvider _instance = ModelProvider();
   @override
   List<ModelSchema> customTypeSchemas = [];
@@ -39,6 +41,8 @@ class ModelProvider implements ModelProviderInterface {
   
   ModelType getModelTypeByModelName(String modelName) {
     switch(modelName) {
+      case "Messages":
+        return Messages.classType;
       case "Sale":
         return Sale.classType;
       case "SaleImage":
