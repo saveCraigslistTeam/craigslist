@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../models/messages/new_message.dart';
+import '../../models/messages/messages_models.dart';
 
 class MessageForm extends StatefulWidget {
   final String userId;
   final String receiverId;
-  final NewMessage message = NewMessage();
+  //final NewMessage message = NewMessage();
 
   MessageForm({Key? key, required this.userId, required this.receiverId})
       : super(key: key);
@@ -72,17 +72,17 @@ Widget send() {
   ));
 }
 
-void sendMessage(
-    NewMessage message, String userId, String receiverId, String text) {
-  final DateTime date = DateTime.now();
-  message.setDateTime = date;
-  message.setUserId = userId;
-  message.setMessageText = text;
-  message.setReceiverId = receiverId;
+// void sendMessage(
+//     Message message, String userId, String receiverId, String text) {
+//   final DateTime date = DateTime.now();
+//   message.setDateTime = date;
+//   message.setUserId = userId;
+//   message.setMessageText = text;
+//   message.setReceiverId = receiverId;
 
-  debugPrint(
-      '${message.userId}, ${message.userId}, ${message.userId}, ${message.userId}');
-}
+//   debugPrint(
+//       '${message.userId}, ${message.userId}, ${message.userId}, ${message.userId}');
+// }
 
 double paddingSides(BuildContext context) {
   return MediaQuery.of(context).size.width * 0.03;
