@@ -6,11 +6,11 @@ class Message {
   final String customer;
   final String sender;
   final String receiver;
-  final String text;
+  String text;
   final bool hostShow = true;
   final bool customerShow = true;
   final bool receiverSeen = false;
-  final DateTime date = DateTime.now();
+  DateTime date = DateTime.now();
 
   Message(
     this.sale,
@@ -27,6 +27,14 @@ class Message {
 
   String get formattedDate {
     return DateFormat.yMMMd().format(date);
+  }
+
+  set changeMessage(String message) {
+    text = message;
+  }
+
+  set changeDate(DateTime newDate){
+    date = newDate;
   }
 }
 

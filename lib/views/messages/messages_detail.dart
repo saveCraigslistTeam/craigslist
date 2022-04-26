@@ -7,18 +7,12 @@ class MessageDetail extends StatelessWidget {
   final String title;
   static const String routeName = 'messageDetail';
 
-  MessageDetail({Key? key, required this.title}) : super(key: key);
-
-  final Conversation data = Conversation();
-  final Message message = Message("saleId", "sender", "customerId", "sender", "receiver", "Hello World");
-  final Message message2 = Message("saleId", "sender", "customerId",  "receiver", "sender", "Goodbye World");
+  const MessageDetail({Key? key, required this.title}) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
-    //final userName = ModalRoute.of(context)?.settings.arguments as String;
-    data.addMessage(message);
-    data.addMessage(message2);
-
+    final Conversation data = ModalRoute.of(context)?.settings.arguments as Conversation;
+    
     return (
       Scaffold(
       appBar: AppBar(title: Text(title),
@@ -46,7 +40,7 @@ class MessageDetail extends StatelessWidget {
                 ),
                Expanded(
                  flex: 2,
-                 child: MessageForm(userId: "sender", receiverId: "receiver"))
+                 child: MessageForm(data: data.conversations[0]))
           ],
         ),
       ),

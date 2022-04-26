@@ -66,11 +66,7 @@ class _AppState extends State<App> {
       '/home': (context) => const Home(),
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
-      '/msgDetail': (context) => MessageDetail(title: App.title),
-      '/msgForm': (context) => MessageForm(
-            userId: '',
-            receiverId: '',
-          ),
+      '/msgDetail': (context) => const MessageDetail(title: App.title),
       '/inbox': (context) => Inbox(title: App.title),
     };
 

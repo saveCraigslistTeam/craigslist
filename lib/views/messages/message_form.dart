@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import '../../models/messages/messages_models.dart';
 
 class MessageForm extends StatefulWidget {
-  final String userId;
-  final String receiverId;
-  //final NewMessage message = NewMessage();
 
-  MessageForm({Key? key, required this.userId, required this.receiverId})
-      : super(key: key);
+  final Message data;
+
+  const MessageForm({Key? key, required this.data}) : super(key: key);
 
   @override
   State<MessageForm> createState() => _MessageFormState();
@@ -18,11 +16,12 @@ class _MessageFormState extends State<MessageForm> {
 
   @override
   Widget build(BuildContext context) {
-    return (form(formKey, context));
+    return (form(formKey, context, widget.data));
   }
 }
 
-Widget form(GlobalKey<FormState> formKey, BuildContext context) {
+Widget form(GlobalKey<FormState> formKey, BuildContext context, Message data) {
+
   return (Form(
     key: formKey,
     child: Row(
@@ -33,16 +32,16 @@ Widget form(GlobalKey<FormState> formKey, BuildContext context) {
               vertical: paddingTopAndBottom(context)),
           child: Container(
             width: 300,
-            child: textEntry(),
+            child: textEntry(data),
           ),
         ),
-        send()
+        send(data, formKey)
       ],
     ),
   ));
 }
 
-Widget textEntry() {
+Widget textEntry(Message data) {
   return (TextFormField(
       decoration: const InputDecoration(
           labelText: 'New Message', border: OutlineInputBorder()),
@@ -51,7 +50,8 @@ Widget textEntry() {
       textInputAction: TextInputAction.done,
       keyboardType: TextInputType.text,
       onSaved: (value) {
-        String? text = value;
+         data.changeMessage = value!;
+         data.changeDate = DateTime.now();
       },
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -62,27 +62,27 @@ Widget textEntry() {
       }));
 }
 
-Widget send() {
+Widget send(Message data, GlobalKey<FormState> formKey) {
   return (ElevatedButton(
     style: ButtonStyle(
         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.0)))),
-    onPressed: () {},
-    child: Icon(Icons.send),
+    onPressed: () async {
+      if (formKey.currentState!.validate()) {
+        formKey.currentState!.save();
+        sendMessage(data);
+      }
+    },
+    child: const Icon(Icons.send),
   ));
 }
 
-// void sendMessage(
-//     Message message, String userId, String receiverId, String text) {
-//   final DateTime date = DateTime.now();
-//   message.setDateTime = date;
-//   message.setUserId = userId;
-//   message.setMessageText = text;
-//   message.setReceiverId = receiverId;
-
-//   debugPrint(
-//       '${message.userId}, ${message.userId}, ${message.userId}, ${message.userId}');
-// }
+void sendMessage(Message data) {
+  print('${data.sale} ${data.host} ${data.customer}');
+  print('${data.sender} ${data.receiver} ${data.text}');
+  print('${data.hostShow} ${data.customerShow} ${data.receiverSeen}');
+  print('${data.date}');
+}
 
 double paddingSides(BuildContext context) {
   return MediaQuery.of(context).size.width * 0.03;
