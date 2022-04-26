@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'messages_detail.dart';
 import '../../models/messages/messages_models.dart';
 
 class Inbox extends StatelessWidget {
@@ -40,7 +39,7 @@ class Inbox extends StatelessWidget {
               flex: 7,
               child: ListView.builder(
                   itemCount: formattedData.listLength,
-                  itemBuilder: (_, index) => getListTile(index, context, formattedData)),
+                  itemBuilder: (_, index) => getListTile(index, context, formattedData, data)),
             ),
             Expanded(
                 flex: 1,
@@ -81,18 +80,18 @@ Widget getMessageText(int index, Conversation data) {
   ));
 }
 
-Widget getListTile(int index, BuildContext context, Conversation data) {
+Widget getListTile(int index, BuildContext context, Conversation formattedData, Conversation data) {
   return (ListTile(
       shape: RoundedRectangleBorder(
           side: const BorderSide(color: Colors.blue, width: 1),
           borderRadius: BorderRadius.circular(5)),
-      leading: getMessageUsername(index, data),
-      title: getMessageText(index, data),
+      leading: getMessageUsername(index, formattedData),
+      title: getMessageText(index, formattedData),
       trailing: const Text(">"),
       focusColor: Colors.blue,
       onTap: () => {
             Navigator.pushNamed(context, '/msgDetail',
-                arguments: data)
+                arguments: groupByConversation(data, formattedData.conversations[index].customer, formattedData.conversations[index].sale))
           }));
 }
 
@@ -118,6 +117,18 @@ Conversation removeDuplicates(Conversation data) {
       formattedConversation.addMessage(data.conversations[i]);
     }
   }
-
   return formattedConversation;
+}
+
+Conversation groupByConversation(Conversation data, String customer, String sale) {
+
+  Conversation groupedConversation = Conversation();
+
+  for(int i = 0; i < data.listLength; i++) {
+    if(data.conversations[i].customer == customer && data.conversations[i].sale == sale){
+      groupedConversation.addMessage(data.conversations[i]);
+    }
+  }
+
+  return groupedConversation;
 }
