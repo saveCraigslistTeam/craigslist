@@ -1,47 +1,59 @@
 import 'package:flutter/material.dart';
 import '../../models/messages/messages_models.dart';
+// dart async library for setting up real time updates
+import 'dart:async';
+// amplify packages
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_datastore/amplify_datastore.dart';
+// amplify configuration and models
+import 'package:craigslist/amplifyconfiguration.dart';
+import '../../models/ModelProvider.dart';
+import '../../models/Messages.dart';
 
 class MessageForm extends StatefulWidget {
+  
+  final Message newMessage;
 
-  final Message data;
-
-  const MessageForm({Key? key, required this.data}) : super(key: key);
+  const MessageForm({Key? key, required this.newMessage}) : super(key: key);
 
   @override
   State<MessageForm> createState() => _MessageFormState();
 }
 
 class _MessageFormState extends State<MessageForm> {
-  final formKey = GlobalKey<FormState>();
+  
 
   @override
   Widget build(BuildContext context) {
-    return (form(formKey, context, widget.data));
-  }
-}
+    final formKey = GlobalKey<FormState>();
 
-Widget form(GlobalKey<FormState> formKey, BuildContext context, Message data) {
-
-  return (Form(
-    key: formKey,
-    child: Row(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: paddingSides(context),
-              vertical: paddingTopAndBottom(context)),
-          child: Container(
-            width: 300,
-            child: textEntry(data),
+    return (
+      Form(
+      key: formKey,
+      child: Row(
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: paddingSides(context),
+                vertical: paddingTopAndBottom(context)),
+            child: Container(
+              width: 300,
+              child: textEntry(),
+            ),
           ),
-        ),
-        send(data, formKey)
+          send(widget.newMessage, formKey)
       ],
     ),
   ));
+  }
 }
 
-Widget textEntry(Message data) {
+
+Widget textEntry() {
+
+  String message;
+  DateTime date;
+
   return (TextFormField(
       decoration: const InputDecoration(
           labelText: 'New Message', border: OutlineInputBorder()),
@@ -50,8 +62,8 @@ Widget textEntry(Message data) {
       textInputAction: TextInputAction.done,
       keyboardType: TextInputType.text,
       onSaved: (value) {
-         data.changeMessage = value!;
-         data.changeDate = DateTime.now();
+         message = value!;
+         date = DateTime.now();
       },
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -75,6 +87,11 @@ Widget send(Message data, GlobalKey<FormState> formKey) {
     },
     child: const Icon(Icons.send),
   ));
+}
+
+Future<void> saveNewMessage(String message, DateTime date) async {
+
+  
 }
 
 void sendMessage(Message data) {

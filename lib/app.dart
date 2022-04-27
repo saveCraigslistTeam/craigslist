@@ -67,7 +67,7 @@ class _AppState extends State<App> {
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
       '/msgDetail': (context) => const MessageDetail(title: App.title),
-      '/inbox': (context) => Inbox(title: App.title),
+      '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
     };
 
     return MaterialApp(
