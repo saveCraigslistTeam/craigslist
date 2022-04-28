@@ -56,21 +56,6 @@ class _InboxPageState extends State<InboxPage> {
 
   }
   
-  // Future<void> _configureAmplify() async {
-  //   try {
-
-  //     // add Amplify plugins
-  //     await Amplify.addPlugins([_dataStorePlugin]);
-
-  //     // May need to remove this
-  //     await Amplify.configure(amplifyconfig);
-
-  //   } catch(e){
-  //     print('An error has accourred while configuring Amplify: $e');
-  //   }
-  // }
-
-  //
   void addMessageData() {
     setState(() {
       final Message message = Message("saleId", "sender", "customerId", "sender", "receiver", "Hello World");
@@ -102,7 +87,10 @@ class _InboxPageState extends State<InboxPage> {
             children: [
               Expanded(
                 flex: 7,
-                child: InboxList(data: data, formattedData: formattedData!),
+                child: InboxList(
+                  data: data, 
+                  formattedData: formattedData!,
+                  dataStore: widget.dataStore),
               ),
               Expanded(
                   flex: 1,
@@ -120,8 +108,11 @@ class InboxList extends StatelessWidget {
 
   final Conversation data;
   final Conversation formattedData;
+  final AmplifyDataStore dataStore;
 
-  const InboxList({Key? key, required this.formattedData, required this.data}) : super(key: key);
+  const InboxList({Key? key, required this.formattedData, 
+    required this.data,
+    required this.dataStore}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +120,7 @@ class InboxList extends StatelessWidget {
       formattedData.listLength > 0 ?
       ListView.builder(
         itemCount: formattedData.listLength,
-        itemBuilder: (_, index) => InboxItem(data: data, message: formattedData.conversations[index], formattedData: formattedData,)):
+        itemBuilder: (_, index) => InboxItem(data: data, message: formattedData.conversations[index], formattedData: formattedData, dataStore: dataStore)):
       const Center(child: Text('No Messages'))
     );
   }
@@ -139,19 +130,13 @@ class InboxItem extends StatelessWidget {
   final Conversation data;
   final Message message;
   final Conversation formattedData;
+  final AmplifyDataStore dataStore;
   
   const InboxItem({Key? key, 
     required this.data,
     required this.message,
-    required this.formattedData}) : super(key: key);
-
-  void _deleteConversation(BuildContext context) async {
-    // to be filled in later
-  }
-
-  Future<void> _toggleIsSeen() async {
-
-  }
+    required this.formattedData,
+    required this.dataStore}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -166,9 +151,12 @@ class InboxItem extends StatelessWidget {
       focusColor: Colors.blue,
       onTap: () => {
             Navigator.pushNamed(context, '/msgDetail',
-                arguments: groupByConversation(data, message.customer, message.sale))
-          })
-    );
+                arguments: DetailData(
+                  dataStore,
+                  groupByConversation(data, message.customer, message.sale)
+            ))
+        }
+    ));
   }
   
 }
@@ -235,4 +223,24 @@ Conversation groupByConversation(Conversation data, String customer, String sale
   }
 
   return groupedConversation;
+}
+
+class DetailData {
+  final AmplifyDataStore ds;
+  final Conversation c;
+
+  DetailData(
+    this.ds,
+    this.c
+  );
+
+  AmplifyDataStore get dataStore{
+    return ds;
+  }
+
+  Conversation get conversation{
+    return c;
+  }
+
+
 }

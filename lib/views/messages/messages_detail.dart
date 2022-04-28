@@ -1,18 +1,25 @@
+import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:flutter/material.dart';
 import '../../models/messages/messages_models.dart';
 import './message_form.dart';
+import './inbox.dart';
 
 class MessageDetail extends StatelessWidget {
 
   final String title;
+  final AmplifyDataStore dataStore;
   static const String routeName = 'messageDetail';
 
-  const MessageDetail({Key? key, required this.title}) : super(key: key);
+  const MessageDetail({Key? key, 
+    required this.title,
+    required this.dataStore}) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
-    final Conversation data = ModalRoute.of(context)?.settings.arguments as Conversation;
-
+    final DetailData detailData = ModalRoute.of(context)?.settings.arguments as DetailData;
+    final Conversation data = detailData.conversation;
+    final AmplifyDataStore dataStore = detailData.dataStore;
+    
     return (
       Scaffold(
       appBar: AppBar(title: Text(title),
@@ -26,7 +33,7 @@ class MessageDetail extends StatelessWidget {
                         style: TextStyle(fontSize: 30)))
                       )
                     ),
-      body: ScrollingMessages(data: data),
+      body: ScrollingMessages(data: data, dataStore: dataStore),
       )
     );
   }
@@ -34,8 +41,11 @@ class MessageDetail extends StatelessWidget {
 
 class ScrollingMessages extends StatelessWidget{
   final Conversation data;
+  final AmplifyDataStore dataStore;
 
-  const ScrollingMessages({Key? key, required this.data}) : super(key: key);
+  const ScrollingMessages({Key? key, 
+    required this.data,
+    required this.dataStore}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -50,15 +60,10 @@ class ScrollingMessages extends StatelessWidget{
                           addAutomaticKeepAlives: true,
                           shrinkWrap: true)),
             Expanded(flex: 2, child: MessageForm(
-              newMessage: Message(
-                data.conversations[0].sale,
-                data.conversations[0].host,
-                data.conversations[0].customer,
-                data.conversations[0].receiver, // This needs to be fixed when we have user login
-                data.conversations[0].sender,
-                ""
+              messageData: data.conversations[0],
+              dataStore: dataStore,
               ),
-            ))
+            )
           ]
         )
       );
@@ -110,7 +115,7 @@ Widget getListTile(int index, Conversation data, BuildContext context) {
     return ListTile(
       title: ColoredBox(
           color: Colors.lightBlue.shade200, 
-          text: data.conversations[index].text ?? '',
+          text: data.conversations[index].text,
           alignment: MainAxisAlignment.end,
           textAlignment: TextAlign.start)
     );
@@ -118,7 +123,7 @@ Widget getListTile(int index, Conversation data, BuildContext context) {
     return ListTile(
       title: ColoredBox(
           color: Colors.grey.shade200, 
-          text: data.conversations[index].text ?? '',
+          text: data.conversations[index].text,
           alignment: MainAxisAlignment.start,
           textAlignment: TextAlign.start)
     );

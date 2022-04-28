@@ -12,9 +12,17 @@ import '../../models/Messages.dart';
 
 class MessageForm extends StatefulWidget {
   
-  final Message newMessage;
+  final Message messageData;
+  final AmplifyDataStore dataStore;
+  // final AmplifyStorageS3 storage;
+  // final AmplifyAuthCognito auth;
 
-  const MessageForm({Key? key, required this.newMessage}) : super(key: key);
+  const MessageForm({Key? key, 
+    required this.messageData,
+    required this.dataStore,
+    // required this.storage,
+    // required this.auth
+    }) : super(key: key);
 
   @override
   State<MessageForm> createState() => _MessageFormState();
@@ -22,6 +30,30 @@ class MessageForm extends StatefulWidget {
 
 class _MessageFormState extends State<MessageForm> {
   
+  @override
+  void initState() {
+    // kick off app initialization
+    //_initializeApp();
+    super.initState();
+  }
+
+  // Future<void> _initializeApp() async {
+  //   // Query and Observe updates to Todo models. DataStore.observeQuery() will
+  //   // emit an initial QuerySnapshot with a list of Todo models in the local store,
+  //   // and will emit subsequent snapshots as updates are made
+  //   //
+  //   // each time a snapshot is received, the following will happen:
+  //   // _isLoading is set to false if it is not already false
+  //   // _todos is set to the value in the latest snapshot
+  //   _subscription = widget.dataStore.observeQuery(Sale.classType)
+  //       // _subscription = Amplify.DataStore.observeQuery(Sale.classType)
+  //       .listen((QuerySnapshot<Sale> snapshot) {
+  //     setState(() {
+  //       if (_isLoading) _isLoading = false;
+  //       _sales = snapshot.items;
+  //     });
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +70,10 @@ class _MessageFormState extends State<MessageForm> {
                 vertical: paddingTopAndBottom(context)),
             child: Container(
               width: 300,
-              child: textEntry(),
+              child: textEntry(widget.messageData),
             ),
           ),
-          send(widget.newMessage, formKey)
+          send(widget.messageData, formKey)
       ],
     ),
   ));
@@ -49,10 +81,7 @@ class _MessageFormState extends State<MessageForm> {
 }
 
 
-Widget textEntry() {
-
-  String message;
-  DateTime date;
+Widget textEntry(Message data) {
 
   return (TextFormField(
       decoration: const InputDecoration(
@@ -62,8 +91,7 @@ Widget textEntry() {
       textInputAction: TextInputAction.done,
       keyboardType: TextInputType.text,
       onSaved: (value) {
-         message = value!;
-         date = DateTime.now();
+         data.text = value!;
       },
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -82,23 +110,39 @@ Widget send(Message data, GlobalKey<FormState> formKey) {
     onPressed: () async {
       if (formKey.currentState!.validate()) {
         formKey.currentState!.save();
-        sendMessage(data);
+        saveNewMessage(data);
       }
     },
     child: const Icon(Icons.send),
   ));
 }
 
-Future<void> saveNewMessage(String message, DateTime date) async {
+Future<void> saveNewMessage(Message oldMessage) async {
 
+  Messages newMessage = Messages(
+    sale: oldMessage.sale,
+    host: oldMessage.host,
+    customer: oldMessage.customer,
+    sender: oldMessage.receiver,
+    receiver: oldMessage.sender,
+    senderSeen: true,
+    receiverSeen: false,
+    text: oldMessage.text);
   
+  try{
+    
+    await Amplify.DataStore.save(newMessage);
+
+  } catch (e) {
+
+    print("An error occurred saving new message: $e");
+  }
+  sendMessage(newMessage);
 }
 
-void sendMessage(Message data) {
+void sendMessage(Messages data) {
   print('${data.sale} ${data.host} ${data.customer}');
   print('${data.sender} ${data.receiver} ${data.text}');
-  print('${data.hostShow} ${data.customerShow} ${data.receiverSeen}');
-  print('${data.date}');
 }
 
 double paddingSides(BuildContext context) {
