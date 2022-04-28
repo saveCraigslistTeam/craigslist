@@ -23,7 +23,7 @@ class _InboxPageState extends State<InboxPage> {
 
   late StreamSubscription<QuerySnapshot<Messages>> messageStream;
 
-  List<Messages>? _messages;
+  List<Messages> _messages = [];
   bool _isLoading = true;
 
   @override
@@ -33,12 +33,10 @@ class _InboxPageState extends State<InboxPage> {
   }
 
   Future<void> getMessageStream() async {
-    messageStream = Amplify.DataStore.observeQuery(Messages.classType)
+    messageStream = widget.dataStore.observeQuery(Messages.classType)
       .listen((QuerySnapshot<Messages> snapshot) {
         setState(() {
-          if(_isLoading) {
-            _isLoading = false;
-          }
+          if(_isLoading) _isLoading = false;
           _messages = snapshot.items;
         });
       });
@@ -56,12 +54,12 @@ class _InboxPageState extends State<InboxPage> {
           ),
           body: _isLoading 
           ? Center(child: CircularProgressIndicator())
-          : _messages == null ? Column(
+          : _messages.isNotEmpty ? Column(
             children: [
               Expanded(
                 flex: 7,
                 child: InboxList(
-                  messages: _messages,
+                  messages: filterRecentMessagesByGroup(_messages),
                   dataStore: widget.dataStore),
               ),
               Expanded(
@@ -78,20 +76,20 @@ class _InboxPageState extends State<InboxPage> {
 
 class InboxList extends StatelessWidget {
 
-  final List<Messages>? messages;
+  List<Messages> messages = [];
   final AmplifyDataStore dataStore;
 
-  const InboxList({Key? key, 
+  InboxList({Key? key, 
     required this.messages,
     required this.dataStore}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return (
-      messages!.isNotEmpty ?
+      messages.isNotEmpty ?
       ListView.builder(
-        itemCount: messages?.length,
-        itemBuilder: (_, index) => InboxItem(message: messages![index], dataStore: dataStore)):
+        itemCount: messages.length,
+        itemBuilder: (_, index) => InboxItem(message: messages[index], dataStore: dataStore)):
       const Center(child: Text('No Messages'))
     );
   }
@@ -113,7 +111,7 @@ class InboxItem extends StatelessWidget {
           side: const BorderSide(color: Colors.blue, width: 1),
           borderRadius: BorderRadius.circular(5)),
       leading: getMessageUsername(message.customer!),
-      //title: getMessageText(message.text, message.formattedDate),
+      title: getMessageText(message.text, message.date),
       trailing: const Text(">"),
       focusColor: Colors.blue,
       // onTap: () => {
@@ -141,55 +139,44 @@ Widget getMessageUsername(String? customer) {
       style: const TextStyle(color: Color(0xff5887FF), fontSize: 20)));
 }
 
-Widget getMessageText(String text, String date) {
+Widget getMessageText(String? text, TemporalDateTime? date) {
   return (Column(
     children: [
-      Text(text.length > 25 ? text.substring(0, 25) : text),
-      Text(date.length > 25 ? date.substring(0, 25) : date)
+      Text(text!.length > 25 ? text.substring(0, 25) : text),
+      Text(date.toString().length > 25 ? date.toString().substring(0, 25) : date.toString())
     ],
   ));
 }
 
-Conversation removeDuplicates(Conversation data) {
-  Conversation formattedConversation = Conversation();
+List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
+  List<Messages> formattedMessages = [];
   List<String> visited = [];
   bool flag = true;
 
-  for(int i = 0; i < data.listLength; i++){
-    String combined = '${data.conversation[i].sale}${data.conversations[i].customer}';
+  for(int i = 0; i < messages.length; i++){
+    String combined = '${messages[i].sale}${messages[i].customer}';
     for(int j = 0; j < visited.length; j++) {
       if(combined == visited[j]){
-        for(int k = 0; k < formattedConversation.listLength; k++) {
-          if(identical(formattedConversation.conversations[k].sale, data.conversations[i].sale)){
-            formattedConversation.conversations[k] = formattedConversation.conversations[k].date.isAfter(data.conversations[i].date) 
-              ? formattedConversation.conversations[k]
-              : data.conversations[i];
+        for(int k = 0; k < formattedMessages.length; k++) {
+          if(identical(formattedMessages[k].sale, messages[i].sale)){
+            TemporalDateTime oldDate = messages[i].date ?? TemporalDateTime.now();
+            formattedMessages[k] = formattedMessages[k].date!.compareTo(oldDate) >= 1
+              ? formattedMessages[k]
+              : messages[i];
           }
         }
         flag = false;
       }
     }
     if(flag) {
-      formattedConversation.addMessage(data.conversations[i]);
+      formattedMessages.add(messages[i]);
       visited.add(combined);
       flag = true;
     }
     flag = true;
   }
-  return formattedConversation;
-}
-
-Conversation groupByConversation(Conversation data, String customer, String sale) {
-
-  Conversation groupedConversation = Conversation();
-
-  for(int i = 0; i < data.listLength; i++) {
-    if(data.conversations[i].customer == customer && data.conversations[i].sale == sale){
-      groupedConversation.addMessage(data.conversations[i]);
-    }
-  }
-
-  return groupedConversation;
+  
+  return formattedMessages;
 }
 
 class DetailData {

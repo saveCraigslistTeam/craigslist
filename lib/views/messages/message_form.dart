@@ -89,6 +89,7 @@ Widget send(Message data, GlobalKey<FormState> formKey) {
 }
 
 Future<void> saveNewMessage(Message oldMessage) async {
+  final TemporalDateTime currDate = TemporalDateTime.now();
 
   Messages newMessage = Messages(
     sale: oldMessage.sale,
@@ -98,7 +99,8 @@ Future<void> saveNewMessage(Message oldMessage) async {
     receiver: oldMessage.sender,
     senderSeen: true,
     receiverSeen: false,
-    text: oldMessage.text);
+    text: oldMessage.text,
+    date: currDate);
   
   try{
     await Amplify.DataStore.save(newMessage);
