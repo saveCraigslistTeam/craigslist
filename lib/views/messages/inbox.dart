@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/messages/messages_models.dart';
+//import '../../models/messages/messages_models.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
 // amplify packages
@@ -20,6 +20,10 @@ class InboxPage extends StatefulWidget {
 }
 
 class _InboxPageState extends State<InboxPage> {
+
+  // Change later
+  final String userName = 'sender';
+  // Change later
 
   late StreamSubscription<QuerySnapshot<Messages>> messageStream;
 
@@ -53,13 +57,14 @@ class _InboxPageState extends State<InboxPage> {
             centerTitle: true,
           ),
           body: _isLoading 
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : _messages.isNotEmpty ? Column(
             children: [
               Expanded(
                 flex: 7,
                 child: InboxList(
-                  messages: filterRecentMessagesByGroup(_messages),
+                  messages: _messages,
+                  formattedMessages: filterRecentMessagesByGroup(_messages),
                   dataStore: widget.dataStore),
               ),
               Expanded(
@@ -68,7 +73,7 @@ class _InboxPageState extends State<InboxPage> {
                     color: Colors.white,
                   ))
             ],
-          ) : Center(child: Text('No messages'))) 
+          ) : const Center(child: Text('No messages'))) 
           
       );
     }
@@ -76,10 +81,12 @@ class _InboxPageState extends State<InboxPage> {
 
 class InboxList extends StatelessWidget {
 
+  List<Messages> formattedMessages = [];
   List<Messages> messages = [];
   final AmplifyDataStore dataStore;
 
   InboxList({Key? key, 
+    required this.formattedMessages,
     required this.messages,
     required this.dataStore}) : super(key: key);
 
@@ -88,18 +95,21 @@ class InboxList extends StatelessWidget {
     return (
       messages.isNotEmpty ?
       ListView.builder(
-        itemCount: messages.length,
-        itemBuilder: (_, index) => InboxItem(message: messages[index], dataStore: dataStore)):
+        itemCount: formattedMessages.length,
+        itemBuilder: (_, index) => InboxItem(
+          messages: messages, message: formattedMessages[index], dataStore: dataStore)):
       const Center(child: Text('No Messages'))
     );
   }
 }
 
 class InboxItem extends StatelessWidget {
+  final List<Messages> messages;
   final Messages message;
   final AmplifyDataStore dataStore;
   
-  const InboxItem({Key? key, 
+  const InboxItem({Key? key,
+    required this.messages, 
     required this.message,
     required this.dataStore}) : super(key: key);
 
@@ -114,13 +124,13 @@ class InboxItem extends StatelessWidget {
       title: getMessageText(message.text, message.date),
       trailing: const Text(">"),
       focusColor: Colors.blue,
-      // onTap: () => {
-      //       Navigator.pushNamed(context, '/msgDetail',
-      //           arguments: DetailData(
-      //             dataStore,
-      //             groupByConversation(data, message.customer, message.sale)
-      //       ))
-      //   }
+      onTap: () => {
+            Navigator.pushNamed(context, '/msgDetail',
+                arguments: DetailData(
+                  dataStore,
+                  groupByConversation(messages, message.host, message.customer, message.sale)
+            ))
+        }
     ));
   }
   
@@ -179,21 +189,33 @@ List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
   return formattedMessages;
 }
 
+List<Messages> groupByConversation(List<Messages> messages, String? host, String? customer, String? sale){
+  List<Messages> formattedMessages = [];
+
+  for(int i = 0; i < messages.length; i++) {
+    if(messages[i].host == host && messages[i].customer == customer && messages[i].sale == sale){
+      formattedMessages.add(messages[i]);
+    }
+  }
+
+  return formattedMessages;
+}
+
 class DetailData {
   final AmplifyDataStore ds;
-  final Conversation c;
+  final List<Messages> m;
 
   DetailData(
     this.ds,
-    this.c
+    this.m
   );
 
   AmplifyDataStore get dataStore{
     return ds;
   }
 
-  Conversation get conversation{
-    return c;
+  List<Messages> get messages{
+    return m;
   }
 
 
