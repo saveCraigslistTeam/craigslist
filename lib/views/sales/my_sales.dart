@@ -2,21 +2,17 @@
 import 'dart:async';
 import 'dart:core';
 import 'dart:io';
-import 'dart:developer';
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
-import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
-import '../../amplifyconfiguration.dart';
 import '../../models/ModelProvider.dart';
-// import '../../models/sale/Sale.dart';
-// import 'upload_image.dart';
+import 'sale_detail_view.dart';
 
 class MySales extends StatefulWidget {
   MySales(
@@ -25,6 +21,7 @@ class MySales extends StatefulWidget {
       required this.Storage,
       required this.Auth})
       : super(key: key);
+
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
   final AmplifyAuthCognito Auth;
@@ -114,9 +111,7 @@ class SalesList extends StatelessWidget {
 class SaleItem extends StatelessWidget {
   final double iconSize = 24.0;
   final Sale sale;
-
   SaleItem({required this.sale});
-
   void _deleteSale(BuildContext context) async {
     try {
       // to delete data from DataStore, we pass the model instance to
@@ -125,6 +120,14 @@ class SaleItem extends StatelessWidget {
     } catch (e) {
       print('An error occurred while deleting Todo: $e');
     }
+  }
+
+  @override
+  Future<List<SaleImage>> getSaleImage(Sale sale) async {
+    List<SaleImage> images = await Amplify.DataStore.query(SaleImage.classType);
+    // ignore: avoid_print
+    print("\n\n" + '$images');
+    return images;
   }
 
   @override
@@ -158,6 +161,16 @@ class SaleItem extends StatelessWidget {
             ),
           ]),
         ),
+        onTap: () async {
+          List<SaleImage> SaleImages = await getSaleImage(sale);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => SaleDetailView(
+                        sale: sale,
+                        saleImages: SaleImages,
+                      )));
+        },
       ),
     );
   }
@@ -182,7 +195,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
       final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
       // NOTE: This code is only for demonstration
       // Your debug console may truncate the printed url string
-      print('Got URL: ${result.url}');
+      // print('Got URL: ${result.url}');
       setState(() {
         imageURL = result.url;
       });

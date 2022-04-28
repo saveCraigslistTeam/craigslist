@@ -36,7 +36,7 @@ class _AppState extends State<App> {
   bool configured = false;
   bool authenticated = false;
 
-  late String amplifyconfig;
+  // late String amplifyconfig;
 
   @override
   initState() {
@@ -73,7 +73,7 @@ class _AppState extends State<App> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: context.read<ThemeManager>().themeMode,
-      initialRoute: '/',
+      initialRoute: '/mySales',
       routes: routes,
     );
   }
