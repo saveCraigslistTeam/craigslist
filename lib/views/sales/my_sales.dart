@@ -120,7 +120,7 @@ class SaleItem extends StatelessWidget {
       // Amplify.DataStore.delete()
       await Amplify.DataStore.delete(sale);
     } catch (e) {
-      print('An error occurred while deleting Todo: $e');
+      debugPrint('An error occurred while deleting Todo: $e');
     }
   }
 
@@ -178,14 +178,14 @@ class _AddSaleFormState extends State<AddSaleForm> {
     try {
       final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
       // NOTE: This code is only for demonstration
-      // Your debug console may truncate the printed url string
-      print('Got URL: ${result.url}');
+      // Your debug console may truncate the debugPrinted url string
+      debugPrint('Got URL: ${result.url}');
       setState(() {
         imageURL = result.url;
       });
       return result.url;
     } on StorageException catch (e) {
-      print('Error getting download URL: $e');
+      debugPrint('Error getting download URL: $e');
       return null;
     }
   }
@@ -194,7 +194,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
     // Select image from user's gallery
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) {
-      print('No image selected');
+      debugPrint('No image selected');
       return;
     }
 
@@ -206,13 +206,13 @@ class _AddSaleFormState extends State<AddSaleForm> {
           local: file,
           key: key,
           onProgress: (progress) {
-            print("Fraction completed: " +
+            debugPrint("Fraction completed: " +
                 progress.getFractionCompleted().toString());
           });
-      print('Successfully uploaded image: ${result.key}');
+      debugPrint('Successfully uploaded image: ${result.key}');
       getDownloadUrl(key);
     } on StorageException catch (e) {
-      print('Error uploading image: $e');
+      debugPrint('Error uploading image: $e');
     }
   }
 
@@ -249,7 +249,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
       // Close the form
       Navigator.of(context).pop();
     } catch (e) {
-      print('An error occurred while saving Sale: $e');
+      debugPrint('An error occurred while saving Sale: $e');
     }
   }
 

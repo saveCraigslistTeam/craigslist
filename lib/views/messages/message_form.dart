@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../models/messages/messages_models.dart';
 
 class MessageForm extends StatefulWidget {
-
   final Message data;
 
   const MessageForm({Key? key, required this.data}) : super(key: key);
@@ -21,7 +20,6 @@ class _MessageFormState extends State<MessageForm> {
 }
 
 Widget form(GlobalKey<FormState> formKey, BuildContext context, Message data) {
-
   return (Form(
     key: formKey,
     child: Row(
@@ -30,6 +28,7 @@ Widget form(GlobalKey<FormState> formKey, BuildContext context, Message data) {
           padding: EdgeInsets.symmetric(
               horizontal: paddingSides(context),
               vertical: paddingTopAndBottom(context)),
+          // ignore: sized_box_for_whitespace
           child: Container(
             width: 300,
             child: textEntry(data),
@@ -50,8 +49,8 @@ Widget textEntry(Message data) {
       textInputAction: TextInputAction.done,
       keyboardType: TextInputType.text,
       onSaved: (value) {
-         data.changeMessage = value!;
-         data.changeDate = DateTime.now();
+        data.changeMessage = value!;
+        data.changeDate = DateTime.now();
       },
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -78,10 +77,10 @@ Widget send(Message data, GlobalKey<FormState> formKey) {
 }
 
 void sendMessage(Message data) {
-  print('${data.sale} ${data.host} ${data.customer}');
-  print('${data.sender} ${data.receiver} ${data.text}');
-  print('${data.hostShow} ${data.customerShow} ${data.receiverSeen}');
-  print('${data.date}');
+  debugPrint('${data.sale} ${data.host} ${data.customer}');
+  debugPrint('${data.sender} ${data.receiver} ${data.text}');
+  debugPrint('${data.hostShow} ${data.customerShow} ${data.receiverSeen}');
+  debugPrint('${data.date}');
 }
 
 double paddingSides(BuildContext context) {
