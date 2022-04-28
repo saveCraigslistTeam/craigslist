@@ -3,11 +3,17 @@
   "serviceConfiguration": {
     "apiName": "craigslist",
     "serviceName": "AppSync",
-    "gqlSchemaPath": "/Users/christopherpeterman/Desktop/capstone/craigslist/amplify/backend/api/craigslist/schema.graphql",
+    "gqlSchemaPath": "/tmp/amplify-d0cb187b-f35b-4505-9e5c-c30b71d47215/amplify/backend/api/craigslist/schema.graphql",
     "defaultAuthType": {
-      "mode": "AWS_IAM"
+      "mode": "API_KEY",
+      "keyDescription": "api key description",
+      "expirationTime": 30
     },
-    "additionalAuthTypes": [],
+    "additionalAuthTypes": [
+      {
+        "mode": "AWS_IAM"
+      }
+    ],
     "conflictResolution": {
       "defaultResolutionStrategy": {
         "type": "AUTOMERGE"
