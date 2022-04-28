@@ -6,11 +6,11 @@ import 'dart:async';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
-import 'package:craigslist/amplifyconfiguration.dart';
 import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
 class InboxPage extends StatefulWidget {
+
   final AmplifyDataStore dataStore;
 
   const InboxPage({Key? key, required this.dataStore}) : super(key: key);
@@ -20,59 +20,32 @@ class InboxPage extends StatefulWidget {
 }
 
 class _InboxPageState extends State<InboxPage> {
-  // Amplify addition
+
+  late StreamSubscription<QuerySnapshot<Messages>> messageStream;
+
+  List<Messages>? _messages;
   bool _isLoading = true;
-
-  Conversation amplifyData = Conversation();
-
-  Conversation data = Conversation();
-  Conversation? formattedData;
-  bool _loading = true;
 
   @override
   void initState(){
-    // Amplify addition
-    _initializeApp();
-    //
-
-    addMessageData();
+    getMessageStream();
     super.initState();
   }
 
-  @override
-  void dispose(){
-    // To do fill this implementation
-    super.dispose();
-  }
-
-  // Amplify addition
-  Future<void> _initializeApp() async {
-    
-    // await _configureAmplify();
-
-    setState(() {
-      _isLoading = false;
-    });
-
-  }
-  
-  void addMessageData() {
-    setState(() {
-      final Message message = Message("saleId", "sender", "customerId", "sender", "receiver", "Hello World");
-      final Message message2 = Message("saleId", "sender", "customerId",  "receiver", "sender", "Goodbye World");
-      final Message message3 = Message("saleId2", "sender", "customerId1", "sender", "receiver1", "Message two");
-      final Message message4 = Message("saleId2", "sender", "customerId1",  "receiver1", "sender", "Super long message incoming let me break your flutter app aaaaaarggghhh!");
-      data.addMessage(message);
-      data.addMessage(message2);
-      data.addMessage(message3);
-      data.addMessage(message4);
-      _loading = false;
-    });
-  }
+  Future<void> getMessageStream() async {
+    messageStream = Amplify.DataStore.observeQuery(Messages.classType)
+      .listen((QuerySnapshot<Messages> snapshot) {
+        setState(() {
+          if(_isLoading) {
+            _isLoading = false;
+          }
+          _messages = snapshot.items;
+        });
+      });
+    }
 
   @override
   Widget build(BuildContext context) {
-      formattedData = removeDuplicates(data);
       return (
         Scaffold(
           appBar: AppBar(
@@ -83,13 +56,12 @@ class _InboxPageState extends State<InboxPage> {
           ),
           body: _isLoading 
           ? Center(child: CircularProgressIndicator())
-          : data.listLength > 0 ? Column(
+          : _messages == null ? Column(
             children: [
               Expanded(
                 flex: 7,
                 child: InboxList(
-                  data: data, 
-                  formattedData: formattedData!,
+                  messages: _messages,
                   dataStore: widget.dataStore),
               ),
               Expanded(
@@ -106,36 +78,31 @@ class _InboxPageState extends State<InboxPage> {
 
 class InboxList extends StatelessWidget {
 
-  final Conversation data;
-  final Conversation formattedData;
+  final List<Messages>? messages;
   final AmplifyDataStore dataStore;
 
-  const InboxList({Key? key, required this.formattedData, 
-    required this.data,
+  const InboxList({Key? key, 
+    required this.messages,
     required this.dataStore}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return (
-      formattedData.listLength > 0 ?
+      messages!.isNotEmpty ?
       ListView.builder(
-        itemCount: formattedData.listLength,
-        itemBuilder: (_, index) => InboxItem(data: data, message: formattedData.conversations[index], formattedData: formattedData, dataStore: dataStore)):
+        itemCount: messages?.length,
+        itemBuilder: (_, index) => InboxItem(message: messages![index], dataStore: dataStore)):
       const Center(child: Text('No Messages'))
     );
   }
 }
 
 class InboxItem extends StatelessWidget {
-  final Conversation data;
-  final Message message;
-  final Conversation formattedData;
+  final Messages message;
   final AmplifyDataStore dataStore;
   
   const InboxItem({Key? key, 
-    required this.data,
     required this.message,
-    required this.formattedData,
     required this.dataStore}) : super(key: key);
 
   @override
@@ -145,17 +112,17 @@ class InboxItem extends StatelessWidget {
       shape: RoundedRectangleBorder(
           side: const BorderSide(color: Colors.blue, width: 1),
           borderRadius: BorderRadius.circular(5)),
-      leading: getMessageUsername(message.customer),
-      title: getMessageText(message.text, message.formattedDate),
+      leading: getMessageUsername(message.customer!),
+      //title: getMessageText(message.text, message.formattedDate),
       trailing: const Text(">"),
       focusColor: Colors.blue,
-      onTap: () => {
-            Navigator.pushNamed(context, '/msgDetail',
-                arguments: DetailData(
-                  dataStore,
-                  groupByConversation(data, message.customer, message.sale)
-            ))
-        }
+      // onTap: () => {
+      //       Navigator.pushNamed(context, '/msgDetail',
+      //           arguments: DetailData(
+      //             dataStore,
+      //             groupByConversation(data, message.customer, message.sale)
+      //       ))
+      //   }
     ));
   }
   
@@ -169,8 +136,8 @@ Widget appBarTitle(String title) {
   );
 }
 
-Widget getMessageUsername(String customer) {
-  return (Text(customer.length > 8 ? customer.substring(0, 8) : customer,
+Widget getMessageUsername(String? customer) {
+  return (Text(customer!.length > 8 ? customer.substring(0, 8) : customer,
       style: const TextStyle(color: Color(0xff5887FF), fontSize: 20)));
 }
 

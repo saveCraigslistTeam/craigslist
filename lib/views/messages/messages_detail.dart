@@ -8,7 +8,6 @@ class MessageDetail extends StatelessWidget {
 
   final String title;
   final AmplifyDataStore dataStore;
-  static const String routeName = 'messageDetail';
 
   const MessageDetail({Key? key, 
     required this.title,

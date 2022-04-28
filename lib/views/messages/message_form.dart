@@ -13,14 +13,10 @@ class MessageForm extends StatefulWidget {
   
   final Message messageData;
   final AmplifyDataStore dataStore;
-  // final AmplifyStorageS3 storage;
-  // final AmplifyAuthCognito auth;
 
   const MessageForm({Key? key, 
     required this.messageData,
     required this.dataStore,
-    // required this.storage,
-    // required this.auth
     }) : super(key: key);
 
   @override
@@ -31,6 +27,7 @@ class _MessageFormState extends State<MessageForm> {
 
   @override
   Widget build(BuildContext context) {
+    
     final formKey = GlobalKey<FormState>();
 
     return (
@@ -42,16 +39,14 @@ class _MessageFormState extends State<MessageForm> {
             padding: EdgeInsets.symmetric(
                 horizontal: paddingSides(context),
                 vertical: paddingTopAndBottom(context)),
-            child: Container(
+            child: SizedBox(
               width: 300,
               child: textEntry(widget.messageData),
             ),
           ),
-          send(widget.messageData, formKey)
-      ],
-    ),
-  ));
-  }
+          send(widget.messageData, formKey)])
+      ));
+    }
 }
 
 
@@ -73,7 +68,8 @@ Widget textEntry(Message data) {
         } else {
           return null;
         }
-      }));
+      })
+  );
 }
 
 Widget send(Message data, GlobalKey<FormState> formKey) {
