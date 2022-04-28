@@ -13,7 +13,9 @@
     },
     "categories": {
       "auth": {
-        "craigslist": {}
+        "craigslist": {},
+        "craigslistec7a3f5c": {},
+        "true": {}
       }
     }
   }

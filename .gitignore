@@ -8,6 +8,10 @@
 .buildlog/
 .history
 .svn/
+/.eslintignore
+/package-lock.json
+/package.json
+
 
 # IntelliJ related
 *.iml
@@ -23,6 +27,9 @@
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.h
+windows/flutter/generated_plugins.cmake
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -105,10 +112,13 @@ amplify/.config/local-*
 amplify/logs
 amplify/mock-data
 amplify/backend/amplify-meta.json
+amplify/backend/analytics/
+amplify/backend/auth
 amplify/backend/.temp
 build/
 dist/
 node_modules/
+src/
 aws-exports.js
 awsconfiguration.json
 amplifyconfiguration.json
