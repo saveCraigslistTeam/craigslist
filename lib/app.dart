@@ -12,7 +12,9 @@ import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
-import 'models/model_provider.dart';
+// amplify configuration and models that should have been generated for you
+import '../../amplifyconfiguration.dart';
+import '../../models/ModelProvider.dart';
 
 class App extends StatefulWidget {
   static const String title = "craigslist";
@@ -32,8 +34,6 @@ class _AppState extends State<App> {
   bool configured = false;
   bool authenticated = false;
 
-  late String amplifyconfig;
-
   @override
   initState() {
     super.initState();
@@ -47,23 +47,42 @@ class _AppState extends State<App> {
           [_dataStorePlugin, _apiPlugin, _authPlugin, storage]);
       // note that Amplify cannot be configured more than once!
       await Amplify.configure(amplifyconfig);
+
+      if (Amplify.isConfigured) {
+        isConfigured();
+        print("amplify configured");
+      } else {
+        print('amplify not configured');
+      }
+    } catch (e) {
+      debugPrint('An error occurred while configuring Amplify: $e');
+    }
+  }
+
+  void isConfigured() {
+    if (!Amplify.isConfigured && !configured) {
       setState(() {
         configured = true;
       });
-    } catch (e) {
-      debugPrint('An error occurred while configuring Amplify: $e');
+      print("amplify configured");
+    } else {
+      print('${Amplify.isConfigured}');
+      print('$configured');
+      print('amplify, not configured');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final routes = {
-      '/': (context) => Login(),
+      '/loading': (context) => const Loading(),
+      '/': (context) => const Start(),
       '/home': (context) => const Home(),
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
-      '/msgDetail': (context) => const MessageDetail(title: App.title),
-      '/inbox': (context) => Inbox(title: App.title),
+      '/msgDetail': (context) => MessageDetail(
+          title: App.title, dataStore: _dataStorePlugin, userName: 'sender'),
+      '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
     };
 
     return MaterialApp(
@@ -105,5 +124,15 @@ class _AppState extends State<App> {
       initialRoute: '/',
       routes: routes,
     );
+  }
+}
+
+class Loading extends StatelessWidget {
+  const Loading({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return (Scaffold(
+        appBar: AppBar(), body: const Center(child: Text('Loading'))));
   }
 }

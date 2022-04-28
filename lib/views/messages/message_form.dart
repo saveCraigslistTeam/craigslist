@@ -1,86 +1,107 @@
 import 'package:flutter/material.dart';
-import '../../models/messages/messages_models.dart';
+// dart async library for setting up real time updates
+import 'dart:async';
+// amplify packages
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_datastore/amplify_datastore.dart';
+// amplify configuration and models
+import '../../models/ModelProvider.dart';
+import '../../models/Messages.dart';
 
 class MessageForm extends StatefulWidget {
-  final Message data;
+  final Messages messageData;
+  final String userName;
+  final AmplifyDataStore dataStore;
 
-  const MessageForm({Key? key, required this.data}) : super(key: key);
+  const MessageForm(
+      {Key? key,
+      required this.messageData,
+      required this.dataStore,
+      required this.userName})
+      : super(key: key);
 
   @override
   State<MessageForm> createState() => _MessageFormState();
 }
 
 class _MessageFormState extends State<MessageForm> {
-  final formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
-    return (form(formKey, context, widget.data));
+    final formKey = GlobalKey<FormState>();
+    String newMessage = '';
+    String userName = widget.userName;
+
+    return (Form(
+        key: formKey,
+        child: Row(children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: paddingSides(context),
+                vertical: paddingTopAndBottom(context)),
+            child: SizedBox(
+              width: 300,
+              child: TextFormField(
+                  decoration: const InputDecoration(
+                      labelText: 'New Message', border: OutlineInputBorder()),
+                  maxLines: 2,
+                  minLines: 1,
+                  textInputAction: TextInputAction.done,
+                  keyboardType: TextInputType.text,
+                  onSaved: (value) {
+                    newMessage = value!;
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty || value == '') {
+                      return 'Please enter a message';
+                    } else {
+                      return null;
+                    }
+                  }),
+            ),
+          ),
+          ElevatedButton(
+            style: ButtonStyle(
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0)))),
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                formKey.currentState!.save();
+                await saveNewMessage(widget.messageData, newMessage, userName);
+                formKey.currentState?.reset();
+              }
+            },
+            child: const Icon(Icons.send),
+          )
+        ])));
   }
 }
 
-Widget form(GlobalKey<FormState> formKey, BuildContext context, Message data) {
-  return (Form(
-    key: formKey,
-    child: Row(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: paddingSides(context),
-              vertical: paddingTopAndBottom(context)),
-          // ignore: sized_box_for_whitespace
-          child: Container(
-            width: 300,
-            child: textEntry(data),
-          ),
-        ),
-        send(data, formKey)
-      ],
-    ),
-  ));
-}
+Future<void> saveNewMessage(
+    Messages messageData, String newMessage, String userName) async {
+  TemporalDateTime currDate = TemporalDateTime.now();
 
-Widget textEntry(Message data) {
-  return (TextFormField(
-      decoration: const InputDecoration(
-          labelText: 'New Message', border: OutlineInputBorder()),
-      maxLines: 2,
-      minLines: 1,
-      textInputAction: TextInputAction.done,
-      keyboardType: TextInputType.text,
-      onSaved: (value) {
-        data.changeMessage = value!;
-        data.changeDate = DateTime.now();
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a message';
-        } else {
-          return null;
-        }
-      }));
-}
+  Messages outMessage = Messages(
+      sale: messageData.sale,
+      host: messageData.host,
+      customer: messageData.customer,
+      sender: userName == messageData.host
+          ? messageData.host
+          : messageData.customer,
+      receiver: userName == messageData.host
+          ? messageData.customer
+          : messageData.host,
+      senderSeen: true,
+      receiverSeen: false,
+      text: newMessage,
+      date: currDate);
 
-Widget send(Message data, GlobalKey<FormState> formKey) {
-  return (ElevatedButton(
-    style: ButtonStyle(
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.0)))),
-    onPressed: () async {
-      if (formKey.currentState!.validate()) {
-        formKey.currentState!.save();
-        sendMessage(data);
-      }
-    },
-    child: const Icon(Icons.send),
-  ));
-}
-
-void sendMessage(Message data) {
-  debugPrint('${data.sale} ${data.host} ${data.customer}');
-  debugPrint('${data.sender} ${data.receiver} ${data.text}');
-  debugPrint('${data.hostShow} ${data.customerShow} ${data.receiverSeen}');
-  debugPrint('${data.date}');
+  try {
+    await Amplify.DataStore.save(outMessage);
+    print('Message sent successfully');
+  } catch (e) {
+    print("An error occurred saving new message: $e");
+  }
 }
 
 double paddingSides(BuildContext context) {

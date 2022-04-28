@@ -8,6 +8,7 @@ type Messages @model @auth(rules: [{allow: public}]) {
   senderSeen: Boolean
   receiverSeen: Boolean
   text: String
+  date: AWSDateTime
 }
 
 type SaleImage @model @auth(rules: [{allow: public}]) {

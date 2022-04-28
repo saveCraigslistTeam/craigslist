@@ -1,17 +1,25 @@
+import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:flutter/material.dart';
-import '../../models/messages/messages_models.dart';
+import '../../models/Messages.dart';
 import './message_form.dart';
+import './inbox.dart';
 
 class MessageDetail extends StatelessWidget {
 
   final String title;
-  static const String routeName = 'messageDetail';
+  final AmplifyDataStore dataStore;
+  final String userName;
 
-  const MessageDetail({Key? key, required this.title}) : super(key: key);
+  const MessageDetail({Key? key, 
+    required this.title,
+    required this.dataStore,
+    required this.userName}) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
-    final Conversation data = ModalRoute.of(context)?.settings.arguments as Conversation;
+    final DetailData detailData = ModalRoute.of(context)?.settings.arguments as DetailData;
+    final List<Messages> data = detailData.messages;
+    final AmplifyDataStore dataStore = detailData.dataStore;
     
     return (
       Scaffold(
@@ -26,47 +34,43 @@ class MessageDetail extends StatelessWidget {
                         style: TextStyle(fontSize: 30)))
                       )
                     ),
-      body: SafeArea(
-        child: Column(
-          children: [
-                Expanded(
-                  flex: 8,
-                  child: ListView.builder(
-                          padding: const EdgeInsets.all(10),
-                          itemCount: data.listLength,
-                          itemBuilder: (_, index) => getListTile(index, data, context),
-                          addAutomaticKeepAlives: true,
-                          shrinkWrap: true),
-                ),
-               Expanded(
-                 flex: 2,
-                 child: MessageForm(data: data.conversations[0]))
-          ],
-        ),
-      ),
+      body: ScrollingMessages(data: data, dataStore: dataStore, userName: userName),
       )
     );
   }
 }
 
+class ScrollingMessages extends StatelessWidget{
+  final List<Messages> data;
+  final AmplifyDataStore dataStore;
+  final String userName;
 
-Widget getListTile(int index, Conversation data, BuildContext context) {
-  if (data.conversations[index].host == data.conversations[index].receiver) {
-    return ListTile(
-      title: ColoredBox(
-          color: Colors.lightBlue.shade200, 
-          text: data.conversations[index].text,
-          alignment: MainAxisAlignment.end,
-          textAlignment: TextAlign.start)
-    );
-  } else {
-    return ListTile(
-      title: ColoredBox(
-          color: Colors.grey.shade200, 
-          text: data.conversations[index].text,
-          alignment: MainAxisAlignment.start,
-          textAlignment: TextAlign.start)
-    );
+  const ScrollingMessages({Key? key, 
+    required this.data,
+    required this.dataStore,
+    required this.userName}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+        child: Column(
+          children: [
+            Expanded(flex: 7,
+                  child: ListView.builder(
+                          padding: const EdgeInsets.all(10),
+                          itemCount: data.length,
+                          itemBuilder: (_, index) => getListTile(index, data, context, userName),
+                          addAutomaticKeepAlives: true,
+                          shrinkWrap: true)),
+            Expanded(flex: 3, child: MessageForm(
+              messageData: data[0],
+              dataStore: dataStore,
+              userName: userName,
+              ),
+            )
+          ]
+        )
+      );
   }
 }
 
@@ -110,4 +114,24 @@ class ColoredBox extends StatelessWidget {
   }
 }
 
+Widget getListTile(int index, List<Messages> data, BuildContext context, String userName) {
+  print(userName);
+  if (data[index].receiver == userName) {
+    return ListTile(
+      title: ColoredBox(
+          color: Colors.lightBlue.shade200, 
+          text: data[index].text ?? '',
+          alignment: MainAxisAlignment.end,
+          textAlignment: TextAlign.start)
+    );
+  } else {
+    return ListTile(
+      title: ColoredBox(
+          color: Colors.grey.shade200, 
+          text: data[index].text ?? '',
+          alignment: MainAxisAlignment.start,
+          textAlignment: TextAlign.start)
+    );
+  }
+}
 

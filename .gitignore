@@ -129,3 +129,6 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+amplify/README.md
+windows/flutter/generated_plugins.cmake
+windows/flutter/generated_plugin_registrant.cc
