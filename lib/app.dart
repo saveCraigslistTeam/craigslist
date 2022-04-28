@@ -7,16 +7,12 @@ import 'package:provider/provider.dart';
 import 'views/messages/inbox.dart';
 import 'package:flutter/material.dart';
 import 'dart:core';
-// amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
-// amplify configuration and models that should have been generated for you
-import '../../amplifyconfiguration.dart';
-import '../../models/ModelProvider.dart';
-import 'views/messages/message_form.dart';
+import 'models/model_provider.dart';
 
 class App extends StatefulWidget {
   static const String title = "craigslist";

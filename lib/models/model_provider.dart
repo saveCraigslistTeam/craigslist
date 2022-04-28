@@ -20,27 +20,31 @@
 // ignore_for_file: public_member_api_docs, file_names, unnecessary_new, prefer_if_null_operators, prefer_const_constructors, slash_for_doc_comments, annotate_overrides, non_constant_identifier_names, unnecessary_string_interpolations, prefer_adjacent_string_concatenation, unnecessary_const, dead_code
 
 import 'package:amplify_core/amplify_core.dart';
-import 'Messages.dart';
-import 'Sale.dart';
-import 'SaleImage.dart';
+import 'messages.dart';
+import 'sale.dart';
+import 'sale_image.dart';
 
-export 'Messages.dart';
-export 'Sale.dart';
-export 'SaleImage.dart';
+export 'messages.dart';
+export 'sale.dart';
+export 'sale_image.dart';
 
 class ModelProvider implements ModelProviderInterface {
   @override
   String version = "12b87e085566b65f631f016529497065";
   @override
-  List<ModelSchema> modelSchemas = [Messages.schema, Sale.schema, SaleImage.schema];
+  List<ModelSchema> modelSchemas = [
+    Messages.schema,
+    Sale.schema,
+    SaleImage.schema
+  ];
   static final ModelProvider _instance = ModelProvider();
   @override
   List<ModelSchema> customTypeSchemas = [];
 
   static ModelProvider get instance => _instance;
-  
+
   ModelType getModelTypeByModelName(String modelName) {
-    switch(modelName) {
+    switch (modelName) {
       case "Messages":
         return Messages.classType;
       case "Sale":
@@ -48,7 +52,9 @@ class ModelProvider implements ModelProviderInterface {
       case "SaleImage":
         return SaleImage.classType;
       default:
-        throw Exception("Failed to find model in model provider for model name: " + modelName);
+        throw Exception(
+            "Failed to find model in model provider for model name: " +
+                modelName);
     }
   }
 }
