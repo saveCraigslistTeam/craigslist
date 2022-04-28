@@ -82,16 +82,14 @@ class _AppState extends State<App> {
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
       '/msgDetail': (context) => MessageDetail(
-            title: App.title,
-            dataStore: _dataStorePlugin,
-          ),
+          title: App.title, dataStore: _dataStorePlugin, userName: 'sender'),
       '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
     };
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: context.read<ThemeManager>().themeMode,
-      initialRoute: '/mySales',
+      initialRoute: '/',
       routes: routes,
     );
   }
