@@ -16,7 +16,6 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 // amplify configuration and models that should have been generated for you
 import '../../amplifyconfiguration.dart';
 import '../../models/ModelProvider.dart';
-import 'views/messages/message_form.dart';
 
 class App extends StatefulWidget {
   static const String title = "craigslist";
@@ -36,8 +35,6 @@ class _AppState extends State<App> {
   bool configured = false;
   bool authenticated = false;
 
-  late String amplifyconfig;
-
   @override
   initState() {
     super.initState();
@@ -45,23 +42,42 @@ class _AppState extends State<App> {
   }
 
   Future<void> _configureAmplify() async {
-    try {
-      // add Amplify plugins
-      await Amplify.addPlugins(
-          [_dataStorePlugin, _apiPlugin, _authPlugin, storage]);
-      // note that Amplify cannot be configured more than once!
-      await Amplify.configure(amplifyconfig);
+      try {
+          // add Amplify plugins
+          await Amplify.addPlugins(
+              [_dataStorePlugin, _apiPlugin, _authPlugin, storage]);
+          // note that Amplify cannot be configured more than once!
+          await Amplify.configure(amplifyconfig);
+          
+          if(Amplify.isConfigured) {
+            isConfigured();
+            print("amplify configured");
+          } else {
+            print('amplify not configured');
+          }
+        
+      } catch (e) {
+        debugPrint('An error occurred while configuring Amplify: $e');
+      }
+  }
+
+  void isConfigured() {
+    if(!Amplify.isConfigured && !configured) {
       setState(() {
         configured = true;
       });
-    } catch (e) {
-      debugPrint('An error occurred while configuring Amplify: $e');
+      print("amplify configured");
+    } else {
+      print('${Amplify.isConfigured}');
+      print('$configured');
+      print('amplify, not configured');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final routes = {
+      '/loading': (context) => const Loading(),
       '/': (context) => const Start(),
       '/home': (context) => const Home(),
       '/mySales': (context) => MySales(
@@ -77,4 +93,18 @@ class _AppState extends State<App> {
       routes: routes,
     );
   }
+}
+
+class Loading extends StatelessWidget {
+
+  const Loading({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return (
+      Scaffold(appBar: AppBar(),
+      body: const Center(child: Text('Loading')))
+      );
+  }
+  
 }

@@ -146,7 +146,7 @@ class InboxItem extends StatelessWidget {
           side: const BorderSide(color: Colors.blue, width: 1),
           borderRadius: BorderRadius.circular(5)),
       leading: getMessageUsername(message.customer),
-      title: getMessageText(message.text ?? '', message.formattedDate),
+      title: getMessageText(message.text, message.formattedDate),
       trailing: const Text(">"),
       focusColor: Colors.blue,
       onTap: () => {
