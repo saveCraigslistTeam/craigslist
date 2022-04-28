@@ -6,7 +6,6 @@ import 'dart:async';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
-import 'package:craigslist/amplifyconfiguration.dart';
 import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
@@ -29,31 +28,6 @@ class MessageForm extends StatefulWidget {
 }
 
 class _MessageFormState extends State<MessageForm> {
-  
-  @override
-  void initState() {
-    // kick off app initialization
-    //_initializeApp();
-    super.initState();
-  }
-
-  // Future<void> _initializeApp() async {
-  //   // Query and Observe updates to Todo models. DataStore.observeQuery() will
-  //   // emit an initial QuerySnapshot with a list of Todo models in the local store,
-  //   // and will emit subsequent snapshots as updates are made
-  //   //
-  //   // each time a snapshot is received, the following will happen:
-  //   // _isLoading is set to false if it is not already false
-  //   // _todos is set to the value in the latest snapshot
-  //   _subscription = widget.dataStore.observeQuery(Sale.classType)
-  //       // _subscription = Amplify.DataStore.observeQuery(Sale.classType)
-  //       .listen((QuerySnapshot<Sale> snapshot) {
-  //     setState(() {
-  //       if (_isLoading) _isLoading = false;
-  //       _sales = snapshot.items;
-  //     });
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +68,7 @@ Widget textEntry(Message data) {
          data.text = value!;
       },
       validator: (value) {
-        if (value == null || value.isEmpty) {
+        if (value == null || value.isEmpty || value == '') {
           return 'Please enter a message';
         } else {
           return null;
@@ -110,7 +84,8 @@ Widget send(Message data, GlobalKey<FormState> formKey) {
     onPressed: () async {
       if (formKey.currentState!.validate()) {
         formKey.currentState!.save();
-        saveNewMessage(data);
+        await saveNewMessage(data);
+        formKey.currentState?.reset();
       }
     },
     child: const Icon(Icons.send),
@@ -130,19 +105,11 @@ Future<void> saveNewMessage(Message oldMessage) async {
     text: oldMessage.text);
   
   try{
-    
     await Amplify.DataStore.save(newMessage);
-
+    print('Message sent successfully');
   } catch (e) {
-
     print("An error occurred saving new message: $e");
   }
-  sendMessage(newMessage);
-}
-
-void sendMessage(Messages data) {
-  print('${data.sale} ${data.host} ${data.customer}');
-  print('${data.sender} ${data.receiver} ${data.text}');
 }
 
 double paddingSides(BuildContext context) {

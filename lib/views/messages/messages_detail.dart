@@ -52,14 +52,14 @@ class ScrollingMessages extends StatelessWidget{
     return SafeArea(
         child: Column(
           children: [
-            Expanded(flex: 8,
+            Expanded(flex: 7,
                   child: ListView.builder(
                           padding: const EdgeInsets.all(10),
                           itemCount: data.listLength,
                           itemBuilder: (_, index) => getListTile(index, data, context),
                           addAutomaticKeepAlives: true,
                           shrinkWrap: true)),
-            Expanded(flex: 2, child: MessageForm(
+            Expanded(flex: 3, child: MessageForm(
               messageData: data.conversations[0],
               dataStore: dataStore,
               ),
