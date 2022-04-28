@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
-import '../../models/messages/messages_models.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
 // amplify packages
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
-import 'package:craigslist/amplifyconfiguration.dart';
 import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
 class MessageForm extends StatefulWidget {
   
-  final Message messageData;
+  final Messages messageData;
+  final String userName;
   final AmplifyDataStore dataStore;
-  // final AmplifyStorageS3 storage;
-  // final AmplifyAuthCognito auth;
 
   const MessageForm({Key? key, 
     required this.messageData,
     required this.dataStore,
-    // required this.storage,
-    // required this.auth
+    required this.userName
     }) : super(key: key);
 
   @override
@@ -29,120 +25,84 @@ class MessageForm extends StatefulWidget {
 }
 
 class _MessageFormState extends State<MessageForm> {
-  
-  @override
-  void initState() {
-    // kick off app initialization
-    //_initializeApp();
-    super.initState();
-  }
-
-  // Future<void> _initializeApp() async {
-  //   // Query and Observe updates to Todo models. DataStore.observeQuery() will
-  //   // emit an initial QuerySnapshot with a list of Todo models in the local store,
-  //   // and will emit subsequent snapshots as updates are made
-  //   //
-  //   // each time a snapshot is received, the following will happen:
-  //   // _isLoading is set to false if it is not already false
-  //   // _todos is set to the value in the latest snapshot
-  //   _subscription = widget.dataStore.observeQuery(Sale.classType)
-  //       // _subscription = Amplify.DataStore.observeQuery(Sale.classType)
-  //       .listen((QuerySnapshot<Sale> snapshot) {
-  //     setState(() {
-  //       if (_isLoading) _isLoading = false;
-  //       _sales = snapshot.items;
-  //     });
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
+    
     final formKey = GlobalKey<FormState>();
+    String newMessage = '';
+    String userName = widget.userName;
 
     return (
       Form(
-      key: formKey,
-      child: Row(
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: paddingSides(context),
-                vertical: paddingTopAndBottom(context)),
-            child: Container(
-              width: 300,
-              child: textEntry(widget.messageData),
+        key: formKey,
+        child: Row(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: paddingSides(context),
+                  vertical: paddingTopAndBottom(context)),
+              child: SizedBox(
+                width: 300,
+                child: TextFormField(
+                  decoration: const InputDecoration(
+                      labelText: 'New Message', border: OutlineInputBorder()),
+                  maxLines: 2,
+                  minLines: 1,
+                  textInputAction: TextInputAction.done,
+                  keyboardType: TextInputType.text,
+                  onSaved: (value) {
+                    newMessage = value!;
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty || value == '') {
+                      return 'Please enter a message';
+                    } else {
+                      return null;
+                    }
+                  }
+                ),
+              ),
             ),
-          ),
-          send(widget.messageData, formKey)
-      ],
-    ),
-  ));
-  }
+            ElevatedButton(
+            style: ButtonStyle(
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.0)))),
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                formKey.currentState!.save();
+                await saveNewMessage(widget.messageData, newMessage, userName);
+                formKey.currentState?.reset();
+              }
+            },
+            child: const Icon(Icons.send),
+          )])
+        ));
+    }
 }
 
 
-Widget textEntry(Message data) {
+Future<void> saveNewMessage(Messages messageData, String newMessage, String userName) async {
+  TemporalDateTime currDate = TemporalDateTime.now();
 
-  return (TextFormField(
-      decoration: const InputDecoration(
-          labelText: 'New Message', border: OutlineInputBorder()),
-      maxLines: 2,
-      minLines: 1,
-      textInputAction: TextInputAction.done,
-      keyboardType: TextInputType.text,
-      onSaved: (value) {
-         data.text = value!;
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a message';
-        } else {
-          return null;
-        }
-      }));
-}
-
-Widget send(Message data, GlobalKey<FormState> formKey) {
-  return (ElevatedButton(
-    style: ButtonStyle(
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.0)))),
-    onPressed: () async {
-      if (formKey.currentState!.validate()) {
-        formKey.currentState!.save();
-        saveNewMessage(data);
-      }
-    },
-    child: const Icon(Icons.send),
-  ));
-}
-
-Future<void> saveNewMessage(Message oldMessage) async {
-
-  Messages newMessage = Messages(
-    sale: oldMessage.sale,
-    host: oldMessage.host,
-    customer: oldMessage.customer,
-    sender: oldMessage.receiver,
-    receiver: oldMessage.sender,
+  Messages outMessage = Messages(
+    sale: messageData.sale,
+    host: messageData.host,
+    customer: messageData.customer,
+    sender: userName == messageData.host ? messageData.host : messageData.customer,
+    receiver: userName == messageData.host ?  messageData.customer : messageData.host,
     senderSeen: true,
     receiverSeen: false,
-    text: oldMessage.text);
-  
+    text: newMessage,
+    date: currDate
+  );
+
   try{
-    
-    await Amplify.DataStore.save(newMessage);
-
+    await Amplify.DataStore.save(outMessage);
+    print('Message sent successfully');
   } catch (e) {
-
     print("An error occurred saving new message: $e");
   }
-  sendMessage(newMessage);
-}
-
-void sendMessage(Messages data) {
-  print('${data.sale} ${data.host} ${data.customer}');
-  print('${data.sender} ${data.receiver} ${data.text}');
 }
 
 double paddingSides(BuildContext context) {

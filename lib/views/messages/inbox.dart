@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../models/messages/messages_models.dart';
+//import '../../models/messages/messages_models.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
 // amplify packages
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
-import 'package:craigslist/amplifyconfiguration.dart';
 import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
 class InboxPage extends StatefulWidget {
+
   final AmplifyDataStore dataStore;
 
   const InboxPage({Key? key, required this.dataStore}) : super(key: key);
@@ -20,59 +20,34 @@ class InboxPage extends StatefulWidget {
 }
 
 class _InboxPageState extends State<InboxPage> {
-  // Amplify addition
+
+  // Change later
+  final String userName = 'sender';
+  // Change later
+
+  late StreamSubscription<QuerySnapshot<Messages>> messageStream;
+
+  List<Messages> _messages = [];
   bool _isLoading = true;
-
-  Conversation amplifyData = Conversation();
-
-  Conversation data = Conversation();
-  Conversation? formattedData;
-  bool _loading = true;
 
   @override
   void initState(){
-    // Amplify addition
-    _initializeApp();
-    //
-
-    addMessageData();
+    getMessageStream();
     super.initState();
   }
 
-  @override
-  void dispose(){
-    // To do fill this implementation
-    super.dispose();
-  }
-
-  // Amplify addition
-  Future<void> _initializeApp() async {
-    
-    // await _configureAmplify();
-
-    setState(() {
-      _isLoading = false;
-    });
-
-  }
-  
-  void addMessageData() {
-    setState(() {
-      final Message message = Message("saleId", "sender", "customerId", "sender", "receiver", "Hello World");
-      final Message message2 = Message("saleId", "sender", "customerId",  "receiver", "sender", "Goodbye World");
-      final Message message3 = Message("saleId2", "sender", "customerId1", "sender", "receiver1", "Message two");
-      final Message message4 = Message("saleId2", "sender", "customerId1",  "receiver1", "sender", "Super long message incoming let me break your flutter app aaaaaarggghhh!");
-      data.addMessage(message);
-      data.addMessage(message2);
-      data.addMessage(message3);
-      data.addMessage(message4);
-      _loading = false;
-    });
-  }
+  Future<void> getMessageStream() async {
+    messageStream = widget.dataStore.observeQuery(Messages.classType)
+      .listen((QuerySnapshot<Messages> snapshot) {
+        setState(() {
+          if(_isLoading) _isLoading = false;
+          _messages = snapshot.items;
+        });
+      });
+    }
 
   @override
   Widget build(BuildContext context) {
-      formattedData = removeDuplicates(data);
       return (
         Scaffold(
           appBar: AppBar(
@@ -82,14 +57,14 @@ class _InboxPageState extends State<InboxPage> {
             centerTitle: true,
           ),
           body: _isLoading 
-          ? Center(child: CircularProgressIndicator())
-          : data.listLength > 0 ? Column(
+          ? const Center(child: CircularProgressIndicator())
+          : _messages.isNotEmpty ? Column(
             children: [
               Expanded(
                 flex: 7,
                 child: InboxList(
-                  data: data, 
-                  formattedData: formattedData!,
+                  messages: _messages,
+                  formattedMessages: filterRecentMessagesByGroup(_messages),
                   dataStore: widget.dataStore),
               ),
               Expanded(
@@ -98,7 +73,7 @@ class _InboxPageState extends State<InboxPage> {
                     color: Colors.white,
                   ))
             ],
-          ) : Center(child: Text('No messages'))) 
+          ) : const Center(child: Text('No messages'))) 
           
       );
     }
@@ -106,36 +81,36 @@ class _InboxPageState extends State<InboxPage> {
 
 class InboxList extends StatelessWidget {
 
-  final Conversation data;
-  final Conversation formattedData;
+  List<Messages> formattedMessages = [];
+  List<Messages> messages = [];
   final AmplifyDataStore dataStore;
 
-  const InboxList({Key? key, required this.formattedData, 
-    required this.data,
+  InboxList({Key? key, 
+    required this.formattedMessages,
+    required this.messages,
     required this.dataStore}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return (
-      formattedData.listLength > 0 ?
+      messages.isNotEmpty ?
       ListView.builder(
-        itemCount: formattedData.listLength,
-        itemBuilder: (_, index) => InboxItem(data: data, message: formattedData.conversations[index], formattedData: formattedData, dataStore: dataStore)):
+        itemCount: formattedMessages.length,
+        itemBuilder: (_, index) => InboxItem(
+          messages: messages, message: formattedMessages[index], dataStore: dataStore)):
       const Center(child: Text('No Messages'))
     );
   }
 }
 
 class InboxItem extends StatelessWidget {
-  final Conversation data;
-  final Message message;
-  final Conversation formattedData;
+  final List<Messages> messages;
+  final Messages message;
   final AmplifyDataStore dataStore;
   
-  const InboxItem({Key? key, 
-    required this.data,
+  const InboxItem({Key? key,
+    required this.messages, 
     required this.message,
-    required this.formattedData,
     required this.dataStore}) : super(key: key);
 
   @override
@@ -145,15 +120,15 @@ class InboxItem extends StatelessWidget {
       shape: RoundedRectangleBorder(
           side: const BorderSide(color: Colors.blue, width: 1),
           borderRadius: BorderRadius.circular(5)),
-      leading: getMessageUsername(message.customer),
-      title: getMessageText(message.text, message.formattedDate),
+      leading: getMessageUsername(message.customer!),
+      title: getMessageText(message.text, message.date),
       trailing: const Text(">"),
       focusColor: Colors.blue,
       onTap: () => {
             Navigator.pushNamed(context, '/msgDetail',
                 arguments: DetailData(
                   dataStore,
-                  groupByConversation(data, message.customer, message.sale)
+                  groupByConversation(messages, message.host, message.customer, message.sale)
             ))
         }
     ));
@@ -169,77 +144,78 @@ Widget appBarTitle(String title) {
   );
 }
 
-Widget getMessageUsername(String customer) {
-  return (Text(customer.length > 8 ? customer.substring(0, 8) : customer,
+Widget getMessageUsername(String? customer) {
+  return (Text(customer!.length > 8 ? customer.substring(0, 8) : customer,
       style: const TextStyle(color: Color(0xff5887FF), fontSize: 20)));
 }
 
-Widget getMessageText(String text, String date) {
+Widget getMessageText(String? text, TemporalDateTime? date) {
   return (Column(
     children: [
-      Text(text.length > 25 ? text.substring(0, 25) : text),
-      Text(date.length > 25 ? date.substring(0, 25) : date)
+      Text(text!.length > 25 ? text.substring(0, 25) : text),
+      Text(date.toString().length > 25 ? date.toString().substring(0, 25) : date.toString())
     ],
   ));
 }
 
-Conversation removeDuplicates(Conversation data) {
-  Conversation formattedConversation = Conversation();
+List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
+  List<Messages> formattedMessages = [];
   List<String> visited = [];
   bool flag = true;
 
-  for(int i = 0; i < data.listLength; i++){
-    String combined = '${data.conversation[i].sale}${data.conversations[i].customer}';
+  for(int i = 0; i < messages.length; i++){
+    String combined = '${messages[i].sale}${messages[i].customer}';
     for(int j = 0; j < visited.length; j++) {
       if(combined == visited[j]){
-        for(int k = 0; k < formattedConversation.listLength; k++) {
-          if(identical(formattedConversation.conversations[k].sale, data.conversations[i].sale)){
-            formattedConversation.conversations[k] = formattedConversation.conversations[k].date.isAfter(data.conversations[i].date) 
-              ? formattedConversation.conversations[k]
-              : data.conversations[i];
+        for(int k = 0; k < formattedMessages.length; k++) {
+          if(identical(formattedMessages[k].sale, messages[i].sale)){
+            TemporalDateTime oldDate = messages[i].date ?? TemporalDateTime.now();
+            formattedMessages[k] = formattedMessages[k].date!.compareTo(oldDate) >= 1
+              ? formattedMessages[k]
+              : messages[i];
           }
         }
         flag = false;
       }
     }
     if(flag) {
-      formattedConversation.addMessage(data.conversations[i]);
+      formattedMessages.add(messages[i]);
       visited.add(combined);
       flag = true;
     }
     flag = true;
   }
-  return formattedConversation;
+  
+  return formattedMessages;
 }
 
-Conversation groupByConversation(Conversation data, String customer, String sale) {
+List<Messages> groupByConversation(List<Messages> messages, String? host, String? customer, String? sale){
+  List<Messages> formattedMessages = [];
 
-  Conversation groupedConversation = Conversation();
-
-  for(int i = 0; i < data.listLength; i++) {
-    if(data.conversations[i].customer == customer && data.conversations[i].sale == sale){
-      groupedConversation.addMessage(data.conversations[i]);
+  for(int i = 0; i < messages.length; i++) {
+    if(messages[i].host == host && messages[i].customer == customer && messages[i].sale == sale){
+      formattedMessages.add(messages[i]);
     }
   }
 
-  return groupedConversation;
+  return formattedMessages;
 }
 
 class DetailData {
   final AmplifyDataStore ds;
-  final Conversation c;
+  final List<Messages> m;
 
   DetailData(
     this.ds,
-    this.c
+    this.m
   );
 
   AmplifyDataStore get dataStore{
     return ds;
   }
 
-  Conversation get conversation{
-    return c;
+  List<Messages> get messages{
+    return m;
   }
 
 
