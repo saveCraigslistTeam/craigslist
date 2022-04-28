@@ -45,9 +45,7 @@ class _SaleDetailViewState extends State<SaleDetailView> {
             ),
             Padding(
                 padding: const EdgeInsets.all(25.0),
-                child: Image.network(
-                    'https://craigslist-storage-images174444-staging.s3.amazonaws.com/public/images+(2).jpg',
-                    // widget.saleImages[0].imageURL!.toString(),
+                child: Image.network(widget.saleImages[0].imageURL.toString(),
                     height: 400)),
           ],
         ),

@@ -36,6 +36,7 @@ class Messages extends Model {
   final bool? _senderSeen;
   final bool? _receiverSeen;
   final String? _text;
+  final TemporalDateTime? _date;
   final TemporalDateTime? _createdAt;
   final TemporalDateTime? _updatedAt;
 
@@ -79,6 +80,10 @@ class Messages extends Model {
     return _text;
   }
   
+  TemporalDateTime? get date {
+    return _date;
+  }
+  
   TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -87,9 +92,9 @@ class Messages extends Model {
     return _updatedAt;
   }
   
-  const Messages._internal({required this.id, sale, host, customer, sender, receiver, senderSeen, receiverSeen, text, createdAt, updatedAt}): _sale = sale, _host = host, _customer = customer, _sender = sender, _receiver = receiver, _senderSeen = senderSeen, _receiverSeen = receiverSeen, _text = text, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Messages._internal({required this.id, sale, host, customer, sender, receiver, senderSeen, receiverSeen, text, date, createdAt, updatedAt}): _sale = sale, _host = host, _customer = customer, _sender = sender, _receiver = receiver, _senderSeen = senderSeen, _receiverSeen = receiverSeen, _text = text, _date = date, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Messages({String? id, String? sale, String? host, String? customer, String? sender, String? receiver, bool? senderSeen, bool? receiverSeen, String? text}) {
+  factory Messages({String? id, String? sale, String? host, String? customer, String? sender, String? receiver, bool? senderSeen, bool? receiverSeen, String? text, TemporalDateTime? date}) {
     return Messages._internal(
       id: id == null ? UUID.getUUID() : id,
       sale: sale,
@@ -99,7 +104,8 @@ class Messages extends Model {
       receiver: receiver,
       senderSeen: senderSeen,
       receiverSeen: receiverSeen,
-      text: text);
+      text: text,
+      date: date);
   }
   
   bool equals(Object other) {
@@ -118,7 +124,8 @@ class Messages extends Model {
       _receiver == other._receiver &&
       _senderSeen == other._senderSeen &&
       _receiverSeen == other._receiverSeen &&
-      _text == other._text;
+      _text == other._text &&
+      _date == other._date;
   }
   
   @override
@@ -138,6 +145,7 @@ class Messages extends Model {
     buffer.write("senderSeen=" + (_senderSeen != null ? _senderSeen!.toString() : "null") + ", ");
     buffer.write("receiverSeen=" + (_receiverSeen != null ? _receiverSeen!.toString() : "null") + ", ");
     buffer.write("text=" + "$_text" + ", ");
+    buffer.write("date=" + (_date != null ? _date!.format() : "null") + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
@@ -145,7 +153,7 @@ class Messages extends Model {
     return buffer.toString();
   }
   
-  Messages copyWith({String? id, String? sale, String? host, String? customer, String? sender, String? receiver, bool? senderSeen, bool? receiverSeen, String? text}) {
+  Messages copyWith({String? id, String? sale, String? host, String? customer, String? sender, String? receiver, bool? senderSeen, bool? receiverSeen, String? text, TemporalDateTime? date}) {
     return Messages._internal(
       id: id ?? this.id,
       sale: sale ?? this.sale,
@@ -155,7 +163,8 @@ class Messages extends Model {
       receiver: receiver ?? this.receiver,
       senderSeen: senderSeen ?? this.senderSeen,
       receiverSeen: receiverSeen ?? this.receiverSeen,
-      text: text ?? this.text);
+      text: text ?? this.text,
+      date: date ?? this.date);
   }
   
   Messages.fromJson(Map<String, dynamic> json)  
@@ -168,11 +177,12 @@ class Messages extends Model {
       _senderSeen = json['senderSeen'],
       _receiverSeen = json['receiverSeen'],
       _text = json['text'],
+      _date = json['date'] != null ? TemporalDateTime.fromString(json['date']) : null,
       _createdAt = json['createdAt'] != null ? TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'sale': _sale, 'host': _host, 'customer': _customer, 'sender': _sender, 'receiver': _receiver, 'senderSeen': _senderSeen, 'receiverSeen': _receiverSeen, 'text': _text, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'sale': _sale, 'host': _host, 'customer': _customer, 'sender': _sender, 'receiver': _receiver, 'senderSeen': _senderSeen, 'receiverSeen': _receiverSeen, 'text': _text, 'date': _date?.format(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
 
   static final QueryField ID = QueryField(fieldName: "messages.id");
@@ -184,6 +194,7 @@ class Messages extends Model {
   static final QueryField SENDERSEEN = QueryField(fieldName: "senderSeen");
   static final QueryField RECEIVERSEEN = QueryField(fieldName: "receiverSeen");
   static final QueryField TEXT = QueryField(fieldName: "text");
+  static final QueryField DATE = QueryField(fieldName: "date");
   static var schema = Model.defineSchema(define: (ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "Messages";
     modelSchemaDefinition.pluralName = "Messages";
@@ -247,6 +258,12 @@ class Messages extends Model {
       key: Messages.TEXT,
       isRequired: false,
       ofType: ModelFieldType(ModelFieldTypeEnum.string)
+    ));
+    
+    modelSchemaDefinition.addField(ModelFieldDefinition.field(
+      key: Messages.DATE,
+      isRequired: false,
+      ofType: ModelFieldType(ModelFieldTypeEnum.dateTime)
     ));
     
     modelSchemaDefinition.addField(ModelFieldDefinition.nonQueryField(

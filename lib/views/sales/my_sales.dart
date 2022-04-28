@@ -43,20 +43,12 @@ class _MySalesState extends State<MySales> {
   @override
   void initState() {
     // kick off app initialization
-    _initializeApp();
+    _getSalesStream();
     super.initState();
   }
 
-  Future<void> _initializeApp() async {
-    // Query and Observe updates to Todo models. DataStore.observeQuery() will
-    // emit an initial QuerySnapshot with a list of Todo models in the local store,
-    // and will emit subsequent snapshots as updates are made
-    //
-    // each time a snapshot is received, the following will happen:
-    // _isLoading is set to false if it is not already false
-    // _todos is set to the value in the latest snapshot
+  Future<void> _getSalesStream() async {
     _subscription = widget.DataStore.observeQuery(Sale.classType)
-        // _subscription = Amplify.DataStore.observeQuery(Sale.classType)
         .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
@@ -112,21 +104,25 @@ class SaleItem extends StatelessWidget {
   final double iconSize = 24.0;
   final Sale sale;
   SaleItem({required this.sale});
+
+  @override
   void _deleteSale(BuildContext context) async {
+    List<SaleImage> saleImage = (await Amplify.DataStore.query(
+        SaleImage.classType,
+        where: SaleImage.SALEID.eq(sale.id)));
     try {
-      // to delete data from DataStore, we pass the model instance to
-      // Amplify.DataStore.delete()
+      // Delete the sale and the associated image
       await Amplify.DataStore.delete(sale);
+      await Amplify.DataStore.delete(saleImage[0]);
     } catch (e) {
       print('An error occurred while deleting Todo: $e');
     }
   }
 
-  @override
   Future<List<SaleImage>> getSaleImage(Sale sale) async {
-    List<SaleImage> images = await Amplify.DataStore.query(SaleImage.classType);
-    // ignore: avoid_print
-    print("\n\n" + '$images');
+    List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
+        where: SaleImage.SALEID.eq(sale.id)));
+    String? image = images[0].imageURL;
     return images;
   }
 
@@ -144,7 +140,7 @@ class SaleItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(sale.title!,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
                       Text('\$${sale.price}'),
                     ],
@@ -195,7 +191,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
       final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
       // NOTE: This code is only for demonstration
       // Your debug console may truncate the printed url string
-      // print('Got URL: ${result.url}');
+      print('Got URL: ${result.url}');
       setState(() {
         imageURL = result.url;
       });
@@ -207,18 +203,22 @@ class _AddSaleFormState extends State<AddSaleForm> {
   }
 
   Future<void> uploadImage() async {
+    final options = S3UploadFileOptions(
+      accessLevel: StorageAccessLevel.guest,
+    );
+
     // Select image from user's gallery
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) {
       print('No image selected');
       return;
     }
-
     // Upload image with the current time as the key
     final key = DateTime.now().toString();
     final file = File(pickedFile.path);
     try {
       final UploadFileResult result = await Amplify.Storage.uploadFile(
+          options: options,
           local: file,
           key: key,
           onProgress: (progress) {
@@ -241,8 +241,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
   Future<void> _saveSale() async {
     // get the current text field contents
     String title = _titleController.text;
-    String description = _conditionController.text;
-    String condition = _descriptionController.text;
+    String condition = _conditionController.text;
+    String description = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     String price = _priceController.text;
 
