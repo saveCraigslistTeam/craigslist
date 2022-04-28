@@ -1,17 +1,24 @@
+import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:flutter/material.dart';
 import '../../models/messages/messages_models.dart';
 import './message_form.dart';
+import './inbox.dart';
 
 class MessageDetail extends StatelessWidget {
 
   final String title;
+  final AmplifyDataStore dataStore;
   static const String routeName = 'messageDetail';
 
-  const MessageDetail({Key? key, required this.title}) : super(key: key);
+  const MessageDetail({Key? key, 
+    required this.title,
+    required this.dataStore}) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
-    final Conversation data = ModalRoute.of(context)?.settings.arguments as Conversation;
+    final DetailData detailData = ModalRoute.of(context)?.settings.arguments as DetailData;
+    final Conversation data = detailData.conversation;
+    final AmplifyDataStore dataStore = detailData.dataStore;
     
     return (
       Scaffold(
@@ -26,47 +33,40 @@ class MessageDetail extends StatelessWidget {
                         style: TextStyle(fontSize: 30)))
                       )
                     ),
-      body: SafeArea(
-        child: Column(
-          children: [
-                Expanded(
-                  flex: 8,
-                  child: ListView.builder(
-                          padding: const EdgeInsets.all(10),
-                          itemCount: data.listLength,
-                          itemBuilder: (_, index) => getListTile(index, data, context),
-                          addAutomaticKeepAlives: true,
-                          shrinkWrap: true),
-                ),
-               Expanded(
-                 flex: 2,
-                 child: MessageForm(data: data.conversations[0]))
-          ],
-        ),
-      ),
+      body: ScrollingMessages(data: data, dataStore: dataStore),
       )
     );
   }
 }
 
+class ScrollingMessages extends StatelessWidget{
+  final Conversation data;
+  final AmplifyDataStore dataStore;
 
-Widget getListTile(int index, Conversation data, BuildContext context) {
-  if (data.conversations[index].host == data.conversations[index].receiver) {
-    return ListTile(
-      title: ColoredBox(
-          color: Colors.lightBlue.shade200, 
-          text: data.conversations[index].text,
-          alignment: MainAxisAlignment.end,
-          textAlignment: TextAlign.start)
-    );
-  } else {
-    return ListTile(
-      title: ColoredBox(
-          color: Colors.grey.shade200, 
-          text: data.conversations[index].text,
-          alignment: MainAxisAlignment.start,
-          textAlignment: TextAlign.start)
-    );
+  const ScrollingMessages({Key? key, 
+    required this.data,
+    required this.dataStore}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+        child: Column(
+          children: [
+            Expanded(flex: 8,
+                  child: ListView.builder(
+                          padding: const EdgeInsets.all(10),
+                          itemCount: data.listLength,
+                          itemBuilder: (_, index) => getListTile(index, data, context),
+                          addAutomaticKeepAlives: true,
+                          shrinkWrap: true)),
+            Expanded(flex: 2, child: MessageForm(
+              messageData: data.conversations[0],
+              dataStore: dataStore,
+              ),
+            )
+          ]
+        )
+      );
   }
 }
 
@@ -110,4 +110,23 @@ class ColoredBox extends StatelessWidget {
   }
 }
 
+Widget getListTile(int index, Conversation data, BuildContext context) {
+  if (data.conversations[index].host == data.conversations[index].receiver) {
+    return ListTile(
+      title: ColoredBox(
+          color: Colors.lightBlue.shade200, 
+          text: data.conversations[index].text,
+          alignment: MainAxisAlignment.end,
+          textAlignment: TextAlign.start)
+    );
+  } else {
+    return ListTile(
+      title: ColoredBox(
+          color: Colors.grey.shade200, 
+          text: data.conversations[index].text,
+          alignment: MainAxisAlignment.start,
+          textAlignment: TextAlign.start)
+    );
+  }
+}
 
