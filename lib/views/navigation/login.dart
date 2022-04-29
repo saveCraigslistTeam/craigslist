@@ -11,22 +11,39 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  Future<String?>? _onLogin(BuildContext context, LoginData data) async {
-    print(data);
+  late LoginData _data;
+  late LoginData data;
+  bool _isLoggedIn = false;
+
+  Future<String?>? _onLogin(data) async {
+    try {
+      final res = await Amplify.Auth.signIn(
+        username: data.name,
+        password: data.password,
+      );
+
+      _isLoggedIn = res.isSignedIn;
+    } on AuthException catch (e) {
+      if (e.message.contains('Already signed in.')) {
+        await Amplify.Auth.signOut();
+        return 'Cannot log in, please try again later.';
+      }
+      return '${e.message} - ${e.recoverySuggestion}';
+    }
   }
 
-  Future<String> _onSignup(LoginData data) async {
+  Future<String?>? _onSignup(data) async {
     try {
       await Amplify.Auth.signUp(
         username: data.name,
         password: data.password,
         options: CognitoSignUpOptions(userAttributes: {
-          'email': data.name,
+          CognitoUserAttributeKey.email: data.name,
         }),
       );
-      //_data = data;
+      _data = data;
     } on AuthException catch (e) {
-      return '${e.message} - ${e.recoverySuggestion}'
+      return '${e.message} - ${e.recoverySuggestion}';
     }
   }
 
@@ -34,9 +51,9 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return FlutterLogin(
       title: 'Craigslist',
-      onLogin: (LoginData data) => _onLogin(context, data),
+      onLogin: _onLogin,
       onRecoverPassword: (_) => Future.value(''),
-      onSignup: (LoginData data) => _onSignup(context, data),
+      onSignup: _onSignup,
       theme: LoginTheme(primaryColor: Theme.of(context).primaryColor),
       onSubmitAnimationCompleted: () {},
     );

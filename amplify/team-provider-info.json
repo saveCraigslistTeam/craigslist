@@ -10,6 +10,11 @@
       "StackName": "amplify-craigslist-staging-174444",
       "StackId": "arn:aws:cloudformation:us-east-1:314832383311:stack/amplify-craigslist-staging-174444/bc52e4f0-bce3-11ec-970f-0e35e849f84b",
       "AmplifyAppId": "d2s6v6rawhdoo7"
+    },
+    "categories": {
+      "auth": {
+        "craigslistec7a3f5c": {}
+      }
     }
   }
 }
