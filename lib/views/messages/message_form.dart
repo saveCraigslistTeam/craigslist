@@ -27,24 +27,39 @@ class MessageForm extends StatefulWidget {
 class _MessageFormState extends State<MessageForm> {
   @override
   Widget build(BuildContext context) {
+    
     final formKey = GlobalKey<FormState>();
     String newMessage = '';
     String userName = widget.userName;
 
-    return (Form(
+    return (
+      Form(
         key: formKey,
-        child: Row(children: [
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Padding(
             padding: EdgeInsets.symmetric(
                 horizontal: paddingSides(context),
                 vertical: paddingTopAndBottom(context)),
             child: SizedBox(
-              width: 300,
+              width: 350,
               child: TextFormField(
-                  decoration: const InputDecoration(
-                      labelText: 'New Message', border: OutlineInputBorder()),
-                  maxLines: 2,
-                  minLines: 1,
+                  decoration: InputDecoration(
+                      labelText: 'New Message', border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                         icon: const Icon(Icons.send), 
+                         onPressed: () async {
+                                if (formKey.currentState!.validate()) {
+                                  formKey.currentState!.save();
+                                  await saveNewMessage(widget.messageData, newMessage, userName);
+                                  formKey.currentState?.reset();
+                                }
+                              }
+                           )),
+                  maxLines: 3,
+                  minLines: 2,
                   textInputAction: TextInputAction.done,
                   keyboardType: TextInputType.text,
                   onSaved: (value) {
@@ -59,21 +74,8 @@ class _MessageFormState extends State<MessageForm> {
                   }),
             ),
           ),
-          ElevatedButton(
-            style: ButtonStyle(
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25.0)))),
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                formKey.currentState!.save();
-                await saveNewMessage(widget.messageData, newMessage, userName);
-                formKey.currentState?.reset();
-              }
-            },
-            child: const Icon(Icons.send),
-          )
-        ])));
+        ])
+      ));
   }
 }
 
@@ -85,10 +87,10 @@ Future<void> saveNewMessage(
       sale: messageData.sale,
       host: messageData.host,
       customer: messageData.customer,
-      sender: userName == messageData.host
+      sender: userName != messageData.host
           ? messageData.host
           : messageData.customer,
-      receiver: userName == messageData.host
+      receiver: userName != messageData.host
           ? messageData.customer
           : messageData.host,
       senderSeen: true,
