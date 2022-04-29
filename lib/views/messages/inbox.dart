@@ -64,7 +64,8 @@ class _InboxPageState extends State<InboxPage> {
                             messages: _messages,
                             formattedMessages:
                                 filterRecentMessagesByGroup(_messages),
-                            dataStore: widget.dataStore),
+                            dataStore: widget.dataStore,
+                            rebuildFunction: getMessageStream),
                       ),
                       Expanded(
                           flex: 1,
@@ -81,12 +82,14 @@ class InboxList extends StatelessWidget {
   List<Messages> formattedMessages = [];
   List<Messages> messages = [];
   final AmplifyDataStore dataStore;
+  Function rebuildFunction;
 
   InboxList(
       {Key? key,
       required this.formattedMessages,
       required this.messages,
-      required this.dataStore})
+      required this.dataStore,
+      required this.rebuildFunction})
       : super(key: key);
 
   @override
@@ -97,7 +100,8 @@ class InboxList extends StatelessWidget {
             itemBuilder: (_, index) => InboxItem(
                 messages: messages,
                 message: formattedMessages[index],
-                dataStore: dataStore))
+                dataStore: dataStore,
+                rebuildFunction: rebuildFunction))
         : const Center(child: Text('No Messages')));
   }
 }
@@ -106,12 +110,14 @@ class InboxItem extends StatelessWidget {
   final List<Messages> messages;
   final Messages message;
   final AmplifyDataStore dataStore;
+  Function rebuildFunction;
 
-  const InboxItem(
+  InboxItem(
       {Key? key,
       required this.messages,
       required this.message,
-      required this.dataStore})
+      required this.dataStore,
+      required this.rebuildFunction})
       : super(key: key);
 
   @override
@@ -126,14 +132,15 @@ class InboxItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10)),
         child: (
           ListTile(
-            leading: leadingContent(message.customer, message.text),
+            title: leadingContent(message.customer, message.text),
             trailing: trailingContent(message.date),
             onTap: () => {
                   Navigator.pushNamed(context, '/msgDetail',
                       arguments: DetailData(
                           dataStore,
                           groupByConversation(messages, message.host,
-                              message.customer, message.sale)))
+                              message.customer, message.sale),
+                          rebuildFunction))
                 })),
       ),
     );
@@ -142,11 +149,19 @@ class InboxItem extends StatelessWidget {
 
 Widget leadingContent(String? customer, String? message){
   return (
-    Column(children: [
-      Text(customer!.length > 8 ? customer.substring(0, 8) : customer,
-      style: const TextStyle(fontSize: 20)),
-      Text(message!.length > 25 ? message.substring(0, 25) : message),
-    ],)
+    Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+      Text(customer!.length > 12 
+          ? customer.substring(0, 12) 
+          : customer,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+      Text(message!.length > 30 
+          ? message.substring(0, 30) + "..."
+          : message,
+          style: const TextStyle(fontSize: 14)
+      )])
   );
 }
 
@@ -158,7 +173,7 @@ Widget trailingContent(TemporalDateTime? date){
   if(withinCurrentDay(date!)) {
     formattedDate = DateFormat.jm().format(parsedDate);
   } else {
-    formattedDate = DateFormat.Md().format(parsedDate);
+    formattedDate = DateFormat.yMd().format(parsedDate);
   }
 
   return Text(formattedDate.length > 25
@@ -176,13 +191,13 @@ List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
     for (int j = 0; j < visited.length; j++) {
       if (combined == visited[j]) {
         for (int k = 0; k < formattedMessages.length; k++) {
-          if (identical(formattedMessages[k].sale, messages[i].sale)) {
-            TemporalDateTime oldDate =
-                messages[i].date ?? TemporalDateTime.now();
+          if (formattedMessages[k].sale == messages[i].sale) {
+            DateTime currMessageDate = DateTime.parse(messages[i].date.toString());
+            DateTime oldDate = DateTime.parse(formattedMessages[k].date.toString());
             formattedMessages[k] =
-                formattedMessages[k].date!.compareTo(oldDate) >= 1
-                    ? formattedMessages[k]
-                    : messages[i];
+                currMessageDate.isAfter(oldDate)
+                    ? messages[i]
+                    : formattedMessages[k];
           }
         }
         flag = false;
@@ -227,8 +242,9 @@ bool withinCurrentDay(TemporalDateTime messageDate) {
 class DetailData {
   final AmplifyDataStore ds;
   final List<Messages> m;
+  final Function rebuildFunction;
 
-  DetailData(this.ds, this.m);
+  DetailData(this.ds, this.m, this.rebuildFunction);
 
   AmplifyDataStore get dataStore {
     return ds;
@@ -236,5 +252,9 @@ class DetailData {
 
   List<Messages> get messages {
     return m;
+  }
+
+  Function get rebuild {
+    return rebuildFunction;
   }
 }

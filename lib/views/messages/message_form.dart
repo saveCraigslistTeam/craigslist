@@ -12,12 +12,14 @@ class MessageForm extends StatefulWidget {
   final Messages messageData;
   final String userName;
   final AmplifyDataStore dataStore;
+  final Function rebuildFunction;
 
   const MessageForm(
       {Key? key,
       required this.messageData,
       required this.dataStore,
-      required this.userName})
+      required this.userName,
+      required this.rebuildFunction})
       : super(key: key);
 
   @override
@@ -27,24 +29,40 @@ class MessageForm extends StatefulWidget {
 class _MessageFormState extends State<MessageForm> {
   @override
   Widget build(BuildContext context) {
+    
     final formKey = GlobalKey<FormState>();
     String newMessage = '';
     String userName = widget.userName;
 
-    return (Form(
+    return (
+      Form(
         key: formKey,
-        child: Row(children: [
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Padding(
             padding: EdgeInsets.symmetric(
                 horizontal: paddingSides(context),
                 vertical: paddingTopAndBottom(context)),
             child: SizedBox(
-              width: 300,
+              width: 350,
               child: TextFormField(
-                  decoration: const InputDecoration(
-                      labelText: 'New Message', border: OutlineInputBorder()),
-                  maxLines: 2,
-                  minLines: 1,
+                  decoration: InputDecoration(
+                      labelText: 'New Message', border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                         icon: Icon(Icons.send), 
+                         onPressed: () async {
+                                if (formKey.currentState!.validate()) {
+                                  formKey.currentState!.save();
+                                  await saveNewMessage(widget.messageData, newMessage, userName);
+                                  formKey.currentState?.reset();
+                                  //widget.rebuildFunction();
+                                }
+                              }
+                           )),
+                  maxLines: 3,
+                  minLines: 2,
                   textInputAction: TextInputAction.done,
                   keyboardType: TextInputType.text,
                   onSaved: (value) {
@@ -59,22 +77,31 @@ class _MessageFormState extends State<MessageForm> {
                   }),
             ),
           ),
-          ElevatedButton(
-            style: ButtonStyle(
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25.0)))),
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                formKey.currentState!.save();
-                await saveNewMessage(widget.messageData, newMessage, userName);
-                formKey.currentState?.reset();
-              }
-            },
-            child: const Icon(Icons.send),
-          )
-        ])));
+          // ElevatedButton(
+          //   style: ButtonStyle(
+          //       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          //           RoundedRectangleBorder(
+          //               borderRadius: BorderRadius.circular(25.0)))),
+          //   onPressed: () async {
+          //     if (formKey.currentState!.validate()) {
+          //       formKey.currentState!.save();
+          //       await saveNewMessage(widget.messageData, newMessage, userName);
+          //       formKey.currentState?.reset();
+          //     }
+          //   },
+          //   child: const Icon(Icons.send, size: 20),
+          // )
+        ])
+      ));
   }
+}
+
+void validateForm(GlobalKey<FormState> formKey, messageData, newMessage, userName) async{
+  if (formKey.currentState!.validate()) {
+          formKey.currentState!.save();
+          await saveNewMessage(messageData, newMessage, userName);
+          formKey.currentState?.reset();
+        }
 }
 
 Future<void> saveNewMessage(
