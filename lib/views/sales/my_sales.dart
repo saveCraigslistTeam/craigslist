@@ -11,9 +11,8 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
-import '../../models/model_provider.dart';
-// import '../../models/sale/Sale.dart';
-// import 'upload_image.dart';
+import '../../models/ModelProvider.dart';
+import 'sale_detail_view.dart';
 
 class MySales extends StatefulWidget {
   MySales(
@@ -22,6 +21,7 @@ class MySales extends StatefulWidget {
       required this.Storage,
       required this.Auth})
       : super(key: key);
+
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
   final AmplifyAuthCognito Auth;
@@ -115,13 +115,23 @@ class SaleItem extends StatelessWidget {
   SaleItem({required this.sale});
 
   void _deleteSale(BuildContext context) async {
+    List<SaleImage> saleImage = (await Amplify.DataStore.query(
+        SaleImage.classType,
+        where: SaleImage.SALEID.eq(sale.id)));
     try {
-      // to delete data from DataStore, we pass the model instance to
-      // Amplify.DataStore.delete()
+      // Delete the sale and the associated image
       await Amplify.DataStore.delete(sale);
+      await Amplify.DataStore.delete(saleImage[0]);
     } catch (e) {
       debugPrint('An error occurred while deleting Todo: $e');
     }
+  }
+
+  Future<List<SaleImage>> getSaleImage(Sale sale) async {
+    List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
+        where: SaleImage.SALEID.eq(sale.id)));
+    String? image = images[0].imageURL;
+    return images;
   }
 
   @override
@@ -138,7 +148,7 @@ class SaleItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(sale.title!,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold)),
                       Text('\$${sale.price}'),
                     ],
@@ -155,6 +165,16 @@ class SaleItem extends StatelessWidget {
             ),
           ]),
         ),
+        onTap: () async {
+          List<SaleImage> SaleImages = await getSaleImage(sale);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => SaleDetailView(
+                        sale: sale,
+                        saleImages: SaleImages,
+                      )));
+        },
       ),
     );
   }
@@ -191,18 +211,22 @@ class _AddSaleFormState extends State<AddSaleForm> {
   }
 
   Future<void> uploadImage() async {
+    final options = S3UploadFileOptions(
+      accessLevel: StorageAccessLevel.guest,
+    );
+
     // Select image from user's gallery
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) {
       debugPrint('No image selected');
       return;
     }
-
     // Upload image with the current time as the key
     final key = DateTime.now().toString();
     final file = File(pickedFile.path);
     try {
       final UploadFileResult result = await Amplify.Storage.uploadFile(
+          options: options,
           local: file,
           key: key,
           onProgress: (progress) {
@@ -225,8 +249,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
   Future<void> _saveSale() async {
     // get the current text field contents
     String title = _titleController.text;
-    String description = _conditionController.text;
-    String condition = _descriptionController.text;
+    String condition = _conditionController.text;
+    String description = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     String price = _priceController.text;
 
