@@ -48,7 +48,7 @@ class _HomeState extends State<Home> {
                 title: const Text('Sales'),
                 onTap: () => {Navigator.pushNamed(context, '/mySales')},
               ),
-              ListTile(
+              const ListTile(
                 leading: Icon(Icons.account_circle),
                 title: Text('Account'),
               ),

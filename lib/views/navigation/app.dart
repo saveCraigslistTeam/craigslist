@@ -1,21 +1,20 @@
 import 'package:craigslist/theme/theme_manager.dart';
-import 'package:craigslist/views/home.dart';
+import 'package:craigslist/views/navigation/home.dart';
 import 'package:craigslist/views/messages/messages_detail.dart';
-import 'package:craigslist/views/start.dart';
+import 'package:craigslist/views/navigation/login.dart';
 import 'package:craigslist/views/sales/my_sales.dart';
 import 'package:provider/provider.dart';
-import 'views/messages/inbox.dart';
+import '../../amplifyconfiguration.dart';
+import '../messages/inbox.dart';
 import 'package:flutter/material.dart';
 import 'dart:core';
-// amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 // amplify configuration and models that should have been generated for you
-import '../../amplifyconfiguration.dart';
-import '../../models/ModelProvider.dart';
+import '../../../../models/ModelProvider.dart';
 
 class App extends StatefulWidget {
   static const String title = "craigslist";
@@ -77,7 +76,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     final routes = {
       '/loading': (context) => const Loading(),
-      '/': (context) => const Start(),
+      '/': (context) => const Login(),
       '/home': (context) => const Home(),
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
@@ -88,8 +87,41 @@ class _AppState extends State<App> {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primaryColor: const Color(0xffA682FF),
+        inputDecorationTheme: InputDecorationTheme(
+          prefixIconColor: const Color.fromARGB(255, 125, 128, 132),
+          filled: true,
+          fillColor: Colors.purple.withOpacity(.1),
+          contentPadding: EdgeInsets.zero,
+          errorStyle: const TextStyle(
+            backgroundColor: Color.fromARGB(255, 106, 0, 255),
+            color: Colors.white,
+          ),
+          labelStyle: const TextStyle(fontSize: 12),
+          enabledBorder: UnderlineInputBorder(
+            borderSide:
+                BorderSide(color: Colors.purple.withOpacity(.1), width: 4),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide:
+                BorderSide(color: Colors.purple.withOpacity(.1), width: 5),
+          ),
+          errorBorder: UnderlineInputBorder(
+            borderSide:
+                BorderSide(color: Colors.purple.withOpacity(.1), width: 7),
+          ),
+          focusedErrorBorder: UnderlineInputBorder(
+            borderSide:
+                BorderSide(color: Colors.purple.withOpacity(.1), width: 8),
+          ),
+          disabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey, width: 5),
+          ),
+        ),
+      ),
       themeMode: context.read<ThemeManager>().themeMode,
-      initialRoute: '/',
+      initialRoute: '/mySales',
       routes: routes,
     );
   }

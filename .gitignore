@@ -8,6 +8,10 @@
 .buildlog/
 .history
 .svn/
+/.eslintignore
+/package-lock.json
+/package.json
+
 
 # IntelliJ related
 *.iml
@@ -23,6 +27,9 @@
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.h
+windows/flutter/generated_plugins.cmake
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -98,6 +105,10 @@ $RECYCLE.BIN/
 *.lnk
 
 ./vscode
+
+amplify/README.md
+windows/flutter/generated_plugins.cmake
+windows/flutter/generated_plugin_registrant.cc
 
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend

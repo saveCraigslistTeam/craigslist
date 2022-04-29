@@ -9,42 +9,38 @@ import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
 class MessageForm extends StatefulWidget {
-  
   final Messages messageData;
   final String userName;
   final AmplifyDataStore dataStore;
 
-  const MessageForm({Key? key, 
-    required this.messageData,
-    required this.dataStore,
-    required this.userName
-    }) : super(key: key);
+  const MessageForm(
+      {Key? key,
+      required this.messageData,
+      required this.dataStore,
+      required this.userName})
+      : super(key: key);
 
   @override
   State<MessageForm> createState() => _MessageFormState();
 }
 
 class _MessageFormState extends State<MessageForm> {
-
   @override
   Widget build(BuildContext context) {
-    
     final formKey = GlobalKey<FormState>();
     String newMessage = '';
     String userName = widget.userName;
 
-    return (
-      Form(
+    return (Form(
         key: formKey,
-        child: Row(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: paddingSides(context),
-                  vertical: paddingTopAndBottom(context)),
-              child: SizedBox(
-                width: 300,
-                child: TextFormField(
+        child: Row(children: [
+          Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: paddingSides(context),
+                vertical: paddingTopAndBottom(context)),
+            child: SizedBox(
+              width: 300,
+              child: TextFormField(
                   decoration: const InputDecoration(
                       labelText: 'New Message', border: OutlineInputBorder()),
                   maxLines: 2,
@@ -60,14 +56,14 @@ class _MessageFormState extends State<MessageForm> {
                     } else {
                       return null;
                     }
-                  }
-                ),
-              ),
+                  }),
             ),
-            ElevatedButton(
+          ),
+          ElevatedButton(
             style: ButtonStyle(
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.0)))),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0)))),
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 formKey.currentState!.save();
@@ -76,28 +72,31 @@ class _MessageFormState extends State<MessageForm> {
               }
             },
             child: const Icon(Icons.send),
-          )])
-        ));
-    }
+          )
+        ])));
+  }
 }
 
-
-Future<void> saveNewMessage(Messages messageData, String newMessage, String userName) async {
+Future<void> saveNewMessage(
+    Messages messageData, String newMessage, String userName) async {
   TemporalDateTime currDate = TemporalDateTime.now();
 
   Messages outMessage = Messages(
-    sale: messageData.sale,
-    host: messageData.host,
-    customer: messageData.customer,
-    sender: userName == messageData.host ? messageData.host : messageData.customer,
-    receiver: userName == messageData.host ?  messageData.customer : messageData.host,
-    senderSeen: true,
-    receiverSeen: false,
-    text: newMessage,
-    date: currDate
-  );
+      sale: messageData.sale,
+      host: messageData.host,
+      customer: messageData.customer,
+      sender: userName == messageData.host
+          ? messageData.host
+          : messageData.customer,
+      receiver: userName == messageData.host
+          ? messageData.customer
+          : messageData.host,
+      senderSeen: true,
+      receiverSeen: false,
+      text: newMessage,
+      date: currDate);
 
-  try{
+  try {
     await Amplify.DataStore.save(outMessage);
     print('Message sent successfully');
   } catch (e) {
