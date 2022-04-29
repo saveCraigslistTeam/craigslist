@@ -85,10 +85,10 @@ Future<void> saveNewMessage(
       sale: messageData.sale,
       host: messageData.host,
       customer: messageData.customer,
-      sender: userName == messageData.host
+      sender: userName != messageData.host
           ? messageData.host
           : messageData.customer,
-      receiver: userName == messageData.host
+      receiver: userName != messageData.host
           ? messageData.customer
           : messageData.host,
       senderSeen: true,

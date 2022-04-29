@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import '../../models/messages/messages_models.dart';
+import 'package:intl/intl.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
 // amplify packages
@@ -48,9 +48,9 @@ class _InboxPageState extends State<InboxPage> {
   Widget build(BuildContext context) {
     return (Scaffold(
         appBar: AppBar(
-          leading: const BackButton(color: Color.fromARGB(255, 166, 130, 255)),
-          title: appBarTitle('Craigslist'),
-          backgroundColor: Colors.white,
+          leading: const BackButton(),
+          title: const Text('Inbox'),
+          backgroundColor: Theme.of(context).primaryColor,
           centerTitle: true,
         ),
         body: _isLoading
@@ -69,7 +69,7 @@ class _InboxPageState extends State<InboxPage> {
                       Expanded(
                           flex: 1,
                           child: Container(
-                            color: Colors.white,
+                            color: Theme.of(context).primaryColor,
                           ))
                     ],
                   )
@@ -116,46 +116,54 @@ class InboxItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (ListTile(
-        shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Colors.blue, width: 1),
-            borderRadius: BorderRadius.circular(5)),
-        leading: getMessageUsername(message.customer!),
-        title: getMessageText(message.text, message.date),
-        trailing: const Text(">"),
-        focusColor: Colors.blue,
-        onTap: () => {
-              Navigator.pushNamed(context, '/msgDetail',
-                  arguments: DetailData(
-                      dataStore,
-                      groupByConversation(messages, message.host,
-                          message.customer, message.sale)))
-            }));
+    return Padding(
+      padding: const EdgeInsets.all(6.0),
+      child: Material(
+        elevation: 3.0,
+        shadowColor: Colors.black,
+        shape:RoundedRectangleBorder(
+                side: BorderSide(color: Theme.of(context).primaryColor, width: 1),
+                borderRadius: BorderRadius.circular(10)),
+        child: (
+          ListTile(
+            leading: leadingContent(message.customer, message.text),
+            trailing: trailingContent(message.date),
+            onTap: () => {
+                  Navigator.pushNamed(context, '/msgDetail',
+                      arguments: DetailData(
+                          dataStore,
+                          groupByConversation(messages, message.host,
+                              message.customer, message.sale)))
+                })),
+      ),
+    );
   }
 }
 
-Widget appBarTitle(String title) {
-  return Text(
-    title,
-    style: const TextStyle(
-        color: Color(0xffA682FF), backgroundColor: Colors.white, fontSize: 30),
+Widget leadingContent(String? customer, String? message){
+  return (
+    Column(children: [
+      Text(customer!.length > 8 ? customer.substring(0, 8) : customer,
+      style: const TextStyle(fontSize: 20)),
+      Text(message!.length > 25 ? message.substring(0, 25) : message),
+    ],)
   );
 }
 
-Widget getMessageUsername(String? customer) {
-  return (Text(customer!.length > 8 ? customer.substring(0, 8) : customer,
-      style: const TextStyle(color: Color(0xff5887FF), fontSize: 20)));
-}
+Widget trailingContent(TemporalDateTime? date){
+  
+  DateTime parsedDate = DateTime.parse(date.toString());
+  String formattedDate;
 
-Widget getMessageText(String? text, TemporalDateTime? date) {
-  return (Column(
-    children: [
-      Text(text!.length > 25 ? text.substring(0, 25) : text),
-      Text(date.toString().length > 25
-          ? date.toString().substring(0, 25)
-          : date.toString())
-    ],
-  ));
+  if(withinCurrentDay(date!)) {
+    formattedDate = DateFormat.jm().format(parsedDate);
+  } else {
+    formattedDate = DateFormat.Md().format(parsedDate);
+  }
+
+  return Text(formattedDate.length > 25
+          ? formattedDate.substring(0, 25)
+          : formattedDate);
 }
 
 List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
@@ -204,6 +212,16 @@ List<Messages> groupByConversation(
   }
 
   return formattedMessages;
+}
+
+bool withinCurrentDay(TemporalDateTime messageDate) {
+  DateTime currDate = DateTime.now();
+  DateTime parseMessageDate = DateTime.parse(messageDate.toString());
+
+  if(currDate.day < parseMessageDate.day) {
+    return false;
+  }
+  return true;
 }
 
 class DetailData {
