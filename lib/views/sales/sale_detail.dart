@@ -41,15 +41,15 @@ class _SaleDetailViewState extends State<SaleDetailView> {
           children: [
             Padding(
               padding: const EdgeInsets.all(25.0),
-              child: Text('${widget.sale.price}'),
+              child: Text('Price: ${widget.sale.price}'),
             ),
             Padding(
               padding: const EdgeInsets.all(25.0),
-              child: Text('${widget.sale.description}'),
+              child: Text('Description: ${widget.sale.description}'),
             ),
             Padding(
               padding: const EdgeInsets.all(25.0),
-              child: Text('${widget.sale.condition}'),
+              child: Text('Condition: ${widget.sale.condition}'),
             ),
             Padding(
                 padding: const EdgeInsets.all(25.0),

@@ -20,58 +20,12 @@ class AddSaleForm extends StatefulWidget {
 }
 
 class _AddSaleFormState extends State<AddSaleForm> {
-  String? imageURL;
+  String imageURL = '';
   final picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-  }
-
-  Future<String?> getDownloadUrl(key) async {
-    try {
-      final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
-      // NOTE: This code is only for demonstration
-      // Your debug console may truncate the debugPrinted url string
-      debugPrint('Got URL: ${result.url}');
-      setState(() {
-        imageURL = result.url;
-      });
-      return result.url;
-    } on StorageException catch (e) {
-      debugPrint('Error getting download URL: $e');
-      return null;
-    }
-  }
-
-  Future<void> uploadImage() async {
-    final options = S3UploadFileOptions(
-      accessLevel: StorageAccessLevel.guest,
-    );
-
-    // Select image from user's gallery
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) {
-      debugPrint('No image selected');
-      return;
-    }
-    // Upload image with the current time as the key
-    final key = DateTime.now().toString();
-    final file = File(pickedFile.path);
-    try {
-      final UploadFileResult result = await Amplify.Storage.uploadFile(
-          options: options,
-          local: file,
-          key: key,
-          onProgress: (progress) {
-            debugPrint("Fraction completed: " +
-                progress.getFractionCompleted().toString());
-          });
-      debugPrint('Successfully uploaded image: ${result.key}');
-      getDownloadUrl(key);
-    } on StorageException catch (e) {
-      debugPrint('Error uploading image: $e');
-    }
   }
 
   final _titleController = TextEditingController();
@@ -148,10 +102,71 @@ class _AddSaleFormState extends State<AddSaleForm> {
                       InputDecoration(filled: true, labelText: 'Price')),
               ElevatedButton(
                   onPressed: uploadImage, child: Text('Upload Image')),
+              imageSelector(imageURL: imageURL),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<String?> getDownloadUrl(key) async {
+    try {
+      final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
+      // NOTE: This code is only for demonstration
+      // Your debug console may truncate the debugPrinted url string
+      debugPrint('Got URL: ${result.url}');
+      setState(() {
+        imageURL = result.url;
+      });
+      return result.url;
+    } on StorageException catch (e) {
+      debugPrint('Error getting download URL: $e');
+      return null;
+    }
+  }
+
+  Future<void> uploadImage() async {
+    final options = S3UploadFileOptions(
+      accessLevel: StorageAccessLevel.guest,
+    );
+
+    // Select image from user's gallery
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) {
+      debugPrint('No image selected');
+      return;
+    }
+    // Upload image with the current time as the key
+    final key = DateTime.now().toString();
+    final file = File(pickedFile.path);
+    try {
+      final UploadFileResult result = await Amplify.Storage.uploadFile(
+          options: options,
+          local: file,
+          key: key,
+          onProgress: (progress) {
+            debugPrint("Fraction completed: " +
+                progress.getFractionCompleted().toString());
+          });
+      debugPrint('Successfully uploaded image: ${result.key}');
+      getDownloadUrl(key);
+    } on StorageException catch (e) {
+      debugPrint('Error uploading image: $e');
+    }
+  }
+}
+
+class imageSelector extends StatelessWidget {
+  const imageSelector({Key? key, required this.imageURL}) : super(key: key);
+  final String imageURL;
+
+  @override
+  Widget build(BuildContext context) {
+    return imageURL != ''
+        ? Padding(
+            padding: const EdgeInsets.all(25.0),
+            child: Image.network(imageURL.toString(), height: 400))
+        : Container();
   }
 }
