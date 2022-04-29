@@ -22,9 +22,11 @@ class AddSaleForm extends StatefulWidget {
 class _AddSaleFormState extends State<AddSaleForm> {
   String imageURL = '';
   final picker = ImagePicker();
+  late String imageFile;
 
   @override
   void initState() {
+    imageFile = '';
     super.initState();
   }
 
@@ -52,8 +54,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
     );
 
     try {
+      await uploadImage(imageFile);
       await Amplify.DataStore.save(newSale);
-
       await Amplify.DataStore.save(SaleImage(
         imageURL: imageURL,
         saleID: newSale.getId(),
@@ -101,8 +103,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
                   decoration:
                       InputDecoration(filled: true, labelText: 'Price')),
               ElevatedButton(
-                  onPressed: uploadImage, child: Text('Upload Image')),
-              imageSelector(imageURL: imageURL),
+                  onPressed: selectImage, child: Text('Select an Image')),
+              imageDisplay(imageFile: imageFile),
             ],
           ),
         ),
@@ -126,47 +128,64 @@ class _AddSaleFormState extends State<AddSaleForm> {
     }
   }
 
-  Future<void> uploadImage() async {
-    final options = S3UploadFileOptions(
-      accessLevel: StorageAccessLevel.guest,
-    );
+  Future<void> uploadImage(imageFile) async {
+    if (imageFile != '') {
+      final options = S3UploadFileOptions(
+        accessLevel: StorageAccessLevel.guest,
+      );
 
+      final key = DateTime.now().toString();
+      final file = File(imageFile);
+      try {
+        final UploadFileResult result = await Amplify.Storage.uploadFile(
+            options: options,
+            local: file,
+            key: key,
+            onProgress: (progress) {
+              debugPrint("Fraction completed: " +
+                  progress.getFractionCompleted().toString());
+            });
+        debugPrint('Successfully uploaded image: ${result.key}');
+        getDownloadUrl(key);
+      } on StorageException catch (e) {
+        debugPrint('Error uploading image: $e');
+      }
+    }
+
+    // Select image from user's gallery
+    // final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    // if (pickedFile == null) {
+    //   debugPrint('No image selected');
+    //   return;
+    // }
+    // Upload image with the current time as the key
+  }
+
+  Future<void> selectImage() async {
     // Select image from user's gallery
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) {
       debugPrint('No image selected');
       return;
     }
-    // Upload image with the current time as the key
-    final key = DateTime.now().toString();
-    final file = File(pickedFile.path);
-    try {
-      final UploadFileResult result = await Amplify.Storage.uploadFile(
-          options: options,
-          local: file,
-          key: key,
-          onProgress: (progress) {
-            debugPrint("Fraction completed: " +
-                progress.getFractionCompleted().toString());
-          });
-      debugPrint('Successfully uploaded image: ${result.key}');
-      getDownloadUrl(key);
-    } on StorageException catch (e) {
-      debugPrint('Error uploading image: $e');
-    }
+    setState(() {
+      imageFile = pickedFile.path;
+    });
   }
 }
 
-class imageSelector extends StatelessWidget {
-  const imageSelector({Key? key, required this.imageURL}) : super(key: key);
-  final String imageURL;
+class imageDisplay extends StatelessWidget {
+  const imageDisplay({Key? key, required this.imageFile}) : super(key: key);
+  final String imageFile;
 
   @override
   Widget build(BuildContext context) {
-    return imageURL != ''
-        ? Padding(
-            padding: const EdgeInsets.all(25.0),
-            child: Image.network(imageURL.toString(), height: 400))
-        : Container();
+    if (imageFile != '') {
+      return Padding(
+          padding: const EdgeInsets.all(25.0),
+          child: Image.file(File(imageFile), fit: BoxFit.contain));
+    } else {
+      return Container();
+    }
   }
 }
