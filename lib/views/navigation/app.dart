@@ -75,13 +75,15 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     final routes = {
-      '/loading': (context) => const Loading(),
       '/': (context) => const Login(),
       '/home': (context) => const Home(),
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
       '/msgDetail': (context) => MessageDetail(
-          title: App.title, dataStore: _dataStorePlugin, userName: 'sender', sale: 'sale'),
+          title: App.title,
+          dataStore: _dataStorePlugin,
+          userName: 'sender',
+          sale: 'sale'),
       '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
     };
 
@@ -121,8 +123,7 @@ class _AppState extends State<App> {
         ),
       ),
       themeMode: context.read<ThemeManager>().themeMode,
-      initialRoute: '/home',
-
+      //initialRoute: '/home',
       routes: routes,
     );
   }
