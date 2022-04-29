@@ -2,19 +2,16 @@
 import 'dart:async';
 import 'dart:core';
 import 'dart:io';
-import 'dart:developer';
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
-import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
-import '../../amplifyconfiguration.dart';
-import '../../models/ModelProvider.dart';
+import '../../models/model_provider.dart';
 // import '../../models/sale/Sale.dart';
 // import 'upload_image.dart';
 
@@ -123,7 +120,7 @@ class SaleItem extends StatelessWidget {
       // Amplify.DataStore.delete()
       await Amplify.DataStore.delete(sale);
     } catch (e) {
-      print('An error occurred while deleting Todo: $e');
+      debugPrint('An error occurred while deleting Todo: $e');
     }
   }
 
@@ -181,14 +178,14 @@ class _AddSaleFormState extends State<AddSaleForm> {
     try {
       final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
       // NOTE: This code is only for demonstration
-      // Your debug console may truncate the printed url string
-      print('Got URL: ${result.url}');
+      // Your debug console may truncate the debugPrinted url string
+      debugPrint('Got URL: ${result.url}');
       setState(() {
         imageURL = result.url;
       });
       return result.url;
     } on StorageException catch (e) {
-      print('Error getting download URL: $e');
+      debugPrint('Error getting download URL: $e');
       return null;
     }
   }
@@ -197,7 +194,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
     // Select image from user's gallery
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) {
-      print('No image selected');
+      debugPrint('No image selected');
       return;
     }
 
@@ -209,13 +206,13 @@ class _AddSaleFormState extends State<AddSaleForm> {
           local: file,
           key: key,
           onProgress: (progress) {
-            print("Fraction completed: " +
+            debugPrint("Fraction completed: " +
                 progress.getFractionCompleted().toString());
           });
-      print('Successfully uploaded image: ${result.key}');
+      debugPrint('Successfully uploaded image: ${result.key}');
       getDownloadUrl(key);
     } on StorageException catch (e) {
-      print('Error uploading image: $e');
+      debugPrint('Error uploading image: $e');
     }
   }
 
@@ -252,7 +249,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
       // Close the form
       Navigator.of(context).pop();
     } catch (e) {
-      print('An error occurred while saving Sale: $e');
+      debugPrint('An error occurred while saving Sale: $e');
     }
   }
 
