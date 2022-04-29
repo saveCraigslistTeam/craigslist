@@ -81,7 +81,7 @@ class _AppState extends State<App> {
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
       '/msgDetail': (context) => MessageDetail(
-          title: App.title, dataStore: _dataStorePlugin, userName: 'sender'),
+          title: App.title, dataStore: _dataStorePlugin, userName: 'sender', sale: 'sale'),
       '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
     };
 

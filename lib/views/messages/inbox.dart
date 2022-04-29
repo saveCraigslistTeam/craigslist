@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import './messages_detail.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
 // amplify packages
@@ -9,6 +10,7 @@ import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
 class InboxPage extends StatefulWidget {
+
   final AmplifyDataStore dataStore;
 
   const InboxPage({Key? key, required this.dataStore}) : super(key: key);
@@ -18,9 +20,8 @@ class InboxPage extends StatefulWidget {
 }
 
 class _InboxPageState extends State<InboxPage> {
-  // Change later
+
   final String userName = 'sender';
-  // Change later
 
   late StreamSubscription<QuerySnapshot<Messages>> messageStream;
 
@@ -35,7 +36,9 @@ class _InboxPageState extends State<InboxPage> {
 
   Future<void> getMessageStream() async {
     messageStream = widget.dataStore
-        .observeQuery(Messages.classType)
+        .observeQuery(Messages.classType,
+        where: Messages.HOST.beginsWith(userName) | Messages.CUSTOMER.beginsWith(userName),
+        sortBy: [Messages.DATE.descending()])
         .listen((QuerySnapshot<Messages> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
@@ -61,11 +64,9 @@ class _InboxPageState extends State<InboxPage> {
                       Expanded(
                         flex: 7,
                         child: InboxList(
-                            messages: _messages,
-                            formattedMessages:
-                                filterRecentMessagesByGroup(_messages),
+                            messages: filterRecentMessagesByGroup(_messages),
                             dataStore: widget.dataStore,
-                            rebuildFunction: getMessageStream),
+                            userName: userName),
                       ),
                       Expanded(
                           flex: 1,
@@ -79,29 +80,27 @@ class _InboxPageState extends State<InboxPage> {
 }
 
 class InboxList extends StatelessWidget {
-  List<Messages> formattedMessages = [];
   List<Messages> messages = [];
   final AmplifyDataStore dataStore;
-  Function rebuildFunction;
+  final String userName;
 
   InboxList(
       {Key? key,
-      required this.formattedMessages,
       required this.messages,
       required this.dataStore,
-      required this.rebuildFunction})
+      required this.userName})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return (messages.isNotEmpty
         ? ListView.builder(
-            itemCount: formattedMessages.length,
+            itemCount: messages.length,
             itemBuilder: (_, index) => InboxItem(
                 messages: messages,
-                message: formattedMessages[index],
+                message: messages[index],
                 dataStore: dataStore,
-                rebuildFunction: rebuildFunction))
+                userName: userName))
         : const Center(child: Text('No Messages')));
   }
 }
@@ -110,14 +109,14 @@ class InboxItem extends StatelessWidget {
   final List<Messages> messages;
   final Messages message;
   final AmplifyDataStore dataStore;
-  Function rebuildFunction;
+  final String userName;
 
   InboxItem(
       {Key? key,
       required this.messages,
       required this.message,
       required this.dataStore,
-      required this.rebuildFunction})
+      required this.userName})
       : super(key: key);
 
   @override
@@ -135,17 +134,14 @@ class InboxItem extends StatelessWidget {
             title: leadingContent(message.customer, message.text),
             trailing: trailingContent(message.date),
             onTap: () => {
-                  Navigator.pushNamed(context, '/msgDetail',
-                      arguments: DetailData(
-                          dataStore,
-                          groupByConversation(messages, message.host,
-                              message.customer, message.sale),
-                          rebuildFunction))
+                  Navigator.pushNamed(context, '/msgDetail', arguments: [userName, message.sale])
                 })),
       ),
     );
   }
 }
+
+
 
 Widget leadingContent(String? customer, String? message){
   return (
@@ -214,21 +210,6 @@ List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
   return formattedMessages;
 }
 
-List<Messages> groupByConversation(
-    List<Messages> messages, String? host, String? customer, String? sale) {
-  List<Messages> formattedMessages = [];
-
-  for (int i = 0; i < messages.length; i++) {
-    if (messages[i].host == host &&
-        messages[i].customer == customer &&
-        messages[i].sale == sale) {
-      formattedMessages.add(messages[i]);
-    }
-  }
-
-  return formattedMessages;
-}
-
 bool withinCurrentDay(TemporalDateTime messageDate) {
   DateTime currDate = DateTime.now();
   DateTime parseMessageDate = DateTime.parse(messageDate.toString());
@@ -239,22 +220,3 @@ bool withinCurrentDay(TemporalDateTime messageDate) {
   return true;
 }
 
-class DetailData {
-  final AmplifyDataStore ds;
-  final List<Messages> m;
-  final Function rebuildFunction;
-
-  DetailData(this.ds, this.m, this.rebuildFunction);
-
-  AmplifyDataStore get dataStore {
-    return ds;
-  }
-
-  List<Messages> get messages {
-    return m;
-  }
-
-  Function get rebuild {
-    return rebuildFunction;
-  }
-}
