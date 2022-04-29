@@ -2,75 +2,87 @@ import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:flutter/material.dart';
 import '../../models/Messages.dart';
 import './message_form.dart';
-import './inbox.dart';
+// dart async library for setting up real time updates
+import 'dart:async';
+// amplify packages
+import 'package:amplify_datastore/amplify_datastore.dart';
+// amplify configuration and models
+import '../../models/ModelProvider.dart';
+import '../../models/Messages.dart';
 
-class MessageDetail extends StatelessWidget {
+class MessageDetail extends StatefulWidget {
 
   final String title;
   final AmplifyDataStore dataStore;
   final String userName;
+  final String sale;
 
   const MessageDetail({Key? key, 
     required this.title,
     required this.dataStore,
-    required this.userName}) : super(key: key);
-  
+    required this.userName,
+    required this.sale}) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
-    final DetailData detailData = ModalRoute.of(context)?.settings.arguments as DetailData;
-    final List<Messages> data = detailData.messages;
-    final AmplifyDataStore dataStore = detailData.dataStore;
-    
-    return (
-      Scaffold(
-      appBar: AppBar(title: Text(title),
-                    leading: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                      child: GestureDetector(
-                        onTap: () => {
-                          Navigator.of(context).pop()
-                        },
-                        child: const Text("<",
-                        style: TextStyle(fontSize: 30)))
-                      )
-                    ),
-      body: ScrollingMessages(data: data, dataStore: dataStore, userName: userName),
-      )
-    );
-  }
+  State<MessageDetail> createState() => _MessageDetailState();
 }
 
-class ScrollingMessages extends StatelessWidget{
-  final List<Messages> data;
-  final AmplifyDataStore dataStore;
-  final String userName;
+class _MessageDetailState extends State<MessageDetail> {
 
-  const ScrollingMessages({Key? key, 
-    required this.data,
-    required this.dataStore,
-    required this.userName}) : super(key: key);
+  late StreamSubscription<QuerySnapshot<Messages>> messageStream;
+
+  List<Messages> _messages = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<void> getMessageStream(String userName, String sale) async {
+    messageStream = widget.dataStore
+        .observeQuery(Messages.classType,
+        where: (Messages.SENDER.beginsWith(userName) | Messages.RECEIVER.beginsWith(userName)) & Messages.SALE.beginsWith(sale),
+        sortBy: [Messages.DATE.ascending()])
+        .listen((QuerySnapshot<Messages> snapshot) {
+      setState(() {
+        if (_isLoading) _isLoading = false;
+        _messages = snapshot.items;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Column(
-          children: [
-            Expanded(flex: 7,
-                  child: ListView.builder(
-                          padding: const EdgeInsets.all(10),
-                          itemCount: data.length,
-                          itemBuilder: (_, index) => getListTile(index, data, context, userName),
-                          addAutomaticKeepAlives: true,
-                          shrinkWrap: true)),
-            Expanded(flex: 3, child: MessageForm(
-              messageData: data[0],
-              dataStore: dataStore,
-              userName: userName,
-              ),
-            )
-          ]
-        )
-      );
+
+    final List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
+    final String? userName = args[0];
+    final String? sale = args[1];
+
+    if(_isLoading) {
+      getMessageStream(userName.toString(), sale.toString());
+    }
+    return (
+      _isLoading ? Center(child: Text("loading messages")) :
+      Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "To: " + _messages[0].customer.toString()),
+        leading: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            child: GestureDetector(
+              onTap: () => {
+                Navigator.of(context).pop()
+              },
+              child: const BackButton())
+            ),
+        backgroundColor: Theme.of(context).primaryColor,
+          ),
+      body: ScrollingMessagesSliver(data: _messages, 
+        dataStore: widget.dataStore, 
+        userName: userName.toString()),
+      )
+    );
   }
 }
 
@@ -115,11 +127,10 @@ class ColoredBox extends StatelessWidget {
 }
 
 Widget getListTile(int index, List<Messages> data, BuildContext context, String userName) {
-  print(userName);
   if (data[index].receiver == userName) {
     return ListTile(
       title: ColoredBox(
-          color: Colors.lightBlue.shade200, 
+          color: Theme.of(context).primaryColor, 
           text: data[index].text ?? '',
           alignment: MainAxisAlignment.end,
           textAlignment: TextAlign.start)
@@ -135,3 +146,45 @@ Widget getListTile(int index, List<Messages> data, BuildContext context, String 
   }
 }
 
+class ScrollingMessagesSliver extends StatelessWidget{
+  final List<Messages> data;
+  final AmplifyDataStore dataStore;
+  final String userName;
+
+  const ScrollingMessagesSliver({Key? key, 
+    required this.data,
+    required this.dataStore,
+    required this.userName}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final ScrollController _sc = ScrollController();
+    
+    return SafeArea(
+        child: Column(
+          children: [
+            Expanded(flex: 8,
+                  child:CustomScrollView(
+      controller: ScrollController(initialScrollOffset: 300), 
+      slivers: [
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+                      (context, int index) {
+                        return getListTile(index, data, context, userName);
+                      },
+                      childCount: data.length,
+                      semanticIndexOffset: data.length
+                    )
+        ),]
+    )),
+    Expanded(flex: 2, child: MessageForm(
+              messageData: data[0],
+              dataStore: dataStore,
+              userName: userName
+              ),
+            )
+          ]
+        )
+      );
+  }
+}
