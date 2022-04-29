@@ -55,7 +55,12 @@ class _LoginState extends State<Login> {
       onRecoverPassword: (_) => Future.value(''),
       onSignup: _onSignup,
       theme: LoginTheme(primaryColor: Theme.of(context).primaryColor),
-      onSubmitAnimationCompleted: () {},
+      onSubmitAnimationCompleted: () {
+        Navigator.of(context).pushReplacementNamed(
+          _isLoggedIn ? '/home' : '/confirm',
+          arguments: _data,
+        );
+      },
     );
   }
 }
