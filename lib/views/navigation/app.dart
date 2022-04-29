@@ -122,17 +122,8 @@ class _AppState extends State<App> {
       ),
       themeMode: context.read<ThemeManager>().themeMode,
       initialRoute: '/home',
+
       routes: routes,
     );
-  }
-}
-
-class Loading extends StatelessWidget {
-  const Loading({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return (Scaffold(
-        appBar: AppBar(), body: const Center(child: Text('Loading'))));
   }
 }
