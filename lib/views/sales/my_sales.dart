@@ -43,12 +43,20 @@ class _MySalesState extends State<MySales> {
   @override
   void initState() {
     // kick off app initialization
-    _getSalesStream();
+    _initializeApp();
     super.initState();
   }
 
-  Future<void> _getSalesStream() async {
+  Future<void> _initializeApp() async {
+    // Query and Observe updates to Todo models. DataStore.observeQuery() will
+    // emit an initial QuerySnapshot with a list of Todo models in the local store,
+    // and will emit subsequent snapshots as updates are made
+    //
+    // each time a snapshot is received, the following will happen:
+    // _isLoading is set to false if it is not already false
+    // _todos is set to the value in the latest snapshot
     _subscription = widget.DataStore.observeQuery(Sale.classType)
+        // _subscription = Amplify.DataStore.observeQuery(Sale.classType)
         .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
@@ -103,9 +111,9 @@ class SalesList extends StatelessWidget {
 class SaleItem extends StatelessWidget {
   final double iconSize = 24.0;
   final Sale sale;
+
   SaleItem({required this.sale});
 
-  @override
   void _deleteSale(BuildContext context) async {
     List<SaleImage> saleImage = (await Amplify.DataStore.query(
         SaleImage.classType,
