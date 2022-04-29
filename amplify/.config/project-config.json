@@ -4,14 +4,10 @@
   ],
   "projectName": "craigslist",
   "version": "3.1",
-  "frontend": "javascript",
-  "javascript": {
-    "framework": "none",
+  "frontend": "flutter",
+  "flutter": {
     "config": {
-      "SourceDir": "src",
-      "DistributionDir": "dist",
-      "BuildCommand": "npm.cmd run-script build",
-      "StartCommand": "npm.cmd run-script start"
+      "ResDir": "./lib/"
     }
   }
 }
