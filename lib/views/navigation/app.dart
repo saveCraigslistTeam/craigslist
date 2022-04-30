@@ -123,6 +123,7 @@ class _AppState extends State<App> {
         ),
       ),
       themeMode: context.read<ThemeManager>().themeMode,
+      // initialRoute: '/mySales',
       //initialRoute: '/home',
       routes: routes,
     );
