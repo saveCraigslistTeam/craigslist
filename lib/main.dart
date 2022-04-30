@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'views/navigation/app.dart';
 
 void main() {
+  //this widget is to ensure async runs prior
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,

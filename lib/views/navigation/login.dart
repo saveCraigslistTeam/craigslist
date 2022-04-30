@@ -11,37 +11,89 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  late LoginData _data;
-  late LoginData data;
-  bool _isLoggedIn = false;
+  //late LoginData _data;
+  late SignupData signUpData;
+  late LoginData loginData;
+  //bool _isLoggedIn = false;
+  late String confirmationCode;
 
-  Future<String?>? _onLogin(data) async {
+  Future<String?> _onLogin(loginData) async {
     try {
-      final res = await Amplify.Auth.signIn(
-        username: data.name,
-        password: data.password,
+      await Amplify.Auth.signIn(
+        username: loginData.name,
+        password: loginData.password,
       );
+      // final res = await Amplify.Auth.signIn(
+      //   username: loginData.name,
+      //   password: loginData.password,
+      // );
 
-      _isLoggedIn = res.isSignedIn;
+      //_isLoggedIn = res.isSignedIn;
     } on AuthException catch (e) {
-      if (e.message.contains('Already signed in.')) {
-        await Amplify.Auth.signOut();
-        return 'Cannot log in, please try again later.';
-      }
       return '${e.message} - ${e.recoverySuggestion}';
     }
+    return null;
   }
 
-  Future<String?>? _onSignup(data) async {
+  Future<String?> _onSignup(signUpData) async {
     try {
       await Amplify.Auth.signUp(
-        username: data.name,
-        password: data.password,
+        username: signUpData.name,
+        password: signUpData.password,
         options: CognitoSignUpOptions(userAttributes: {
-          CognitoUserAttributeKey.email: data.name,
+          CognitoUserAttributeKey.email: signUpData.name,
         }),
       );
-      _data = data;
+      //_data = data;
+    } on AuthException catch (e) {
+      return '${e.message} - ${e.recoverySuggestion}';
+    }
+    return null;
+  }
+
+  Future<String?>? confirmSignupCallback(confirmationCode, loginData) async {
+    try {
+      final res = await Amplify.Auth.confirmSignUp(
+        username: loginData.name,
+        confirmationCode: confirmationCode,
+      );
+
+      if (res.isSignUpComplete) {
+        await Amplify.Auth.signIn(
+            username: loginData.name, password: loginData.password);
+      }
+
+      // if (res.isSignUpComplete) {
+      //   final user = await Amplify.Auth.signIn(
+      //     username: loginData.name, password: loginData.password);
+      // }
+      //   if (user.isSignedIn) {
+      //     _isLoggedIn = true;
+      //   }
+      // if (user.isSignedIn) {
+      //   Navigator.pushReplacementNamed(context, '/home');
+      // }
+      // if (!user.isSignedIn) {
+      //   try {
+      //     await Amplify.Auth.signOut(
+      //         options: const SignOutOptions(globalSignOut: true));
+      //   } on AmplifyException catch (e) {
+      //     return '${e.message} - ${e.recoverySuggestion}';
+      //   }
+      // }
+      // }
+    } on AuthException catch (e) {
+      return '${e.message} - ${e.recoverySuggestion}';
+    }
+    return null;
+  }
+
+  Future<String?> onRecoverPassword(BuildContext context, data) async {
+    try {
+      var res = await Amplify.Auth.resetPassword(username: data.name);
+      if (res.nextStep.updateStep == 'CONFIRM_RESET_PASSWORD_WITH_CODE') {
+        //navigate to reset class or widget
+      }
     } on AuthException catch (e) {
       return '${e.message} - ${e.recoverySuggestion}';
     }
@@ -54,12 +106,16 @@ class _LoginState extends State<Login> {
       onLogin: _onLogin,
       onRecoverPassword: (_) => Future.value(''),
       onSignup: _onSignup,
+      onConfirmSignup: confirmSignupCallback,
       theme: LoginTheme(primaryColor: Theme.of(context).primaryColor),
       onSubmitAnimationCompleted: () {
-        Navigator.of(context).pushReplacementNamed(
-          _isLoggedIn ? '/home' : '/confirm',
-          arguments: _data,
-        );
+        Navigator.of(context).pushNamed('/home');
+        // _isLoggedIn
+        //     ? Navigator.of(context).pushReplacementNamed(
+        //         '/home',
+        //       )
+        //     : _isLoggedIn = false;
+        //arguments: _data,
       },
     );
   }

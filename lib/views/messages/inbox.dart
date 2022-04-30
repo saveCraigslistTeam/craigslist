@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import './messages_detail.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
 // amplify packages
@@ -10,7 +9,6 @@ import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
 class InboxPage extends StatefulWidget {
-
   final AmplifyDataStore dataStore;
 
   const InboxPage({Key? key, required this.dataStore}) : super(key: key);
@@ -20,7 +18,6 @@ class InboxPage extends StatefulWidget {
 }
 
 class _InboxPageState extends State<InboxPage> {
-
   final String userName = 'sender';
 
   late StreamSubscription<QuerySnapshot<Messages>> messageStream;
@@ -35,11 +32,12 @@ class _InboxPageState extends State<InboxPage> {
   }
 
   Future<void> getMessageStream() async {
-    messageStream = widget.dataStore
-        .observeQuery(Messages.classType,
-        where: Messages.HOST.beginsWith(userName) | Messages.CUSTOMER.beginsWith(userName),
-        sortBy: [Messages.DATE.descending()])
-        .listen((QuerySnapshot<Messages> snapshot) {
+    messageStream = widget.dataStore.observeQuery(Messages.classType,
+        where: Messages.HOST.beginsWith(userName) |
+            Messages.CUSTOMER.beginsWith(userName),
+        sortBy: [
+          Messages.DATE.descending()
+        ]).listen((QuerySnapshot<Messages> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
         _messages = snapshot.items;
@@ -126,55 +124,46 @@ class InboxItem extends StatelessWidget {
       child: Material(
         elevation: 3.0,
         shadowColor: Colors.black,
-        shape:RoundedRectangleBorder(
-                side: BorderSide(color: Theme.of(context).primaryColor, width: 1),
-                borderRadius: BorderRadius.circular(10)),
-        child: (
-          ListTile(
+        shape: RoundedRectangleBorder(
+            side: BorderSide(color: Theme.of(context).primaryColor, width: 1),
+            borderRadius: BorderRadius.circular(10)),
+        child: (ListTile(
             title: leadingContent(message.customer, message.text),
             trailing: trailingContent(message.date),
             onTap: () => {
-                  Navigator.pushNamed(context, '/msgDetail', arguments: [userName, message.sale])
+                  Navigator.pushNamed(context, '/msgDetail',
+                      arguments: [userName, message.sale])
                 })),
       ),
     );
   }
 }
 
-
-
-Widget leadingContent(String? customer, String? message){
-  return (
-    Column(
+Widget leadingContent(String? customer, String? message) {
+  return (Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-      Text(customer!.length > 12 
-          ? customer.substring(0, 12) 
-          : customer,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-      Text(message!.length > 30 
-          ? message.substring(0, 30) + "..."
-          : message,
-          style: const TextStyle(fontSize: 14)
-      )])
-  );
+        Text(customer!.length > 12 ? customer.substring(0, 12) : customer,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(message!.length > 30 ? message.substring(0, 30) + "..." : message,
+            style: const TextStyle(fontSize: 14))
+      ]));
 }
 
-Widget trailingContent(TemporalDateTime? date){
-  
+Widget trailingContent(TemporalDateTime? date) {
   DateTime parsedDate = DateTime.parse(date.toString());
   String formattedDate;
 
-  if(withinCurrentDay(date!)) {
+  if (withinCurrentDay(date!)) {
     formattedDate = DateFormat.jm().format(parsedDate);
   } else {
     formattedDate = DateFormat.yMd().format(parsedDate);
   }
 
   return Text(formattedDate.length > 25
-          ? formattedDate.substring(0, 25)
-          : formattedDate);
+      ? formattedDate.substring(0, 25)
+      : formattedDate);
 }
 
 List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
@@ -188,12 +177,13 @@ List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
       if (combined == visited[j]) {
         for (int k = 0; k < formattedMessages.length; k++) {
           if (formattedMessages[k].sale == messages[i].sale) {
-            DateTime currMessageDate = DateTime.parse(messages[i].date.toString());
-            DateTime oldDate = DateTime.parse(formattedMessages[k].date.toString());
-            formattedMessages[k] =
-                currMessageDate.isAfter(oldDate)
-                    ? messages[i]
-                    : formattedMessages[k];
+            DateTime currMessageDate =
+                DateTime.parse(messages[i].date.toString());
+            DateTime oldDate =
+                DateTime.parse(formattedMessages[k].date.toString());
+            formattedMessages[k] = currMessageDate.isAfter(oldDate)
+                ? messages[i]
+                : formattedMessages[k];
           }
         }
         flag = false;
@@ -214,9 +204,8 @@ bool withinCurrentDay(TemporalDateTime messageDate) {
   DateTime currDate = DateTime.now();
   DateTime parseMessageDate = DateTime.parse(messageDate.toString());
 
-  if(currDate.day < parseMessageDate.day) {
+  if (currDate.day < parseMessageDate.day) {
     return false;
   }
   return true;
 }
-

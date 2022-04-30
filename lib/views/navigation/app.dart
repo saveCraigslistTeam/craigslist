@@ -15,6 +15,8 @@ import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 // amplify configuration and models that should have been generated for you
 import '../../../../models/ModelProvider.dart';
+// ignore: unused_import
+import 'package:amplify_authenticator/amplify_authenticator.dart';
 
 class App extends StatefulWidget {
   static const String title = "craigslist";
@@ -87,7 +89,9 @@ class _AppState extends State<App> {
       '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
     };
 
+    //return Authenticator is a good option as well
     return MaterialApp(
+      //builder: Authenticator.builder(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primaryColor: const Color(0xffA682FF),
