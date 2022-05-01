@@ -51,7 +51,7 @@ class _LoginState extends State<Login> {
     return null;
   }
 
-  Future<String?>? confirmSignupCallback(confirmationCode, loginData) async {
+  Future<String?>? _onConfirmSignup(confirmationCode, loginData) async {
     try {
       final res = await Amplify.Auth.confirmSignUp(
         username: loginData.name,
@@ -88,15 +88,48 @@ class _LoginState extends State<Login> {
     return null;
   }
 
-  Future<String?> onRecoverPassword(BuildContext context, data) async {
+  Future<String?> _onResendCode(signUpData) async {
     try {
-      var res = await Amplify.Auth.resetPassword(username: data.name);
-      if (res.nextStep.updateStep == 'CONFIRM_RESET_PASSWORD_WITH_CODE') {
-        //navigate to reset class or widget
-      }
+      await Amplify.Auth.resendSignUpCode(
+        username: signUpData.name,
+      );
     } on AuthException catch (e) {
       return '${e.message} - ${e.recoverySuggestion}';
     }
+    return null;
+  }
+
+  //reset/forgot password, if needed function would use LoginData object
+  Future<String?>? _onRecoverPassword(String username) async {
+    try {
+      await Amplify.Auth.resetPassword(username: username);
+      // var res = await Amplify.Auth.resetPassword(username: data.name);
+      // if (res.nextStep.updateStep == 'CONFIRM_RESET_PASSWORD_WITH_CODE') {
+      //   //navigate to reset class or widget
+      // }
+    } on AuthException catch (e) {
+      return '${e.message} - ${e.recoverySuggestion}';
+    }
+    return null;
+  }
+
+  //onConfirm recover is to confirm the new/temp password you just reset
+  Future<String?>? _onConfirmRecover(
+      String newPasswordConfirmationCode, LoginData loginData) async {
+    try {
+      await Amplify.Auth.confirmResetPassword(
+        username: loginData.name,
+        newPassword: loginData.password,
+        confirmationCode: newPasswordConfirmationCode,
+      );
+      // var res = await Amplify.Auth.resetPassword(username: data.name);
+      // if (res.nextStep.updateStep == 'CONFIRM_RESET_PASSWORD_WITH_CODE') {
+      //   //navigate to reset class or widget
+      // }
+    } on AuthException catch (e) {
+      return '${e.message} - ${e.recoverySuggestion}';
+    }
+    return null;
   }
 
   @override
@@ -104,9 +137,11 @@ class _LoginState extends State<Login> {
     return FlutterLogin(
       title: 'Craigslist',
       onLogin: _onLogin,
-      onRecoverPassword: (_) => Future.value(''),
+      onRecoverPassword: _onRecoverPassword,
+      onConfirmRecover: _onConfirmRecover,
       onSignup: _onSignup,
-      onConfirmSignup: confirmSignupCallback,
+      onConfirmSignup: _onConfirmSignup,
+      onResendCode: _onResendCode,
       theme: LoginTheme(primaryColor: Theme.of(context).primaryColor),
       onSubmitAnimationCompleted: () {
         Navigator.of(context).pushNamed('/home');
