@@ -1,3 +1,5 @@
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 // dart async library for setting up real time updates
@@ -18,8 +20,8 @@ class InboxPage extends StatefulWidget {
 }
 
 class _InboxPageState extends State<InboxPage> {
-  final String userName = 'sender';
 
+  String userName = '';
   late StreamSubscription<QuerySnapshot<Messages>> messageStream;
 
   List<Messages> _messages = [];
@@ -28,6 +30,7 @@ class _InboxPageState extends State<InboxPage> {
   @override
   void initState() {
     getMessageStream();
+    getUserCredentials();
     super.initState();
   }
 
@@ -45,9 +48,26 @@ class _InboxPageState extends State<InboxPage> {
     });
   }
 
+  Future<void> getUserCredentials() async {
+    final AuthSession res = (await Amplify.Auth.fetchAuthSession());
+    if (res.isSignedIn) {
+      final AuthUser user = await Amplify.Auth.currentUserInfo();
+      getUserName(user);
+    }
+  }
+
+  void getUserName(AuthUser user) {
+    setState(() {
+      userName = user.username;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return (Scaffold(
+    print(userName);
+
+    return (
+      Scaffold(
         appBar: AppBar(
           leading: const BackButton(),
           title: const Text('Inbox'),
