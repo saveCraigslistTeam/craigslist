@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
@@ -29,15 +31,15 @@ class _InboxPageState extends State<InboxPage> {
 
   @override
   void initState() {
-    getMessageStream();
     getUserCredentials();
+    getMessageStream();
     super.initState();
   }
 
   Future<void> getMessageStream() async {
     messageStream = widget.dataStore.observeQuery(Messages.classType,
-        where: Messages.HOST.beginsWith(userName) |
-            Messages.CUSTOMER.beginsWith(userName),
+        where: Messages.HOST.eq(userName) |
+            Messages.CUSTOMER.eq(userName),
         sortBy: [
           Messages.DATE.descending()
         ]).listen((QuerySnapshot<Messages> snapshot) {
@@ -51,14 +53,22 @@ class _InboxPageState extends State<InboxPage> {
   Future<void> getUserCredentials() async {
     final AuthSession res = (await Amplify.Auth.fetchAuthSession());
     if (res.isSignedIn) {
-      final AuthUser user = await Amplify.Auth.currentUserInfo();
-      getUserName(user);
+      final user = await Amplify.Auth.fetchUserAttributes();
+      
+      for(int i = 0; i < user.length; i++) {
+        if(user[i].value.contains('@')) {
+          getUserName(user[i].value);
+          break;
+        }
+      }
     }
   }
 
-  void getUserName(AuthUser user) {
+  void getUserName(String userEmail) {
+    final indexOfAt = userEmail.indexOf('@');
+
     setState(() {
-      userName = user.username;
+      userName = userEmail.substring(0, indexOfAt);
     });
   }
 
