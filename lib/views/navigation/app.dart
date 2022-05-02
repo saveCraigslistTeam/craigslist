@@ -16,7 +16,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 // amplify configuration and models that should have been generated for you
 import '../../../../models/ModelProvider.dart';
 // ignore: unused_import
-import 'package:amplify_authenticator/amplify_authenticator.dart';
+//import 'package:amplify_authenticator/amplify_authenticator.dart';
 
 class App extends StatefulWidget {
   static const String title = "craigslist";
@@ -128,7 +128,7 @@ class _AppState extends State<App> {
       ),
       themeMode: context.read<ThemeManager>().themeMode,
       // initialRoute: '/mySales',
-      //initialRoute: '/home',
+      initialRoute: '/',
       routes: routes,
     );
   }
