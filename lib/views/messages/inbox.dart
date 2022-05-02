@@ -38,8 +38,8 @@ class _InboxPageState extends State<InboxPage> {
 
   Future<void> getMessageStream() async {
     messageStream = widget.dataStore.observeQuery(Messages.classType,
-        where: Messages.HOST.eq(userName) |
-            Messages.CUSTOMER.eq(userName),
+        where: Messages.HOST.beginsWith(userName) |
+            Messages.CUSTOMER.beginsWith(userName),
         sortBy: [
           Messages.DATE.descending()
         ]).listen((QuerySnapshot<Messages> snapshot) {
