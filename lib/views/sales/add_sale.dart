@@ -20,12 +20,13 @@ class AddSaleForm extends StatefulWidget {
 }
 
 class _AddSaleFormState extends State<AddSaleForm> {
-  String imageURL = '';
+  late String imageURL;
   final picker = ImagePicker();
   late String imageFile;
 
   @override
   void initState() {
+    imageURL = '';
     imageFile = '';
     super.initState();
   }
@@ -78,37 +79,36 @@ class _AddSaleFormState extends State<AddSaleForm> {
       ),
       body: Container(
         padding: EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                  controller: _titleController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Title')),
-              TextFormField(
-                  controller: _descriptionController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Description')),
-              TextFormField(
-                  controller: _conditionController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Condition')),
-              TextFormField(
-                  controller: _zipcodeController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Zipcode')),
-              TextFormField(
-                  controller: _priceController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Price')),
-              ElevatedButton(
-                  onPressed: selectImage, child: Text('Select an Image')),
-              imageDisplay(imageFile: imageFile),
-            ],
-          ),
+        child: Column(
+          children: [textFormFields(), const Spacer()],
         ),
       ),
+    );
+  }
+
+  Column textFormFields() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextFormField(
+            controller: _titleController,
+            decoration: InputDecoration(filled: true, labelText: 'Title')),
+        TextFormField(
+            controller: _descriptionController,
+            decoration:
+                InputDecoration(filled: true, labelText: 'Description')),
+        TextFormField(
+            controller: _conditionController,
+            decoration: InputDecoration(filled: true, labelText: 'Condition')),
+        TextFormField(
+            controller: _zipcodeController,
+            decoration: InputDecoration(filled: true, labelText: 'Zipcode')),
+        TextFormField(
+            controller: _priceController,
+            decoration: InputDecoration(filled: true, labelText: 'Price')),
+        ElevatedButton(onPressed: selectImage, child: Text('Select an Image')),
+        imageDisplay(imageFile: imageFile),
+      ],
     );
   }
 
@@ -130,7 +130,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
 
   Future<void> uploadImage(imageFile) async {
     if (imageFile != '') {
-      final options = S3UploadFileOptions(
+      final uploadOptions = S3UploadFileOptions(
         accessLevel: StorageAccessLevel.guest,
       );
 
@@ -138,7 +138,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
       final file = File(imageFile);
       try {
         final UploadFileResult result = await Amplify.Storage.uploadFile(
-            options: options,
+            options: uploadOptions,
             local: file,
             key: key,
             onProgress: (progress) {
@@ -146,19 +146,11 @@ class _AddSaleFormState extends State<AddSaleForm> {
                   progress.getFractionCompleted().toString());
             });
         debugPrint('Successfully uploaded image: ${result.key}');
-        getDownloadUrl(key);
+        await getDownloadUrl(key);
       } on StorageException catch (e) {
         debugPrint('Error uploading image: $e');
       }
     }
-
-    // Select image from user's gallery
-    // final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    // if (pickedFile == null) {
-    //   debugPrint('No image selected');
-    //   return;
-    // }
-    // Upload image with the current time as the key
   }
 
   Future<void> selectImage() async {

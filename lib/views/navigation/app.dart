@@ -77,7 +77,8 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     final routes = {
-      '/': (context) => const Login(),
+      '/': (context) => MySales(
+          DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
       '/home': (context) => const Home(),
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),

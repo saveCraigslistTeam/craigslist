@@ -9,7 +9,6 @@ class SaleDetailView extends StatefulWidget {
       : super(key: key);
   final Sale sale;
   final List<SaleImage> saleImages;
-
   @override
   State<SaleDetailView> createState() => _SaleDetailViewState();
 }

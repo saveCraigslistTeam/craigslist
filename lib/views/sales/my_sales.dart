@@ -1,5 +1,6 @@
 // dart async library we will refer to when setting up real time updates
 import 'dart:async';
+import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 // flutter and ui libraries
@@ -32,25 +33,19 @@ class MySales extends StatefulWidget {
 }
 
 class _MySalesState extends State<MySales> {
-  // subscription of Todo QuerySnapshots - to be initialized at runtime
   late StreamSubscription<QuerySnapshot<Sale>> _subscription;
-
-  // loading ui state - initially set to a loading state
+  String userName = 'smitchr8';
   bool _isLoading = true;
-
-  // list of Todos - initially empty
   List<Sale> _sales = [];
 
   @override
   void initState() {
-    // kick off app initialization
     getSalesStream();
     super.initState();
   }
 
   Future<void> getSalesStream() async {
     _subscription = widget.DataStore.observeQuery(Sale.classType)
-        // _subscription = Amplify.DataStore.observeQuery(Sale.classType)
         .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
@@ -65,8 +60,49 @@ class _MySalesState extends State<MySales> {
       appBar: AppBar(
         title: Text('My Sales List'),
       ),
-
-      // body: Center(child: CircularProgressIndicator()),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color(0xffA682FF),
+              ),
+              child: Text(
+                'Drawer Header',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.message),
+              title: const Text('Messages'),
+              onTap: () => {Navigator.pushNamed(context, '/inbox')},
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () => {Navigator.pushNamed(context, '/home')},
+            ),
+            ListTile(
+              leading: const Icon(Icons.shopping_bag),
+              title: const Text('Sales'),
+              onTap: () => {Navigator.pushNamed(context, '/mySales')},
+            ),
+            const ListTile(
+              leading: Icon(Icons.account_circle),
+              title: Text('Account'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () => {Navigator.pushNamed(context, '/home')},
+            ),
+          ],
+        ),
+      ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SalesList(sales: _sales),
