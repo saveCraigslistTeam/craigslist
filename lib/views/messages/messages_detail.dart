@@ -32,10 +32,12 @@ class _MessageDetailState extends State<MessageDetail> {
     super.initState();
   }
 
-  Future<void> getMessageStream(String userName, String sale) async {
+  Future<void> getMessageStream(String userName, String sale, String customer) async {
     messageStream = widget.dataStore
         .observeQuery(Messages.classType,
-        where: (Messages.SENDER.beginsWith(userName) | Messages.RECEIVER.beginsWith(userName)) & Messages.SALE.beginsWith(sale),
+        where: (Messages.HOST.eq(userName) | Messages.CUSTOMER.eq(userName))
+                & (Messages.HOST.eq(customer) | Messages.CUSTOMER.eq(customer))  
+                & Messages.SALE.eq(sale),
         sortBy: [Messages.DATE.ascending()])
         .listen((QuerySnapshot<Messages> snapshot) {
       setState(() {
@@ -51,9 +53,10 @@ class _MessageDetailState extends State<MessageDetail> {
     final List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
     final String? userName = args[0];
     final String? sale = args[1];
+    final String? customer = args[2];
 
     if(_isLoading) {
-      getMessageStream(userName.toString(), sale.toString());
+      getMessageStream(userName.toString(), sale.toString(), customer.toString());
     }
     return (
       _isLoading ? const Center(child: Text("loading messages")) :
@@ -151,7 +154,6 @@ class ScrollingMessagesSliver extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    final ScrollController _sc = ScrollController();
     
     return SafeArea(
         child: Column(
