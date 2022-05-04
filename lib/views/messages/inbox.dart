@@ -74,8 +74,6 @@ class _InboxPageState extends State<InboxPage> {
 
   @override
   Widget build(BuildContext context) {
-    print(userName);
-
     return (
       Scaffold(
         appBar: AppBar(
@@ -90,14 +88,14 @@ class _InboxPageState extends State<InboxPage> {
                 ? Column(
                     children: [
                       Expanded(
-                        flex: 7,
+                        flex: 8,
                         child: InboxList(
                             messages: filterRecentMessagesByGroup(_messages),
                             dataStore: widget.dataStore,
                             userName: userName),
                       ),
                       Expanded(
-                          flex: 1,
+                          flex: 2,
                           child: Container(
                             color: Theme.of(context).primaryColor,
                           ))
@@ -108,6 +106,7 @@ class _InboxPageState extends State<InboxPage> {
 }
 
 class InboxList extends StatelessWidget {
+
   List<Messages> messages = [];
   final AmplifyDataStore dataStore;
   final String userName;
@@ -121,15 +120,15 @@ class InboxList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (messages.isNotEmpty
-        ? ListView.builder(
-            itemCount: messages.length,
-            itemBuilder: (_, index) => InboxItem(
-                messages: messages,
-                message: messages[index],
-                dataStore: dataStore,
-                userName: userName))
-        : const Center(child: Text('No Messages')));
+    return (
+      ListView.builder(
+        itemCount: messages.length,
+        itemBuilder: (_, index) => InboxItem(
+            messages: messages,
+            message: messages[index],
+            dataStore: dataStore,
+            userName: userName))
+    );
   }
 }
 
@@ -139,7 +138,7 @@ class InboxItem extends StatelessWidget {
   final AmplifyDataStore dataStore;
   final String userName;
 
-  InboxItem(
+  const InboxItem(
       {Key? key,
       required this.messages,
       required this.message,
@@ -162,7 +161,7 @@ class InboxItem extends StatelessWidget {
             trailing: trailingContent(message.date),
             onTap: () => {
                   Navigator.pushNamed(context, '/msgDetail',
-                      arguments: [userName, message.sale])
+                      arguments: [userName, message.sale, message.customer])
                 })),
       ),
     );
