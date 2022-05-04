@@ -4,11 +4,8 @@ import '../../models/Messages.dart';
 import './message_form.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
-// amplify packages
-import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
 import '../../models/ModelProvider.dart';
-import '../../models/Messages.dart';
 
 class MessageDetail extends StatefulWidget {
 
@@ -61,10 +58,6 @@ class _MessageDetailState extends State<MessageDetail> {
     final String? userName = args[0];
     final String? sale = args[1];
     final String? customer = args[2];
-
-    print(userName);
-    print(sale);
-    print(customer);
 
     if(_isLoading) {
       getMessageStream(userName.toString(), sale.toString(), customer.toString());
