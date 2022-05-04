@@ -4,24 +4,17 @@ import '../../models/Messages.dart';
 import './message_form.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
-// amplify packages
-import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
 import '../../models/ModelProvider.dart';
-import '../../models/Messages.dart';
 
 class MessageDetail extends StatefulWidget {
 
   final String title;
   final AmplifyDataStore dataStore;
-  final String userName;
-  final String sale;
 
   const MessageDetail({Key? key, 
     required this.title,
-    required this.dataStore,
-    required this.userName,
-    required this.sale}) : super(key: key);
+    required this.dataStore}) : super(key: key);
 
   @override
   State<MessageDetail> createState() => _MessageDetailState();
@@ -63,7 +56,7 @@ class _MessageDetailState extends State<MessageDetail> {
       getMessageStream(userName.toString(), sale.toString());
     }
     return (
-      _isLoading ? Center(child: Text("loading messages")) :
+      _isLoading ? const Center(child: Text("loading messages")) :
       Scaffold(
       appBar: AppBar(
         title: Text(
