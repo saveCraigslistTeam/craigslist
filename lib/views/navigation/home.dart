@@ -1,6 +1,7 @@
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import '../drawer.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -22,7 +23,6 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
         appBar: AppBar(
           // leading: const BackButton(color: Color.fromARGB(255, 166, 130, 255)),
@@ -65,8 +65,13 @@ class _HomeState extends State<Home> {
               ),
               ListTile(
                 leading: const Icon(Icons.shopping_bag),
-                title: const Text('Sales'),
+                title: const Text('My Sales'),
                 onTap: () => {Navigator.pushNamed(context, '/mySales')},
+              ),
+              ListTile(
+                leading: const Icon(Icons.shopping_bag),
+                title: const Text('All Sales'),
+                onTap: () => {Navigator.pushNamed(context, '/allSales')},
               ),
               const ListTile(
                 leading: Icon(Icons.account_circle),

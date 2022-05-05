@@ -12,20 +12,24 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail.dart';
+import 'sale_detail_owner.dart';
 
 class AddSaleForm extends StatefulWidget {
+  AddSaleForm({Key? key, required this.username}) : super(key: key);
+  final String username;
+
   @override
   _AddSaleFormState createState() => _AddSaleFormState();
 }
 
 class _AddSaleFormState extends State<AddSaleForm> {
-  String imageURL = '';
-  final picker = ImagePicker();
+  late String imageURL;
   late String imageFile;
+  final picker = ImagePicker();
 
   @override
   void initState() {
+    imageURL = '';
     imageFile = '';
     super.initState();
   }
@@ -46,12 +50,12 @@ class _AddSaleFormState extends State<AddSaleForm> {
 
     // create a new Sale from the form values
     Sale newSale = Sale(
-      title: title,
-      description: description.isNotEmpty ? description : null,
-      condition: condition.isNotEmpty ? condition : null,
-      zipcode: zipcode.isNotEmpty ? zipcode : null,
-      price: price.isNotEmpty ? price : null,
-    );
+        title: title,
+        description: description.isNotEmpty ? description : null,
+        condition: condition.isNotEmpty ? condition : null,
+        zipcode: zipcode.isNotEmpty ? zipcode : null,
+        price: price.isNotEmpty ? price : null,
+        user: widget.username);
 
     try {
       await uploadImage(imageFile);
@@ -115,8 +119,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
   Future<String?> getDownloadUrl(key) async {
     try {
       final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
-      // NOTE: This code is only for demonstration
-      // Your debug console may truncate the debugPrinted url string
       debugPrint('Got URL: ${result.url}');
       setState(() {
         imageURL = result.url;
@@ -146,19 +148,11 @@ class _AddSaleFormState extends State<AddSaleForm> {
                   progress.getFractionCompleted().toString());
             });
         debugPrint('Successfully uploaded image: ${result.key}');
-        getDownloadUrl(key);
+        await getDownloadUrl(key);
       } on StorageException catch (e) {
         debugPrint('Error uploading image: $e');
       }
     }
-
-    // Select image from user's gallery
-    // final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    // if (pickedFile == null) {
-    //   debugPrint('No image selected');
-    //   return;
-    // }
-    // Upload image with the current time as the key
   }
 
   Future<void> selectImage() async {

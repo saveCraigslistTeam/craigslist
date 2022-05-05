@@ -12,12 +12,12 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail_owner.dart';
+import 'sale_detail.dart';
 import 'add_sale.dart';
 import '../drawer.dart';
 
-class MySales extends StatefulWidget {
-  MySales(
+class AllSales extends StatefulWidget {
+  AllSales(
       {Key? key,
       required this.DataStore,
       required this.Storage,
@@ -31,10 +31,10 @@ class MySales extends StatefulWidget {
   final String username;
 
   @override
-  _MySalesState createState() => _MySalesState();
+  _AllSalesState createState() => _AllSalesState();
 }
 
-class _MySalesState extends State<MySales> {
+class _AllSalesState extends State<AllSales> {
   // subscription of Todo QuerySnapshots - to be initialized at runtime
   late StreamSubscription<QuerySnapshot<Sale>> _subscription;
 
@@ -52,9 +52,9 @@ class _MySalesState extends State<MySales> {
   }
 
   Future<void> getSalesStream() async {
-    _subscription = widget.DataStore.observeQuery(Sale.classType,
-            where: (Sale.USER.eq(widget.username)))
-        .listen((QuerySnapshot<Sale> snapshot) {
+    _subscription = widget.DataStore.observeQuery(
+      Sale.classType,
+    ).listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
         _sales = snapshot.items;
@@ -68,26 +68,13 @@ class _MySalesState extends State<MySales> {
       drawer: drawer(context),
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
-        title: Text('My Sales'),
+        title: Text('All Sales'),
       ),
 
       // body: Center(child: CircularProgressIndicator()),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SalesList(sales: _sales),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => AddSaleForm(username: widget.username)),
-          );
-        },
-        tooltip: 'Add Sale',
-        label: Row(
-          children: [Icon(Icons.add), Text('Add Sale')],
-        ),
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -114,24 +101,12 @@ class SaleItem extends StatelessWidget {
 
   SaleItem({required this.sale});
 
-  void _deleteSale(BuildContext context) async {
-    List<SaleImage> saleImage = (await Amplify.DataStore.query(
-        SaleImage.classType,
-        where: SaleImage.SALEID.eq(sale.id)));
-    try {
-      // Delete the sale and the associated image
-      await Amplify.DataStore.delete(sale);
-      await Amplify.DataStore.delete(saleImage[0]);
-    } catch (e) {
-      debugPrint('An error occurred while deleting Todo: $e');
-    }
-  }
+  void _favoriteSale(BuildContext context) async {}
 
   Future<List<SaleImage>?> getSaleImage(Sale sale) async {
     List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
         where: SaleImage.SALEID.eq(sale.id)));
-    String? image = images[0].imageURL;
-    return images;
+    return images.isNotEmpty ? images : null;
   }
 
   @override
@@ -155,10 +130,10 @@ class SaleItem extends StatelessWidget {
                   ),
                   Spacer(),
                   IconButton(
-                      icon: const Icon(Icons.delete),
-                      tooltip: 'Delete Sale',
+                      icon: const Icon(Icons.favorite),
+                      tooltip: 'Favorite this sale',
                       onPressed: () {
-                        _deleteSale(context);
+                        _favoriteSale(context);
                       })
                 ],
               ),
@@ -170,7 +145,7 @@ class SaleItem extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => SaleDetailOwnerView(
+                  builder: (context) => SaleDetailView(
                         sale: sale,
                         saleImages: SaleImages,
                       )));
