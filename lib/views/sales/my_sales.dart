@@ -20,12 +20,14 @@ class MySales extends StatefulWidget {
       {Key? key,
       required this.DataStore,
       required this.Storage,
-      required this.Auth})
+      required this.Auth,
+      required this.username})
       : super(key: key);
 
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
   final AmplifyAuthCognito Auth;
+  final String username;
 
   @override
   _MySalesState createState() => _MySalesState();
@@ -49,8 +51,8 @@ class _MySalesState extends State<MySales> {
   }
 
   Future<void> getSalesStream() async {
-    _subscription = widget.DataStore.observeQuery(Sale.classType)
-        // _subscription = Amplify.DataStore.observeQuery(Sale.classType)
+    _subscription = widget.DataStore.observeQuery(Sale.classType,
+            where: (Sale.USER.eq(widget.username)))
         .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
@@ -63,7 +65,7 @@ class _MySalesState extends State<MySales> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Sales List'),
+        title: Text('${widget.username}'),
       ),
 
       // body: Center(child: CircularProgressIndicator()),
@@ -74,7 +76,8 @@ class _MySalesState extends State<MySales> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddSaleForm()),
+            MaterialPageRoute(
+                builder: (context) => AddSaleForm(username: widget.username)),
           );
         },
         tooltip: 'Add Sale',

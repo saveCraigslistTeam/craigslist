@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:craigslist/theme/theme_manager.dart';
 import 'package:craigslist/views/navigation/home.dart';
 import 'package:craigslist/views/messages/messages_detail.dart';
@@ -36,11 +38,12 @@ class _AppState extends State<App> {
 
   bool configured = false;
   bool authenticated = false;
-
+  late String username;
   @override
   initState() {
     super.initState();
     _configureAmplify();
+    username = '';
   }
 
   Future<void> _configureAmplify() async {
@@ -54,6 +57,7 @@ class _AppState extends State<App> {
       if (Amplify.isConfigured) {
         isConfigured();
         print("amplify configured");
+        getUsername();
       } else {
         print('amplify not configured');
       }
@@ -75,16 +79,32 @@ class _AppState extends State<App> {
     }
   }
 
+  void getUsername() async {
+    try {
+      final res = await Amplify.Auth.getCurrentUser();
+      String userEmail = res.username.toString();
+      final indexOfAt = userEmail.indexOf('@');
+
+      setState(() {
+        username = userEmail.substring(0, indexOfAt);
+      });
+    } on AuthException catch (e) {
+      print(e.message);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final routes = {
       '/': (context) => const Login(),
       '/home': (context) => const Home(),
       '/mySales': (context) => MySales(
-          DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
-      '/msgDetail': (context) => MessageDetail(
-          title: App.title,
-          dataStore: _dataStorePlugin),
+          DataStore: _dataStorePlugin,
+          Storage: storage,
+          Auth: _authPlugin,
+          username: username),
+      '/msgDetail': (context) =>
+          MessageDetail(title: App.title, dataStore: _dataStorePlugin),
       '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
       '/msgSeller': (context) => MessageSellerForm()
     };

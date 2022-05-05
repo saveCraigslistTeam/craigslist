@@ -15,14 +15,17 @@ import '../../models/ModelProvider.dart';
 import 'sale_detail.dart';
 
 class AddSaleForm extends StatefulWidget {
+  AddSaleForm({Key? key, required this.username}) : super(key: key);
+  final String username;
+
   @override
   _AddSaleFormState createState() => _AddSaleFormState();
 }
 
 class _AddSaleFormState extends State<AddSaleForm> {
   late String imageURL;
-  final picker = ImagePicker();
   late String imageFile;
+  final picker = ImagePicker();
 
   @override
   void initState() {
@@ -47,12 +50,12 @@ class _AddSaleFormState extends State<AddSaleForm> {
 
     // create a new Sale from the form values
     Sale newSale = Sale(
-      title: title,
-      description: description.isNotEmpty ? description : null,
-      condition: condition.isNotEmpty ? condition : null,
-      zipcode: zipcode.isNotEmpty ? zipcode : null,
-      price: price.isNotEmpty ? price : null,
-    );
+        title: title,
+        description: description.isNotEmpty ? description : null,
+        condition: condition.isNotEmpty ? condition : null,
+        zipcode: zipcode.isNotEmpty ? zipcode : null,
+        price: price.isNotEmpty ? price : null,
+        user: widget.username);
 
     try {
       await uploadImage(imageFile);
