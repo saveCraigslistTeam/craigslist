@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/ModelProvider.dart';
 import 'sale_detail.dart';
 import 'add_sale.dart';
+import '../drawer.dart';
 
 class MySales extends StatefulWidget {
   MySales(
@@ -64,6 +65,7 @@ class _MySalesState extends State<MySales> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawer(context),
       appBar: AppBar(
         title: Text('My Sales'),
       ),

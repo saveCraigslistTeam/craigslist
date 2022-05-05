@@ -1,10 +1,12 @@
 // ignore_for_file: avoid_print
 
 import 'package:craigslist/theme/theme_manager.dart';
+import 'package:craigslist/views/drawer.dart';
 import 'package:craigslist/views/navigation/home.dart';
 import 'package:craigslist/views/messages/messages_detail.dart';
 import 'package:craigslist/views/navigation/login.dart';
 import 'package:craigslist/views/sales/my_sales.dart';
+import 'package:craigslist/views/sales/all_sales.dart';
 import 'package:craigslist/views/messages/message_seller.dart';
 import 'package:provider/provider.dart';
 import '../../amplifyconfiguration.dart';
@@ -20,6 +22,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import '../../../../models/ModelProvider.dart';
 // ignore: unused_import
 //import 'package:amplify_authenticator/amplify_authenticator.dart';
+import '../drawer.dart';
 
 class App extends StatefulWidget {
   static const String title = "craigslist";
@@ -39,6 +42,7 @@ class _AppState extends State<App> {
   bool configured = false;
   bool authenticated = false;
   late String username;
+
   @override
   initState() {
     super.initState();
@@ -103,7 +107,7 @@ class _AppState extends State<App> {
           Storage: storage,
           Auth: _authPlugin,
           username: username),
-      '/allSales': (context) => MySales(
+      '/allSales': (context) => AllSales(
           DataStore: _dataStorePlugin,
           Storage: storage,
           Auth: _authPlugin,

@@ -15,8 +15,8 @@ import '../../models/ModelProvider.dart';
 import 'sale_detail.dart';
 import 'add_sale.dart';
 
-class MySales extends StatefulWidget {
-  MySales(
+class AllSales extends StatefulWidget {
+  AllSales(
       {Key? key,
       required this.DataStore,
       required this.Storage,
@@ -30,10 +30,10 @@ class MySales extends StatefulWidget {
   final String username;
 
   @override
-  _MySalesState createState() => _MySalesState();
+  _AllSalesState createState() => _AllSalesState();
 }
 
-class _MySalesState extends State<MySales> {
+class _AllSalesState extends State<AllSales> {
   // subscription of Todo QuerySnapshots - to be initialized at runtime
   late StreamSubscription<QuerySnapshot<Sale>> _subscription;
 
