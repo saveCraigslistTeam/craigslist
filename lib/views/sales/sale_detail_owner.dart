@@ -68,7 +68,13 @@ class _SaleDetailOwnerViewState extends State<SaleDetailOwnerView> {
     } else {
       return Padding(
           padding: const EdgeInsets.all(25.0),
-          child: Image.network(widget.saleImages![0].toString(), height: 400));
+          child: Column(
+            children: [
+              Image.network(
+                widget.saleImages![0].imageURL.toString(),
+              ),
+            ],
+          ));
     }
   }
 }

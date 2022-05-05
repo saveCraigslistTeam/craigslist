@@ -80,37 +80,39 @@ class _AddSaleFormState extends State<AddSaleForm> {
           ElevatedButton(onPressed: _saveSale, child: Text('Save')),
         ],
       ),
-      body: Container(
-        padding: EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                  controller: _titleController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Title')),
-              TextFormField(
-                  controller: _descriptionController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Description')),
-              TextFormField(
-                  controller: _conditionController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Condition')),
-              TextFormField(
-                  controller: _zipcodeController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Zipcode')),
-              TextFormField(
-                  controller: _priceController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Price')),
-              ElevatedButton(
-                  onPressed: selectImage, child: Text('Select an Image')),
-              imageDisplay(imageFile: imageFile),
-            ],
-          ),
+      body: addSaleForm(),
+    );
+  }
+
+  Container addSaleForm() {
+    return Container(
+      padding: EdgeInsets.all(8.0),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextFormField(
+                controller: _titleController,
+                decoration: InputDecoration(filled: true, labelText: 'Title')),
+            TextFormField(
+                controller: _descriptionController,
+                decoration:
+                    InputDecoration(filled: true, labelText: 'Description')),
+            TextFormField(
+                controller: _conditionController,
+                decoration:
+                    InputDecoration(filled: true, labelText: 'Condition')),
+            TextFormField(
+                controller: _zipcodeController,
+                decoration:
+                    InputDecoration(filled: true, labelText: 'Zipcode')),
+            TextFormField(
+                controller: _priceController,
+                decoration: InputDecoration(filled: true, labelText: 'Price')),
+            ElevatedButton(
+                onPressed: selectImage, child: Text('Select an Image')),
+            imageDisplay(imageFile: imageFile),
+          ],
         ),
       ),
     );
@@ -118,7 +120,9 @@ class _AddSaleFormState extends State<AddSaleForm> {
 
   Future<String?> getDownloadUrl(key) async {
     try {
-      final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
+      S3GetUrlOptions options = S3GetUrlOptions(expires: 604799);
+      final GetUrlResult result =
+          await Amplify.Storage.getUrl(options: options, key: key);
       debugPrint('Got URL: ${result.url}');
       setState(() {
         imageURL = result.url;
