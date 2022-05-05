@@ -63,7 +63,9 @@ class _MessageDetailState extends State<MessageDetail> {
       Scaffold(
       appBar: AppBar(
         title: Text(
-          "To: " + _messages[0].customer.toString()),
+          "To: " + (_messages[0].host == userName 
+                      ? _messages[0].customer.toString()
+                      : _messages[0].host.toString())),
         leading: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             child: GestureDetector(
@@ -123,7 +125,7 @@ class ColoredBox extends StatelessWidget {
 }
 
 Widget getListTile(int index, List<Messages> data, BuildContext context, String userName) {
-  if (data[index].receiver == userName) {
+  if (data[index].host == userName ? data[index].hostSent! : !data[index].hostSent!) {
     return ListTile(
       title: ColoredBox(
           color: Theme.of(context).primaryColor, 

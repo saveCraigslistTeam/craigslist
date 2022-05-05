@@ -30,7 +30,7 @@ export 'SaleImage.dart';
 
 class ModelProvider implements ModelProviderInterface {
   @override
-  String version = "fab4c825d468325a7a075683bab33a67";
+  String version = "3e4530705ed16cfd9fa1a05e2fdcd47b";
   @override
   List<ModelSchema> modelSchemas = [Messages.schema, Sale.schema, SaleImage.schema];
   static final ModelProvider _instance = ModelProvider();
