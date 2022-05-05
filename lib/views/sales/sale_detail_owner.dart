@@ -9,7 +9,7 @@ class SaleDetailOwnerView extends StatefulWidget {
       {Key? key, required this.sale, required this.saleImages})
       : super(key: key);
   final Sale sale;
-  final List<SaleImage> saleImages;
+  final List<SaleImage>? saleImages;
 
   @override
   State<SaleDetailOwnerView> createState() => _SaleDetailOwnerViewState();
@@ -32,7 +32,7 @@ class _SaleDetailOwnerViewState extends State<SaleDetailOwnerView> {
                   MaterialPageRoute(
                       builder: (context) => EditSaleForm(
                             sale: widget.sale,
-                            saleImages: widget.saleImages,
+                            saleImages: widget.saleImages!,
                           )));
             },
             child: Text('Edit'))
@@ -52,13 +52,23 @@ class _SaleDetailOwnerViewState extends State<SaleDetailOwnerView> {
               padding: const EdgeInsets.all(25.0),
               child: Text('Condition: ${widget.sale.condition}'),
             ),
-            Padding(
-                padding: const EdgeInsets.all(25.0),
-                child: Image.network(widget.saleImages[0].imageURL.toString(),
-                    height: 400)),
+            imageContainer()
           ],
         ),
       ),
     );
+  }
+
+  Padding imageContainer() {
+    if (widget.saleImages == null) {
+      return const Padding(
+        padding: EdgeInsets.all(25.0),
+        child: Text('No image to display'),
+      );
+    } else {
+      return Padding(
+          padding: const EdgeInsets.all(25.0),
+          child: Image.network(widget.saleImages![0].toString(), height: 400));
+    }
   }
 }

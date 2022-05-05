@@ -103,11 +103,10 @@ class SaleItem extends StatelessWidget {
 
   void _favoriteSale(BuildContext context) async {}
 
-  Future<List<SaleImage>> getSaleImage(Sale sale) async {
+  Future<List<SaleImage>?> getSaleImage(Sale sale) async {
     List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
         where: SaleImage.SALEID.eq(sale.id)));
-    String? image = images[0].imageURL;
-    return images;
+    return images.isNotEmpty ? images : null;
   }
 
   @override
@@ -142,7 +141,7 @@ class SaleItem extends StatelessWidget {
           ]),
         ),
         onTap: () async {
-          List<SaleImage> SaleImages = await getSaleImage(sale);
+          List<SaleImage>? SaleImages = await getSaleImage(sale);
           Navigator.push(
               context,
               MaterialPageRoute(
