@@ -51,9 +51,9 @@ class _MySalesState extends State<MySales> {
   }
 
   Future<void> getSalesStream() async {
-    _subscription = widget.DataStore.observeQuery(Sale.classType,
-            where: (Sale.USER.eq(widget.username)))
-        .listen((QuerySnapshot<Sale> snapshot) {
+    _subscription = widget.DataStore.observeQuery(
+      Sale.classType,
+    ).listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
         _sales = snapshot.items;
@@ -65,7 +65,7 @@ class _MySalesState extends State<MySales> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Sales'),
+        title: Text('${widget.username}'),
       ),
 
       // body: Center(child: CircularProgressIndicator()),

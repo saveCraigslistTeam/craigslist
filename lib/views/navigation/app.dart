@@ -103,6 +103,11 @@ class _AppState extends State<App> {
           Storage: storage,
           Auth: _authPlugin,
           username: username),
+      '/allSales': (context) => MySales(
+          DataStore: _dataStorePlugin,
+          Storage: storage,
+          Auth: _authPlugin,
+          username: username),
       '/msgDetail': (context) =>
           MessageDetail(title: App.title, dataStore: _dataStorePlugin),
       '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
