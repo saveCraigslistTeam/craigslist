@@ -88,7 +88,6 @@ class _AppState extends State<App> {
       final res = await Amplify.Auth.getCurrentUser();
       String userEmail = res.username.toString();
       final indexOfAt = userEmail.indexOf('@');
-
       setState(() {
         username = userEmail.substring(0, indexOfAt);
       });

@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/ModelProvider.dart';
 import 'sale_detail.dart';
 import 'add_sale.dart';
+import '../drawer.dart';
 
 class AllSales extends StatefulWidget {
   AllSales(
@@ -64,27 +65,16 @@ class _AllSalesState extends State<AllSales> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawer(context),
       appBar: AppBar(
-        title: Text('${widget.username}'),
+        backgroundColor: const Color(0xffA682FF),
+        title: Text('All Sales'),
       ),
 
       // body: Center(child: CircularProgressIndicator()),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SalesList(sales: _sales),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => AddSaleForm(username: widget.username)),
-          );
-        },
-        tooltip: 'Add Sale',
-        label: Row(
-          children: [Icon(Icons.add), Text('Add Sale')],
-        ),
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -111,18 +101,7 @@ class SaleItem extends StatelessWidget {
 
   SaleItem({required this.sale});
 
-  void _deleteSale(BuildContext context) async {
-    List<SaleImage> saleImage = (await Amplify.DataStore.query(
-        SaleImage.classType,
-        where: SaleImage.SALEID.eq(sale.id)));
-    try {
-      // Delete the sale and the associated image
-      await Amplify.DataStore.delete(sale);
-      await Amplify.DataStore.delete(saleImage[0]);
-    } catch (e) {
-      debugPrint('An error occurred while deleting Todo: $e');
-    }
-  }
+  void _favoriteSale(BuildContext context) async {}
 
   Future<List<SaleImage>> getSaleImage(Sale sale) async {
     List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
@@ -152,10 +131,10 @@ class SaleItem extends StatelessWidget {
                   ),
                   Spacer(),
                   IconButton(
-                      icon: const Icon(Icons.delete),
-                      tooltip: 'Delete Sale',
+                      icon: const Icon(Icons.favorite),
+                      tooltip: 'Favorite this sale',
                       onPressed: () {
-                        _deleteSale(context);
+                        _favoriteSale(context);
                       })
                 ],
               ),

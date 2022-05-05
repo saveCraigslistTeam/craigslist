@@ -12,7 +12,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail.dart';
+import 'sale_detail_owner.dart';
 
 class AddSaleForm extends StatefulWidget {
   AddSaleForm({Key? key, required this.username}) : super(key: key);

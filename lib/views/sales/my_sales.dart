@@ -12,7 +12,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail.dart';
+import 'sale_detail_owner.dart';
 import 'add_sale.dart';
 import '../drawer.dart';
 
@@ -67,6 +67,7 @@ class _MySalesState extends State<MySales> {
     return Scaffold(
       drawer: drawer(context),
       appBar: AppBar(
+        backgroundColor: const Color(0xffA682FF),
         title: Text('My Sales'),
       ),
 
@@ -169,7 +170,7 @@ class SaleItem extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => SaleDetailView(
+                  builder: (context) => SaleDetailOwnerView(
                         sale: sale,
                         saleImages: SaleImages,
                       )));
