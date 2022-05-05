@@ -33,7 +33,7 @@ class MySales extends StatefulWidget {
 }
 
 class _MySalesState extends State<MySales> {
-  late StreamSubscription<QuerySnapshot<Sale>> _subscription;
+  late StreamSubscription<QuerySnapshot<Sale>> subscription;
   String userName = 'smitchr8';
   bool _isLoading = true;
   List<Sale> _sales = [];
@@ -45,8 +45,10 @@ class _MySalesState extends State<MySales> {
   }
 
   Future<void> getSalesStream() async {
-    _subscription = widget.DataStore.observeQuery(Sale.classType)
+    subscription = widget.DataStore.observeQuery(Sale.classType)
         .listen((QuerySnapshot<Sale> snapshot) {
+      // ignore: avoid_print
+      print(snapshot.items);
       setState(() {
         if (_isLoading) _isLoading = false;
         _sales = snapshot.items;
@@ -59,49 +61,6 @@ class _MySalesState extends State<MySales> {
     return Scaffold(
       appBar: AppBar(
         title: Text('My Sales List'),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color(0xffA682FF),
-              ),
-              child: Text(
-                'Drawer Header',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.message),
-              title: const Text('Messages'),
-              onTap: () => {Navigator.pushNamed(context, '/inbox')},
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () => {Navigator.pushNamed(context, '/home')},
-            ),
-            ListTile(
-              leading: const Icon(Icons.shopping_bag),
-              title: const Text('Sales'),
-              onTap: () => {Navigator.pushNamed(context, '/mySales')},
-            ),
-            const ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Account'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () => {Navigator.pushNamed(context, '/home')},
-            ),
-          ],
-        ),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -160,7 +119,7 @@ class SaleItem extends StatelessWidget {
   Future<List<SaleImage>> getSaleImage(Sale sale) async {
     List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
         where: SaleImage.SALEID.eq(sale.id)));
-    String? image = images[0].imageURL;
+    // String? image = images[0].imageURL;
     return images;
   }
 
