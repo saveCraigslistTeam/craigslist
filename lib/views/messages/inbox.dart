@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +11,8 @@ import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
 class InboxPage extends StatefulWidget {
-  final AmplifyDataStore dataStore;
 
+  final AmplifyDataStore dataStore;
   const InboxPage({Key? key, required this.dataStore}) : super(key: key);
 
   @override
@@ -24,30 +22,29 @@ class InboxPage extends StatefulWidget {
 class _InboxPageState extends State<InboxPage> {
 
   String userName = '';
-  late StreamSubscription<QuerySnapshot<Messages>> messageStream;
-
   List<Messages> _messages = [];
   bool _isLoading = true;
+  late StreamSubscription<QuerySnapshot<Messages>> messageStream;
 
   @override
   void initState() {
     getUserCredentials();
-    getMessageStream();
     super.initState();
   }
 
   Future<void> getMessageStream() async {
     messageStream = widget.dataStore.observeQuery(Messages.classType,
-        where: Messages.HOST.beginsWith(userName) |
-            Messages.CUSTOMER.beginsWith(userName),
-        sortBy: [
-          Messages.DATE.descending()
-        ]).listen((QuerySnapshot<Messages> snapshot) {
-      setState(() {
-        if (_isLoading) _isLoading = false;
-        _messages = snapshot.items;
-      });
-    });
+        where: (Messages.HOST.eq(userName) 
+             | Messages.CUSTOMER.eq(userName)),
+        sortBy: [ Messages.DATE.descending()])
+          .listen((QuerySnapshot<Messages> snapshot) {
+
+            setState(() {
+              if (_isLoading) _isLoading = false;
+              _messages = snapshot.items;
+            });
+
+        });
   }
 
   Future<void> getUserCredentials() async {
@@ -69,13 +66,13 @@ class _InboxPageState extends State<InboxPage> {
 
     setState(() {
       userName = userEmail.substring(0, indexOfAt);
+      getMessageStream();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     print(userName);
-
     return (
       Scaffold(
         appBar: AppBar(
@@ -85,19 +82,20 @@ class _InboxPageState extends State<InboxPage> {
           centerTitle: true,
         ),
         body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor,))
             : _messages.isNotEmpty
                 ? Column(
                     children: [
                       Expanded(
-                        flex: 7,
+                        flex: 8,
                         child: InboxList(
                             messages: filterRecentMessagesByGroup(_messages),
                             dataStore: widget.dataStore,
                             userName: userName),
                       ),
                       Expanded(
-                          flex: 1,
+                          flex: 2,
                           child: Container(
                             color: Theme.of(context).primaryColor,
                           ))
@@ -108,6 +106,7 @@ class _InboxPageState extends State<InboxPage> {
 }
 
 class InboxList extends StatelessWidget {
+
   List<Messages> messages = [];
   final AmplifyDataStore dataStore;
   final String userName;
@@ -121,15 +120,15 @@ class InboxList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (messages.isNotEmpty
-        ? ListView.builder(
-            itemCount: messages.length,
-            itemBuilder: (_, index) => InboxItem(
-                messages: messages,
-                message: messages[index],
-                dataStore: dataStore,
-                userName: userName))
-        : const Center(child: Text('No Messages')));
+    return (
+      ListView.builder(
+        itemCount: messages.length,
+        itemBuilder: (_, index) => InboxItem(
+            messages: messages,
+            message: messages[index],
+            dataStore: dataStore,
+            userName: userName))
+    );
   }
 }
 
@@ -139,7 +138,7 @@ class InboxItem extends StatelessWidget {
   final AmplifyDataStore dataStore;
   final String userName;
 
-  InboxItem(
+  const InboxItem(
       {Key? key,
       required this.messages,
       required this.message,
@@ -158,11 +157,13 @@ class InboxItem extends StatelessWidget {
             side: BorderSide(color: Theme.of(context).primaryColor, width: 1),
             borderRadius: BorderRadius.circular(10)),
         child: (ListTile(
-            title: leadingContent(message.customer, message.text),
+            title: message.customer!= userName 
+                  ? leadingContent(message.customer, message.text)
+                  : leadingContent(message.host, message.text),
             trailing: trailingContent(message.date),
             onTap: () => {
                   Navigator.pushNamed(context, '/msgDetail',
-                      arguments: [userName, message.sale])
+                      arguments: [userName, message.sale, message.customer])
                 })),
       ),
     );
@@ -197,6 +198,7 @@ Widget trailingContent(TemporalDateTime? date) {
 }
 
 List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
+
   List<Messages> formattedMessages = [];
   List<String> visited = [];
   bool flag = true;

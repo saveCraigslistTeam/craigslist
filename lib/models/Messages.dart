@@ -31,12 +31,10 @@ class Messages extends Model {
   final String? _sale;
   final String? _host;
   final String? _customer;
-  final String? _sender;
-  final String? _receiver;
-  final bool? _senderSeen;
-  final bool? _receiverSeen;
+  final bool? _hostSent;
   final String? _text;
   final TemporalDateTime? _date;
+  final bool? _seen;
   final TemporalDateTime? _createdAt;
   final TemporalDateTime? _updatedAt;
 
@@ -60,20 +58,8 @@ class Messages extends Model {
     return _customer;
   }
   
-  String? get sender {
-    return _sender;
-  }
-  
-  String? get receiver {
-    return _receiver;
-  }
-  
-  bool? get senderSeen {
-    return _senderSeen;
-  }
-  
-  bool? get receiverSeen {
-    return _receiverSeen;
+  bool? get hostSent {
+    return _hostSent;
   }
   
   String? get text {
@@ -84,6 +70,10 @@ class Messages extends Model {
     return _date;
   }
   
+  bool? get seen {
+    return _seen;
+  }
+  
   TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -92,20 +82,18 @@ class Messages extends Model {
     return _updatedAt;
   }
   
-  const Messages._internal({required this.id, sale, host, customer, sender, receiver, senderSeen, receiverSeen, text, date, createdAt, updatedAt}): _sale = sale, _host = host, _customer = customer, _sender = sender, _receiver = receiver, _senderSeen = senderSeen, _receiverSeen = receiverSeen, _text = text, _date = date, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Messages._internal({required this.id, sale, host, customer, hostSent, text, date, seen, createdAt, updatedAt}): _sale = sale, _host = host, _customer = customer, _hostSent = hostSent, _text = text, _date = date, _seen = seen, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Messages({String? id, String? sale, String? host, String? customer, String? sender, String? receiver, bool? senderSeen, bool? receiverSeen, String? text, TemporalDateTime? date}) {
+  factory Messages({String? id, String? sale, String? host, String? customer, bool? hostSent, String? text, TemporalDateTime? date, bool? seen}) {
     return Messages._internal(
       id: id == null ? UUID.getUUID() : id,
       sale: sale,
       host: host,
       customer: customer,
-      sender: sender,
-      receiver: receiver,
-      senderSeen: senderSeen,
-      receiverSeen: receiverSeen,
+      hostSent: hostSent,
       text: text,
-      date: date);
+      date: date,
+      seen: seen);
   }
   
   bool equals(Object other) {
@@ -120,12 +108,10 @@ class Messages extends Model {
       _sale == other._sale &&
       _host == other._host &&
       _customer == other._customer &&
-      _sender == other._sender &&
-      _receiver == other._receiver &&
-      _senderSeen == other._senderSeen &&
-      _receiverSeen == other._receiverSeen &&
+      _hostSent == other._hostSent &&
       _text == other._text &&
-      _date == other._date;
+      _date == other._date &&
+      _seen == other._seen;
   }
   
   @override
@@ -140,12 +126,10 @@ class Messages extends Model {
     buffer.write("sale=" + "$_sale" + ", ");
     buffer.write("host=" + "$_host" + ", ");
     buffer.write("customer=" + "$_customer" + ", ");
-    buffer.write("sender=" + "$_sender" + ", ");
-    buffer.write("receiver=" + "$_receiver" + ", ");
-    buffer.write("senderSeen=" + (_senderSeen != null ? _senderSeen!.toString() : "null") + ", ");
-    buffer.write("receiverSeen=" + (_receiverSeen != null ? _receiverSeen!.toString() : "null") + ", ");
+    buffer.write("hostSent=" + (_hostSent != null ? _hostSent!.toString() : "null") + ", ");
     buffer.write("text=" + "$_text" + ", ");
     buffer.write("date=" + (_date != null ? _date!.format() : "null") + ", ");
+    buffer.write("seen=" + (_seen != null ? _seen!.toString() : "null") + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
@@ -153,18 +137,16 @@ class Messages extends Model {
     return buffer.toString();
   }
   
-  Messages copyWith({String? id, String? sale, String? host, String? customer, String? sender, String? receiver, bool? senderSeen, bool? receiverSeen, String? text, TemporalDateTime? date}) {
+  Messages copyWith({String? id, String? sale, String? host, String? customer, bool? hostSent, String? text, TemporalDateTime? date, bool? seen}) {
     return Messages._internal(
       id: id ?? this.id,
       sale: sale ?? this.sale,
       host: host ?? this.host,
       customer: customer ?? this.customer,
-      sender: sender ?? this.sender,
-      receiver: receiver ?? this.receiver,
-      senderSeen: senderSeen ?? this.senderSeen,
-      receiverSeen: receiverSeen ?? this.receiverSeen,
+      hostSent: hostSent ?? this.hostSent,
       text: text ?? this.text,
-      date: date ?? this.date);
+      date: date ?? this.date,
+      seen: seen ?? this.seen);
   }
   
   Messages.fromJson(Map<String, dynamic> json)  
@@ -172,29 +154,25 @@ class Messages extends Model {
       _sale = json['sale'],
       _host = json['host'],
       _customer = json['customer'],
-      _sender = json['sender'],
-      _receiver = json['receiver'],
-      _senderSeen = json['senderSeen'],
-      _receiverSeen = json['receiverSeen'],
+      _hostSent = json['hostSent'],
       _text = json['text'],
       _date = json['date'] != null ? TemporalDateTime.fromString(json['date']) : null,
+      _seen = json['seen'],
       _createdAt = json['createdAt'] != null ? TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'sale': _sale, 'host': _host, 'customer': _customer, 'sender': _sender, 'receiver': _receiver, 'senderSeen': _senderSeen, 'receiverSeen': _receiverSeen, 'text': _text, 'date': _date?.format(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'sale': _sale, 'host': _host, 'customer': _customer, 'hostSent': _hostSent, 'text': _text, 'date': _date?.format(), 'seen': _seen, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
 
   static final QueryField ID = QueryField(fieldName: "messages.id");
   static final QueryField SALE = QueryField(fieldName: "sale");
   static final QueryField HOST = QueryField(fieldName: "host");
   static final QueryField CUSTOMER = QueryField(fieldName: "customer");
-  static final QueryField SENDER = QueryField(fieldName: "sender");
-  static final QueryField RECEIVER = QueryField(fieldName: "receiver");
-  static final QueryField SENDERSEEN = QueryField(fieldName: "senderSeen");
-  static final QueryField RECEIVERSEEN = QueryField(fieldName: "receiverSeen");
+  static final QueryField HOSTSENT = QueryField(fieldName: "hostSent");
   static final QueryField TEXT = QueryField(fieldName: "text");
   static final QueryField DATE = QueryField(fieldName: "date");
+  static final QueryField SEEN = QueryField(fieldName: "seen");
   static var schema = Model.defineSchema(define: (ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "Messages";
     modelSchemaDefinition.pluralName = "Messages";
@@ -231,25 +209,7 @@ class Messages extends Model {
     ));
     
     modelSchemaDefinition.addField(ModelFieldDefinition.field(
-      key: Messages.SENDER,
-      isRequired: false,
-      ofType: ModelFieldType(ModelFieldTypeEnum.string)
-    ));
-    
-    modelSchemaDefinition.addField(ModelFieldDefinition.field(
-      key: Messages.RECEIVER,
-      isRequired: false,
-      ofType: ModelFieldType(ModelFieldTypeEnum.string)
-    ));
-    
-    modelSchemaDefinition.addField(ModelFieldDefinition.field(
-      key: Messages.SENDERSEEN,
-      isRequired: false,
-      ofType: ModelFieldType(ModelFieldTypeEnum.bool)
-    ));
-    
-    modelSchemaDefinition.addField(ModelFieldDefinition.field(
-      key: Messages.RECEIVERSEEN,
+      key: Messages.HOSTSENT,
       isRequired: false,
       ofType: ModelFieldType(ModelFieldTypeEnum.bool)
     ));
@@ -264,6 +224,12 @@ class Messages extends Model {
       key: Messages.DATE,
       isRequired: false,
       ofType: ModelFieldType(ModelFieldTypeEnum.dateTime)
+    ));
+    
+    modelSchemaDefinition.addField(ModelFieldDefinition.field(
+      key: Messages.SEEN,
+      isRequired: false,
+      ofType: ModelFieldType(ModelFieldTypeEnum.bool)
     ));
     
     modelSchemaDefinition.addField(ModelFieldDefinition.nonQueryField(

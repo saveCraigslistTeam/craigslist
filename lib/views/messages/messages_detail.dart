@@ -4,24 +4,17 @@ import '../../models/Messages.dart';
 import './message_form.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
-// amplify packages
-import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
 import '../../models/ModelProvider.dart';
-import '../../models/Messages.dart';
 
 class MessageDetail extends StatefulWidget {
 
   final String title;
   final AmplifyDataStore dataStore;
-  final String userName;
-  final String sale;
 
   const MessageDetail({Key? key, 
     required this.title,
-    required this.dataStore,
-    required this.userName,
-    required this.sale}) : super(key: key);
+    required this.dataStore}) : super(key: key);
 
   @override
   State<MessageDetail> createState() => _MessageDetailState();
@@ -39,10 +32,12 @@ class _MessageDetailState extends State<MessageDetail> {
     super.initState();
   }
 
-  Future<void> getMessageStream(String userName, String sale) async {
+  Future<void> getMessageStream(String userName, String sale, String customer) async {
     messageStream = widget.dataStore
         .observeQuery(Messages.classType,
-        where: (Messages.SENDER.beginsWith(userName) | Messages.RECEIVER.beginsWith(userName)) & Messages.SALE.beginsWith(sale),
+        where: (Messages.HOST.eq(userName) | Messages.CUSTOMER.eq(userName))
+                & (Messages.HOST.eq(customer) | Messages.CUSTOMER.eq(customer))  
+                & Messages.SALE.eq(sale),
         sortBy: [Messages.DATE.ascending()])
         .listen((QuerySnapshot<Messages> snapshot) {
       setState(() {
@@ -58,16 +53,19 @@ class _MessageDetailState extends State<MessageDetail> {
     final List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
     final String? userName = args[0];
     final String? sale = args[1];
+    final String? customer = args[2];
 
     if(_isLoading) {
-      getMessageStream(userName.toString(), sale.toString());
+      getMessageStream(userName.toString(), sale.toString(), customer.toString());
     }
     return (
-      _isLoading ? Center(child: Text("loading messages")) :
+      _isLoading ? const Center(child: Text("loading messages")) :
       Scaffold(
       appBar: AppBar(
         title: Text(
-          "To: " + _messages[0].customer.toString()),
+          "To: " + (_messages[0].host == userName 
+                      ? _messages[0].customer.toString()
+                      : _messages[0].host.toString())),
         leading: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             child: GestureDetector(
@@ -127,7 +125,7 @@ class ColoredBox extends StatelessWidget {
 }
 
 Widget getListTile(int index, List<Messages> data, BuildContext context, String userName) {
-  if (data[index].receiver == userName) {
+  if (data[index].host == userName ? data[index].hostSent! : !data[index].hostSent!) {
     return ListTile(
       title: ColoredBox(
           color: Theme.of(context).primaryColor, 
@@ -158,7 +156,6 @@ class ScrollingMessagesSliver extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    final ScrollController _sc = ScrollController();
     
     return SafeArea(
         child: Column(

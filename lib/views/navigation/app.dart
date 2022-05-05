@@ -3,6 +3,7 @@ import 'package:craigslist/views/navigation/home.dart';
 import 'package:craigslist/views/messages/messages_detail.dart';
 import 'package:craigslist/views/navigation/login.dart';
 import 'package:craigslist/views/sales/my_sales.dart';
+import 'package:craigslist/views/messages/message_seller.dart';
 import 'package:provider/provider.dart';
 import '../../amplifyconfiguration.dart';
 import '../messages/inbox.dart';
@@ -83,10 +84,9 @@ class _AppState extends State<App> {
           DataStore: _dataStorePlugin, Storage: storage, Auth: _authPlugin),
       '/msgDetail': (context) => MessageDetail(
           title: App.title,
-          dataStore: _dataStorePlugin,
-          userName: 'sender',
-          sale: 'sale'),
+          dataStore: _dataStorePlugin),
       '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
+      '/msgSeller': (context) => MessageSellerForm()
     };
 
     //return Authenticator is a good option as well
@@ -128,7 +128,7 @@ class _AppState extends State<App> {
       ),
       themeMode: context.read<ThemeManager>().themeMode,
       // initialRoute: '/mySales',
-      initialRoute: '/',
+      initialRoute: '/home',
       routes: routes,
     );
   }
