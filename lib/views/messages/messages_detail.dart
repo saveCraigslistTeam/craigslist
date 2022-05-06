@@ -9,11 +9,9 @@ import '../../models/ModelProvider.dart';
 
 class MessageDetail extends StatefulWidget {
 
-  final String title;
   final AmplifyDataStore dataStore;
 
   const MessageDetail({Key? key, 
-    required this.title,
     required this.dataStore}) : super(key: key);
 
   @override
@@ -62,10 +60,12 @@ class _MessageDetailState extends State<MessageDetail> {
       _isLoading ? const Center(child: Text("loading messages")) :
       Scaffold(
       appBar: AppBar(
-        title: Text(
-          "To: " + (_messages[0].host == userName 
-                      ? _messages[0].customer.toString()
-                      : _messages[0].host.toString())),
+        title: _messages.length > 0 
+              ? Text(
+                "To: " + (_messages[0].host == userName 
+                            ? _messages[0].customer.toString()
+                            : _messages[0].host.toString()))
+              : Text("To: $customer"),
         leading: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             child: GestureDetector(
@@ -76,10 +76,14 @@ class _MessageDetailState extends State<MessageDetail> {
             ),
         backgroundColor: Theme.of(context).primaryColor,
           ),
-      body: ScrollingMessagesSliver(data: _messages, 
+      body: _messages.length > 0 
+      ? ScrollingMessagesSliver(data: _messages, 
         dataStore: widget.dataStore, 
-        userName: userName.toString()),
-      )
+        userName: userName.toString())
+      : NewMessageToSeller(sender: userName.toString(),
+                          saleId: sale.toString(),
+                          seller: customer.toString(),
+                          dataStore: widget.dataStore,))
     );
   }
 }
@@ -184,4 +188,49 @@ class ScrollingMessagesSliver extends StatelessWidget{
         )
       );
   }
+}
+
+class NewMessageToSeller extends StatelessWidget {
+  final String sender;
+  final String saleId;
+  final String seller;
+  final AmplifyDataStore dataStore;
+
+  NewMessageToSeller({Key? key,
+    required this.sender,
+    required this.saleId,
+    required this.seller,
+    required this.dataStore}) : super(key: key);
+
+  Messages createMessageData() {
+
+    Messages dummyMessage = Messages(sale: saleId,
+      host: seller,
+      customer: sender,
+      hostSent: false,
+      text: '',
+      date: TemporalDateTime.now(),
+      seen: false);
+
+    return dummyMessage;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+        child: Column(
+          children: [
+            const Expanded(flex: 8,
+                  child: Center(child: Text('Message seller'))),
+    Expanded(flex: 2, child: MessageForm(
+              messageData: createMessageData(),
+              dataStore: dataStore,
+              userName: sender
+              ),
+            )
+          ]
+        )
+      );
+  }
+
 }

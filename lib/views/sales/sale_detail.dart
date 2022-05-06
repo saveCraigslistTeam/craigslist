@@ -5,10 +5,14 @@ import '../../models/ModelProvider.dart';
 import 'edit_sale.dart';
 
 class SaleDetailView extends StatefulWidget {
-  const SaleDetailView({Key? key, required this.sale, required this.saleImages})
+  const SaleDetailView({Key? key, 
+  required this.sale, 
+  required this.saleImages,
+  required this.customer})
       : super(key: key);
   final Sale sale;
   final List<SaleImage>? saleImages;
+  final String customer;
 
   @override
   State<SaleDetailView> createState() => _SaleDetailViewState();
@@ -24,7 +28,10 @@ class _SaleDetailViewState extends State<SaleDetailView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('${widget.sale.title}'), actions: <Widget>[
-        ElevatedButton(onPressed: () {}, child: Text('Contact Seller'))
+        ElevatedButton(onPressed: () {
+          Navigator.pushNamed(context, '/msgDetail',
+                      arguments: [widget.customer, widget.sale.id, widget.sale.user]);
+        }, child: Text('Contact Seller'))
       ]),
       body: Center(
         child: Column(

@@ -1,7 +1,6 @@
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
-import '../drawer.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -11,6 +10,16 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  bool _loadingUserName = true;
+  String userName = '';
+
+  @override
+  initState() {
+    super.initState();
+    getUserCredentials();
+  }
+
   //signout using amplify api
   Future<void> signOut() async {
     try {
@@ -19,6 +28,29 @@ class _HomeState extends State<Home> {
     } on AuthException catch (e) {
       '${e.message} - ${e.recoverySuggestion}';
     }
+  }
+
+  Future<void> getUserCredentials() async {
+    final AuthSession res = (await Amplify.Auth.fetchAuthSession());
+    if (res.isSignedIn) {
+      final user = await Amplify.Auth.fetchUserAttributes();
+      
+      for(int i = 0; i < user.length; i++) {
+        if(user[i].value.contains('@')) {
+          getUserName(user[i].value);
+          break;
+        }
+      }
+    }
+  }
+
+  void getUserName(String userEmail) {
+    final indexOfAt = userEmail.indexOf('@');
+
+    setState(() {
+      userName = userEmail.substring(0, indexOfAt);
+      _loadingUserName = false;
+    });
   }
 
   @override
@@ -56,7 +88,7 @@ class _HomeState extends State<Home> {
               ListTile(
                 leading: const Icon(Icons.message),
                 title: const Text('Messages'),
-                onTap: () => {Navigator.pushNamed(context, '/inbox')},
+                onTap: () => {Navigator.pushNamed(context, '/inbox', arguments:[userName])},
               ),
               ListTile(
                 leading: const Icon(Icons.home),
@@ -66,12 +98,12 @@ class _HomeState extends State<Home> {
               ListTile(
                 leading: const Icon(Icons.shopping_bag),
                 title: const Text('My Sales'),
-                onTap: () => {Navigator.pushNamed(context, '/mySales')},
+                onTap: () => {Navigator.pushNamed(context, '/mySales', arguments:[userName])},
               ),
               ListTile(
                 leading: const Icon(Icons.shopping_bag),
                 title: const Text('All Sales'),
-                onTap: () => {Navigator.pushNamed(context, '/allSales')},
+                onTap: () => {Navigator.pushNamed(context, '/allSales', arguments:[userName])},
               ),
               const ListTile(
                 leading: Icon(Icons.account_circle),
@@ -84,6 +116,11 @@ class _HomeState extends State<Home> {
               ),
             ],
           ),
-        ));
+        ),
+    body: _loadingUserName 
+        ? Center(
+            child: CircularProgressIndicator(color: Theme.of(context).primaryColor)) 
+        : Center(child: Text('User: $userName\'s home screen'))   
+    );
   }
 }

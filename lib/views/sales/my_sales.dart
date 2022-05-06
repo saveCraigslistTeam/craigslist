@@ -1,7 +1,6 @@
 // dart async library we will refer to when setting up real time updates
 import 'dart:async';
 import 'dart:core';
-import 'dart:io';
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
@@ -14,21 +13,18 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/ModelProvider.dart';
 import 'sale_detail_owner.dart';
 import 'add_sale.dart';
-import '../drawer.dart';
 
 class MySales extends StatefulWidget {
   MySales(
       {Key? key,
       required this.DataStore,
       required this.Storage,
-      required this.Auth,
-      required this.username})
+      required this.Auth})
       : super(key: key);
 
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
   final AmplifyAuthCognito Auth;
-  final String username;
 
   @override
   _MySalesState createState() => _MySalesState();
@@ -44,16 +40,17 @@ class _MySalesState extends State<MySales> {
   // list of Todos - initially empty
   List<Sale> _sales = [];
 
+  // username of currently  logged in user
+  String username = '';
+
   @override
   void initState() {
-    // kick off app initialization
-    getSalesStream();
     super.initState();
   }
 
   Future<void> getSalesStream() async {
     _subscription = widget.DataStore.observeQuery(Sale.classType,
-            where: (Sale.USER.eq(widget.username)))
+            where: (Sale.USER.eq(username)))
         .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
@@ -64,8 +61,16 @@ class _MySalesState extends State<MySales> {
 
   @override
   Widget build(BuildContext context) {
+    // Import the arguments from previous screen.
+    List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
+    username = args[0].toString();
+
+    if(_isLoading) {
+      // kick off app initialization
+      getSalesStream();
+    }
+
     return Scaffold(
-      drawer: drawer(context),
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
         title: Text('My Sales'),
@@ -80,7 +85,7 @@ class _MySalesState extends State<MySales> {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => AddSaleForm(username: widget.username)),
+                builder: (context) => AddSaleForm(username: username)),
           );
         },
         tooltip: 'Add Sale',

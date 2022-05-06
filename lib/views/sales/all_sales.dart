@@ -14,21 +14,18 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/ModelProvider.dart';
 import 'sale_detail.dart';
 import 'add_sale.dart';
-import '../drawer.dart';
 
 class AllSales extends StatefulWidget {
   AllSales(
       {Key? key,
       required this.DataStore,
       required this.Storage,
-      required this.Auth,
-      required this.username})
+      required this.Auth})
       : super(key: key);
 
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
   final AmplifyAuthCognito Auth;
-  final String username;
 
   @override
   _AllSalesState createState() => _AllSalesState();
@@ -43,6 +40,9 @@ class _AllSalesState extends State<AllSales> {
 
   // list of Todos - initially empty
   List<Sale> _sales = [];
+
+  // Username of potential buyer
+  String customer = '';
 
   @override
   void initState() {
@@ -64,8 +64,10 @@ class _AllSalesState extends State<AllSales> {
 
   @override
   Widget build(BuildContext context) {
+    List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
+    customer = args[0].toString();
+
     return Scaffold(
-      drawer: drawer(context),
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
         title: Text('All Sales'),
@@ -74,7 +76,7 @@ class _AllSalesState extends State<AllSales> {
       // body: Center(child: CircularProgressIndicator()),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : SalesList(sales: _sales),
+          : SalesList(sales: _sales, customer: customer),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -82,15 +84,17 @@ class _AllSalesState extends State<AllSales> {
 
 class SalesList extends StatelessWidget {
   final List<Sale> sales;
+  final String customer;
 
-  SalesList({required this.sales});
+  SalesList({required this.sales,
+            required this.customer});
 
   @override
   Widget build(BuildContext context) {
     return sales.length >= 1
         ? ListView(
             padding: EdgeInsets.all(8),
-            children: sales.map((sale) => SaleItem(sale: sale)).toList())
+            children: sales.map((sale) => SaleItem(sale: sale, customer: customer)).toList())
         : Center(child: Text('Tap button below to add a sale!'));
   }
 }
@@ -98,8 +102,10 @@ class SalesList extends StatelessWidget {
 class SaleItem extends StatelessWidget {
   final double iconSize = 24.0;
   final Sale sale;
+  final String customer;
 
-  SaleItem({required this.sale});
+  SaleItem({required this.sale,
+          required this.customer});
 
   void _favoriteSale(BuildContext context) async {}
 
@@ -148,6 +154,7 @@ class SaleItem extends StatelessWidget {
                   builder: (context) => SaleDetailView(
                         sale: sale,
                         saleImages: SaleImages,
+                        customer: customer
                       )));
         },
       ),
