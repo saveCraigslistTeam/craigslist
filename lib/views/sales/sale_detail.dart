@@ -24,7 +24,9 @@ class _SaleDetailViewState extends State<SaleDetailView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('${widget.sale.title}'), actions: <Widget>[
-        ElevatedButton(onPressed: () {}, child: Text('Contact Seller'))
+        ElevatedButton(onPressed: () {
+          
+        }, child: Text('Contact Seller'))
       ]),
       body: Center(
         child: Column(

@@ -21,14 +21,12 @@ class AllSales extends StatefulWidget {
       {Key? key,
       required this.DataStore,
       required this.Storage,
-      required this.Auth,
-      required this.username})
+      required this.Auth})
       : super(key: key);
 
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
   final AmplifyAuthCognito Auth;
-  final String username;
 
   @override
   _AllSalesState createState() => _AllSalesState();
@@ -43,6 +41,9 @@ class _AllSalesState extends State<AllSales> {
 
   // list of Todos - initially empty
   List<Sale> _sales = [];
+
+  // Username of potential buyer
+  String username = '';
 
   @override
   void initState() {
@@ -64,6 +65,9 @@ class _AllSalesState extends State<AllSales> {
 
   @override
   Widget build(BuildContext context) {
+    List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
+    username = args[0].toString();
+
     return Scaffold(
       drawer: drawer(context),
       appBar: AppBar(

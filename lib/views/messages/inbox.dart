@@ -28,7 +28,6 @@ class _InboxPageState extends State<InboxPage> {
 
   @override
   void initState() {
-    getUserCredentials();
     super.initState();
   }
 
@@ -47,32 +46,15 @@ class _InboxPageState extends State<InboxPage> {
         });
   }
 
-  Future<void> getUserCredentials() async {
-    final AuthSession res = (await Amplify.Auth.fetchAuthSession());
-    if (res.isSignedIn) {
-      final user = await Amplify.Auth.fetchUserAttributes();
-      
-      for(int i = 0; i < user.length; i++) {
-        if(user[i].value.contains('@')) {
-          getUserName(user[i].value);
-          break;
-        }
-      }
-    }
-  }
-
-  void getUserName(String userEmail) {
-    final indexOfAt = userEmail.indexOf('@');
-
-    setState(() {
-      userName = userEmail.substring(0, indexOfAt);
-      getMessageStream();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    print(userName);
+    List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
+    userName = args[0].toString();
+
+    if(_isLoading) {
+      getMessageStream();
+    }
+    
     return (
       Scaffold(
         appBar: AppBar(

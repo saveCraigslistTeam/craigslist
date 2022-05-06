@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print
 
 import 'package:craigslist/theme/theme_manager.dart';
-import 'package:craigslist/views/drawer.dart';
 import 'package:craigslist/views/navigation/home.dart';
 import 'package:craigslist/views/messages/messages_detail.dart';
 import 'package:craigslist/views/navigation/login.dart';
@@ -41,32 +40,31 @@ class _AppState extends State<App> {
 
   bool configured = false;
   bool authenticated = false;
-  late String username;
 
   @override
   initState() {
     super.initState();
     _configureAmplify();
-    username = '';
   }
 
   Future<void> _configureAmplify() async {
-    try {
-      // add Amplify plugins
-      await Amplify.addPlugins(
-          [_dataStorePlugin, _apiPlugin, _authPlugin, storage]);
-      // note that Amplify cannot be configured more than once!
-      await Amplify.configure(amplifyconfig);
+    if(!Amplify.isConfigured) {
+      try {
+        // add Amplify plugins
+        await Amplify.addPlugins(
+            [_dataStorePlugin, _apiPlugin, _authPlugin, storage]);
+        // note that Amplify cannot be configured more than once!
+        await Amplify.configure(amplifyconfig);
 
-      if (Amplify.isConfigured) {
-        isConfigured();
-        print("amplify configured");
-        getUsername();
-      } else {
-        print('amplify not configured');
+        if (Amplify.isConfigured) {
+          isConfigured();
+          print("amplify configured");
+        } else {
+          print('amplify not configured');
+        }
+      } catch (e) {
+        debugPrint('An error occurred while configuring Amplify: $e');
       }
-    } catch (e) {
-      debugPrint('An error occurred while configuring Amplify: $e');
     }
   }
 
@@ -83,19 +81,6 @@ class _AppState extends State<App> {
     }
   }
 
-  void getUsername() async {
-    try {
-      final res = await Amplify.Auth.getCurrentUser();
-      String userEmail = res.username.toString();
-      final indexOfAt = userEmail.indexOf('@');
-      setState(() {
-        username = userEmail.substring(0, indexOfAt);
-      });
-    } on AuthException catch (e) {
-      print(e.message);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final routes = {
@@ -104,13 +89,11 @@ class _AppState extends State<App> {
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin,
           Storage: storage,
-          Auth: _authPlugin,
-          username: username),
+          Auth: _authPlugin),
       '/allSales': (context) => AllSales(
           DataStore: _dataStorePlugin,
           Storage: storage,
-          Auth: _authPlugin,
-          username: username),
+          Auth: _authPlugin),
       '/msgDetail': (context) =>
           MessageDetail(title: App.title, dataStore: _dataStorePlugin),
       '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
