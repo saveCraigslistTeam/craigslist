@@ -13,7 +13,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/ModelProvider.dart';
 import 'sale_detail_owner.dart';
 import 'add_sale.dart';
-import '../drawer.dart';
 
 class MySales extends StatefulWidget {
   MySales(
@@ -72,7 +71,6 @@ class _MySalesState extends State<MySales> {
     }
 
     return Scaffold(
-      drawer: drawer(context),
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
         title: Text('My Sales'),
