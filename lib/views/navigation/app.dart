@@ -46,7 +46,7 @@ class _AppState extends State<App> {
   }
 
   Future<void> _configureAmplify() async {
-    if(!Amplify.isConfigured) {
+    if (!Amplify.isConfigured) {
       try {
         // add Amplify plugins
         await Amplify.addPlugins(
@@ -87,13 +87,14 @@ class _AppState extends State<App> {
       '/mySales': (context) => MySales(
           DataStore: _dataStorePlugin,
           Storage: storage,
-          Auth: _authPlugin),
-      '/allSales': (context) => AllSales(
+          Auth: _authPlugin,
+          Role: 'seller'),
+      '/allSales': (context) => MySales(
           DataStore: _dataStorePlugin,
           Storage: storage,
-          Auth: _authPlugin),
-      '/msgDetail': (context) =>
-          MessageDetail(dataStore: _dataStorePlugin),
+          Auth: _authPlugin,
+          Role: 'buyer'),
+      '/msgDetail': (context) => MessageDetail(dataStore: _dataStorePlugin),
       '/inbox': (context) => InboxPage(dataStore: _dataStorePlugin),
     };
 

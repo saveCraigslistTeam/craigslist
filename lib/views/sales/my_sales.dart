@@ -25,12 +25,14 @@ class MySales extends StatefulWidget {
       {Key? key,
       required this.DataStore,
       required this.Storage,
-      required this.Auth})
+      required this.Auth,
+      required this.Role})
       : super(key: key);
 
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
   final AmplifyAuthCognito Auth;
+  final String Role;
 
   @override
   _MySalesState createState() => _MySalesState();
@@ -48,9 +50,13 @@ class _MySalesState extends State<MySales> {
   }
 
   Future<void> getSalesStream() async {
-    _subscription = widget.DataStore.observeQuery(Sale.classType,
+    Stream<QuerySnapshot<Sale>> query;
+    query = widget.Role == 'seller'
+        ? widget.DataStore.observeQuery(Sale.classType,
             where: (Sale.USER.eq(username)))
-        .listen((QuerySnapshot<Sale> snapshot) {
+        : widget.DataStore.observeQuery(Sale.classType);
+
+    _subscription = query.listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
         _sales = snapshot.items;
@@ -71,7 +77,7 @@ class _MySalesState extends State<MySales> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
-        title: Text("${username}'s Sales"),
+        title: Text("$username's Sales"),
         actions: [
           IconButton(
               onPressed: () {
@@ -102,7 +108,11 @@ class SalesList extends StatelessWidget {
         ? SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Column(
-                children: sales.map((sale) => SaleItem(sale: sale)).toList()))
+                children: sales
+                    .map((sale) => SaleItem(
+                          sale: sale,
+                        ))
+                    .toList()))
         : Center(child: Text('Tap the + button below to add a sale!'));
   }
 }
@@ -120,9 +130,13 @@ class _SaleItemState extends State<SaleItem> {
   late List<SaleImage> saleImages;
   @override
   void initState() {
-    getSaleImages(widget.sale);
     saleImages = [];
-    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      await getSaleImages(widget.sale);
+      setState(() {});
+    });
+
+    // super.initState();
   }
 
   @override
@@ -162,7 +176,7 @@ class _SaleItemState extends State<SaleItem> {
                   ),
                   trailing: IconButton(
                       onPressed: () {
-                        showAlertDialog(context);
+                        showAlert(context);
                       },
                       icon: Icon(Icons.delete)),
                 ),
@@ -176,7 +190,7 @@ class _SaleItemState extends State<SaleItem> {
             )));
   }
 
-  showAlertDialog(BuildContext context) {
+  showAlert(BuildContext context) {
     // set up the buttons
     Widget cancelButton = TextButton(
       child: Text("Cancel"),
@@ -188,6 +202,7 @@ class _SaleItemState extends State<SaleItem> {
       child: Text("Delete"),
       onPressed: () {
         _deleteSale(context);
+        Navigator.of(context).pop();
       },
     );
 
