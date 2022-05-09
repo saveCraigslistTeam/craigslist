@@ -162,7 +162,7 @@ class _SaleItemState extends State<SaleItem> {
                   ),
                   trailing: IconButton(
                       onPressed: () {
-                        _deleteSale(context);
+                        showAlertDialog(context);
                       },
                       icon: Icon(Icons.delete)),
                 ),
@@ -174,6 +174,43 @@ class _SaleItemState extends State<SaleItem> {
                 ),
               ],
             )));
+  }
+
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: Text("Cancel"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    Widget continueButton = TextButton(
+      child: Text("Delete"),
+      onPressed: () {
+        _deleteSale(context);
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: const Text(
+        "Delete Sale",
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      content: const Text("Are you sure you want to delete this sale?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 
   void _deleteSale(BuildContext context) async {

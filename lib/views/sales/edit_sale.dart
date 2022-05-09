@@ -48,9 +48,15 @@ class _EditSaleFormState extends State<EditSaleForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xffA682FF),
         title: Text('Edit Sale'),
         actions: <Widget>[
-          ElevatedButton(onPressed: _saveSale, child: Text('Save')),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Color(0xffA682FF),
+              ),
+              onPressed: _saveSale,
+              child: Text('Save')),
         ],
       ),
       body: Container(
@@ -80,7 +86,11 @@ class _EditSaleFormState extends State<EditSaleForm> {
                   decoration:
                       InputDecoration(filled: true, labelText: 'Price')),
               ElevatedButton(
-                  onPressed: uploadImage, child: Text('Upload Image')),
+                  style: ElevatedButton.styleFrom(
+                    primary: Color(0xffA682FF),
+                  ),
+                  onPressed: uploadImage,
+                  child: Text('Upload Image')),
             ],
           ),
         ),

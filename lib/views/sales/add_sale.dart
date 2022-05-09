@@ -75,6 +75,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xffA682FF),
         title: Text('Add Sale'),
         actions: <Widget>[
           ElevatedButton(onPressed: _saveSale, child: Text('Save')),
