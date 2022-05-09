@@ -103,7 +103,7 @@ class SalesList extends StatelessWidget {
             scrollDirection: Axis.vertical,
             child: Column(
                 children: sales.map((sale) => SaleItem(sale: sale)).toList()))
-        : Center(child: Text('Tap button below to add a sale!'));
+        : Center(child: Text('Tap the + button below to add a sale!'));
   }
 }
 
@@ -166,13 +166,7 @@ class _SaleItemState extends State<SaleItem> {
                       },
                       icon: Icon(Icons.delete)),
                 ),
-                Container(
-                  height: 200.0,
-                  child: Ink.image(
-                    image: cardImage,
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                cardImage,
                 Container(
                   padding: EdgeInsets.all(16.0),
                   alignment: Alignment.centerLeft,
@@ -191,14 +185,13 @@ class _SaleItemState extends State<SaleItem> {
       await Amplify.DataStore.delete(widget.sale);
       await Amplify.DataStore.delete(saleImage[0]);
     } catch (e) {
-      debugPrint('An error occurred while deleting Todo: $e');
+      debugPrint('An error occurred while deleting Sale: $e');
     }
   }
 
   Future<List<SaleImage>?> getSaleImages(Sale sale) async {
     List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
         where: SaleImage.SALEID.eq(sale.id)));
-    String? image = images[0].imageURL;
     setState(() {
       saleImages = images;
     });
