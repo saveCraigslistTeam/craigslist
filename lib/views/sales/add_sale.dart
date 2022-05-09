@@ -120,7 +120,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
 
   Future<String?> getDownloadUrl(key) async {
     try {
-      S3GetUrlOptions options = S3GetUrlOptions(expires: 604799);
+      S3GetUrlOptions options = S3GetUrlOptions(
+          expires: 604799, accessLevel: StorageAccessLevel.guest);
       final GetUrlResult result =
           await Amplify.Storage.getUrl(options: options, key: key);
       debugPrint('Got URL: ${result.url}');

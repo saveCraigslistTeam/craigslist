@@ -1,8 +1,10 @@
 // dart async library we will refer to when setting up real time updates
 import 'dart:core';
+import 'package:craigslist/views/sales/services/image_container.dart';
 import 'package:flutter/material.dart';
 import '../../models/ModelProvider.dart';
 import 'edit_sale.dart';
+import 'services/image_container.dart';
 
 class SaleDetailOwnerView extends StatefulWidget {
   const SaleDetailOwnerView(
@@ -52,29 +54,10 @@ class _SaleDetailOwnerViewState extends State<SaleDetailOwnerView> {
               padding: const EdgeInsets.all(25.0),
               child: Text('Condition: ${widget.sale.condition}'),
             ),
-            imageContainer()
+            imageContainer(widget.saleImages)
           ],
         ),
       ),
     );
-  }
-
-  Padding imageContainer() {
-    if (widget.saleImages == null) {
-      return const Padding(
-        padding: EdgeInsets.all(25.0),
-        child: Text('No image to display'),
-      );
-    } else {
-      return Padding(
-          padding: const EdgeInsets.all(25.0),
-          child: Column(
-            children: [
-              Image.network(
-                widget.saleImages![0].imageURL.toString(),
-              ),
-            ],
-          ));
-    }
   }
 }

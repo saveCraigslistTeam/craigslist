@@ -5,10 +5,11 @@ import '../../models/ModelProvider.dart';
 import 'edit_sale.dart';
 
 class SaleDetailView extends StatefulWidget {
-  const SaleDetailView({Key? key, 
-  required this.sale, 
-  required this.saleImages,
-  required this.customer})
+  const SaleDetailView(
+      {Key? key,
+      required this.sale,
+      required this.saleImages,
+      required this.customer})
       : super(key: key);
   final Sale sale;
   final List<SaleImage>? saleImages;
@@ -28,10 +29,15 @@ class _SaleDetailViewState extends State<SaleDetailView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('${widget.sale.title}'), actions: <Widget>[
-        ElevatedButton(onPressed: () {
-          Navigator.pushNamed(context, '/msgDetail',
-                      arguments: [widget.customer, widget.sale.id, widget.sale.user]);
-        }, child: Text('Contact Seller'))
+        ElevatedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/msgDetail', arguments: [
+                widget.customer,
+                widget.sale.id,
+                widget.sale.user
+              ]);
+            },
+            child: Text('Contact Seller'))
       ]),
       body: Center(
         child: Column(
@@ -68,13 +74,11 @@ class _SaleDetailViewState extends State<SaleDetailView> {
     } else {
       return Padding(
           padding: const EdgeInsets.all(25.0),
-          child: Column(
-            children: [
-              Image.network(
-                widget.saleImages![0].imageURL.toString(),
-              ),
-            ],
-          ));
+          child: Image.network(widget.saleImages![0].imageURL.toString(),
+              errorBuilder: (BuildContext context, Object exception,
+                  StackTrace? stackTrace) {
+            return const Text('Could not retrieve image!');
+          }));
     }
   }
 }

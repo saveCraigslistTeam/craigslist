@@ -64,7 +64,8 @@ class _AllSalesState extends State<AllSales> {
 
   @override
   Widget build(BuildContext context) {
-    List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
+    List<String?> args =
+        ModalRoute.of(context)!.settings.arguments as List<String?>;
     customer = args[0].toString();
 
     return Scaffold(
@@ -86,15 +87,16 @@ class SalesList extends StatelessWidget {
   final List<Sale> sales;
   final String customer;
 
-  SalesList({required this.sales,
-            required this.customer});
+  SalesList({required this.sales, required this.customer});
 
   @override
   Widget build(BuildContext context) {
     return sales.length >= 1
         ? ListView(
             padding: EdgeInsets.all(8),
-            children: sales.map((sale) => SaleItem(sale: sale, customer: customer)).toList())
+            children: sales
+                .map((sale) => SaleItem(sale: sale, customer: customer))
+                .toList())
         : Center(child: Text('Tap button below to add a sale!'));
   }
 }
@@ -104,8 +106,7 @@ class SaleItem extends StatelessWidget {
   final Sale sale;
   final String customer;
 
-  SaleItem({required this.sale,
-          required this.customer});
+  SaleItem({required this.sale, required this.customer});
 
   void _favoriteSale(BuildContext context) async {}
 
@@ -152,10 +153,7 @@ class SaleItem extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => SaleDetailView(
-                        sale: sale,
-                        saleImages: SaleImages,
-                        customer: customer
-                      )));
+                      sale: sale, saleImages: SaleImages, customer: customer)));
         },
       ),
     );
