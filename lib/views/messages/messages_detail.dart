@@ -8,11 +8,15 @@ import 'dart:async';
 import '../../models/ModelProvider.dart';
 
 class MessageDetail extends StatefulWidget {
+  /// Provides the details of the [messages] each conversation.
+  /// 
+  /// Each conversation is a list of [Messages] linked together by
+  /// the unique [sale], [host], and [customer]. The list is provided
+  /// in ascending order and pupulated with a [SliverList].
 
   final AmplifyDataStore dataStore;
 
-  const MessageDetail({Key? key, 
-    required this.dataStore}) : super(key: key);
+  const MessageDetail({Key? key, required this.dataStore}) : super(key: key);
 
   @override
   State<MessageDetail> createState() => _MessageDetailState();
@@ -30,19 +34,23 @@ class _MessageDetailState extends State<MessageDetail> {
     super.initState();
   }
 
-  Future<void> getMessageStream(String userName, String sale, String customer) async {
+  Future<void> getMessageStream(String userName, 
+                                String sale, 
+                                String customer) async {
     messageStream = widget.dataStore
         .observeQuery(Messages.classType,
-        where: (Messages.HOST.eq(userName) | Messages.CUSTOMER.eq(userName))
-                & (Messages.HOST.eq(customer) | Messages.CUSTOMER.eq(customer))  
+        where: (Messages.HOST.eq(userName) 
+                  | Messages.CUSTOMER.eq(userName))
+                & (Messages.HOST.eq(customer) 
+                  | Messages.CUSTOMER.eq(customer))  
                 & Messages.SALE.eq(sale),
         sortBy: [Messages.DATE.ascending()])
         .listen((QuerySnapshot<Messages> snapshot) {
-      setState(() {
-        if (_isLoading) _isLoading = false;
-        _messages = snapshot.items;
+            setState(() {
+              if (_isLoading) _isLoading = false;
+              _messages = snapshot.items;
+            });
       });
-    });
   }
 
   @override
@@ -56,39 +64,48 @@ class _MessageDetailState extends State<MessageDetail> {
     if(_isLoading) {
       getMessageStream(userName.toString(), sale.toString(), customer.toString());
     }
+    
     return (
-      _isLoading ? const Center(child: Text("loading messages")) :
-      Scaffold(
-      appBar: AppBar(
-        title: _messages.length > 0 
-              ? Text(
-                "To: " + (_messages[0].host == userName 
-                            ? _messages[0].customer.toString()
-                            : _messages[0].host.toString()))
-              : Text("To: $customer"),
-        leading: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-            child: GestureDetector(
-              onTap: () => {
-                Navigator.of(context).pop()
-              },
-              child: const BackButton())
+      _isLoading 
+      ? const Center(child: Text("loading messages")) 
+      : Scaffold(
+        appBar: AppBar(
+          title: _messages.isNotEmpty 
+                ? Text(
+                  "To: " + (_messages[0].host == userName 
+                              ? _messages[0].customer.toString()
+                              : _messages[0].host.toString()))
+                : Center(child: Text("To: $customer")),
+          leading: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              child: GestureDetector(
+                onTap: () => {
+                  Navigator.of(context).pop()
+                },
+                child: const BackButton())
+              ),
+          backgroundColor: Theme.of(context).primaryColor,
             ),
-        backgroundColor: Theme.of(context).primaryColor,
-          ),
-      body: _messages.length > 0 
-      ? ScrollingMessagesSliver(data: _messages, 
-        dataStore: widget.dataStore, 
-        userName: userName.toString())
-      : NewMessageToSeller(sender: userName.toString(),
-                          saleId: sale.toString(),
-                          seller: customer.toString(),
-                          dataStore: widget.dataStore,))
-    );
+        body: _messages.isNotEmpty 
+        ? ScrollingMessagesSliver(data: _messages, 
+          dataStore: widget.dataStore, 
+          userName: userName.toString())
+        : NewMessageToSeller(sender: userName.toString(),
+                            saleId: sale.toString(),
+                            seller: customer.toString(),
+                            dataStore: widget.dataStore,))
+      );
   }
 }
 
 class ColoredBox extends StatelessWidget {
+  /// Formats a [ColoredBox] with the [Message] [text].
+  /// 
+  /// If the currently logged in [userName] is the [sender] of the
+  /// message. The message will appear on the right hand side of the 
+  /// screen as a purple [ColoredBox]. Otherwise the message will 
+  /// appear on the right hand side of the screen as a grey [ColoredBox]
+  
   final String text;
   final Color color;
   final MainAxisAlignment alignment;
@@ -128,12 +145,22 @@ class ColoredBox extends StatelessWidget {
   }
 }
 
-Widget getListTile(int index, List<Messages> data, BuildContext context, String userName) {
-  if (data[index].host == userName ? data[index].hostSent! : !data[index].hostSent!) {
+Widget getListTile(int index, List<Messages> data, BuildContext context, 
+                  String userName) {
+  /// Returns a [ListTile] of the properly formatted color depending
+  /// on whether the current [userName] has sent the message.
+  /// 
+  /// [ColoredBox] will be purple if the user sent the message. 
+  /// [Coloredbox] will be grey if the user who sent the message is
+  /// not the currently logged in user.
+
+  if (data[index].host == userName 
+      ? data[index].hostSent! 
+      : !data[index].hostSent!) {
     return ListTile(
       title: ColoredBox(
           color: Theme.of(context).primaryColor, 
-          text: data[index].text ?? '',
+          text: data[index].text.toString(),
           alignment: MainAxisAlignment.end,
           textAlignment: TextAlign.start)
     );
@@ -141,7 +168,7 @@ Widget getListTile(int index, List<Messages> data, BuildContext context, String 
     return ListTile(
       title: ColoredBox(
           color: Colors.grey.shade200, 
-          text: data[index].text ?? '',
+          text: data[index].text.toString(),
           alignment: MainAxisAlignment.start,
           textAlignment: TextAlign.start)
     );
@@ -149,6 +176,9 @@ Widget getListTile(int index, List<Messages> data, BuildContext context, String 
 }
 
 class ScrollingMessagesSliver extends StatelessWidget{
+  /// Creates a [SliverList] of the conversation items in ascending order
+  /// where the most recent message appears at the bottom.
+  
   final List<Messages> data;
   final AmplifyDataStore dataStore;
   final String userName;
@@ -161,42 +191,49 @@ class ScrollingMessagesSliver extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     
-    return SafeArea(
-        child: Column(
-          children: [
-            Expanded(flex: 8,
-                  child:CustomScrollView(
-      controller: ScrollController(initialScrollOffset: 300), 
-      slivers: [
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-                      (context, int index) {
-                        return getListTile(index, data, context, userName);
-                      },
-                      childCount: data.length,
-                      semanticIndexOffset: data.length
-                    )
-        ),]
-    )),
-    Expanded(flex: 2, child: MessageForm(
+    return Column(children: [
+      Expanded(flex: 7, 
+        child: CustomScrollView(
+          controller: ScrollController(initialScrollOffset: 300), 
+          slivers: [SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, int index) {
+                return getListTile(index, data, context, userName);
+              },
+              childCount: data.length,
+              semanticIndexOffset: data.length
+            )
+          )]
+        )
+      ),
+        Expanded(flex: 3, 
+        child: Container(
+          color: Theme.of(context).primaryColor,
+          child: MessageForm(
               messageData: data[0],
               dataStore: dataStore,
               userName: userName
-              ),
             )
-          ]
+          )
         )
-      );
+      ]);
+    }
   }
-}
+
 
 class NewMessageToSeller extends StatelessWidget {
+  /// Used in the [AllSales] page to send a new message to a seller.
+  /// 
+  /// Using the [Messages] and [userName] data this will craft a 
+  /// dummy message ready to be sent. The message text and the current
+  /// date time will be added when the message is sent.
+  
   final String sender;
   final String saleId;
   final String seller;
   final AmplifyDataStore dataStore;
 
-  NewMessageToSeller({Key? key,
+  const NewMessageToSeller({Key? key,
     required this.sender,
     required this.saleId,
     required this.seller,
@@ -217,20 +254,16 @@ class NewMessageToSeller extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Column(
-          children: [
-            const Expanded(flex: 8,
-                  child: Center(child: Text('Message seller'))),
-    Expanded(flex: 2, child: MessageForm(
-              messageData: createMessageData(),
-              dataStore: dataStore,
-              userName: sender
-              ),
-            )
-          ]
-        )
-      );
+    return Column(
+      children: [
+        const Expanded(flex: 7,
+              child: Center(child: Text('Message seller'))),
+        Expanded(flex: 3, child: MessageForm(
+                  messageData: createMessageData(),
+                  dataStore: dataStore,
+                  userName: sender)
+                )
+              ]
+          );
   }
-
 }
