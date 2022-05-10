@@ -9,6 +9,12 @@ import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
 class MessageForm extends StatefulWidget {
+  /// Creates an input box for the user to send a [message].
+  /// 
+  /// The [MessageForm] will be at the bottom 30% of the screeen
+  /// it is a [TextFormField] with a [Icon.sent] button that will
+  /// send the message to the AWS server.
+
   final Messages messageData;
   final String userName;
   final AmplifyDataStore dataStore;
@@ -32,55 +38,60 @@ class _MessageFormState extends State<MessageForm> {
     String newMessage = '';
     String userName = widget.userName;
 
-    return (
-      Form(
-        key: formKey,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-          Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: paddingSides(context),
-                vertical: paddingTopAndBottom(context)),
-            child: SizedBox(
-              width: 350,
-              child: TextFormField(
-                  decoration: InputDecoration(
-                      labelText: 'New Message', border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                         icon: const Icon(Icons.send), 
-                         onPressed: () async {
-                                if (formKey.currentState!.validate()) {
-                                  formKey.currentState!.save();
-                                  await saveNewMessage(widget.messageData, newMessage, userName);
-                                  formKey.currentState?.reset();
+    return Form(
+          key: formKey,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: paddingSides(context),
+                  vertical: paddingTopAndBottom(context)),
+              child: Container(
+                color: Colors.white,
+                width: 350,
+                child: TextFormField(
+                    decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 10), 
+                        suffixIcon: IconButton(
+                           icon: const Icon(Icons.send), 
+                           color: Theme.of(context).primaryColor,
+                           onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    formKey.currentState!.save();
+                                    await saveNewMessage(widget.messageData, newMessage, userName);
+                                    formKey.currentState?.reset();
+                                  }
                                 }
-                              }
-                           )),
-                  maxLines: 3,
-                  minLines: 2,
-                  textInputAction: TextInputAction.done,
-                  keyboardType: TextInputType.text,
-                  onSaved: (value) {
-                    newMessage = value!;
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty || value == '') {
-                      return 'Please enter a message';
-                    } else {
-                      return null;
-                    }
-                  }),
+                             )),
+                    maxLines: 3,
+                    minLines: 2,
+                    textInputAction: TextInputAction.done,
+                    keyboardType: TextInputType.text,
+                    onSaved: (value) {
+                      newMessage = value!;
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty || value == '') {
+                        return 'Please enter a message';
+                      } else {
+                        return null;
+                      }
+                    }),
+              ),
             ),
-          ),
-        ])
-      ));
+          ]),
+    );
   }
 }
 
-Future<void> saveNewMessage(
-    Messages messageData, String newMessage, String userName) async {
+Future<void> saveNewMessage(Messages messageData, String newMessage, 
+                            String userName) async {
+  /// Sends the data of the new message to the AWS server.
+  
   TemporalDateTime currDate = TemporalDateTime.now();
 
   Messages outMessage = Messages(
@@ -88,6 +99,7 @@ Future<void> saveNewMessage(
       host: messageData.host,
       customer: messageData.customer,
       hostSent: messageData.host == userName,
+      seen: false,
       text: newMessage,
       date: currDate);
 
@@ -100,9 +112,11 @@ Future<void> saveNewMessage(
 }
 
 double paddingSides(BuildContext context) {
+  /// Adds padding to the sides of the field 
   return MediaQuery.of(context).size.width * 0.03;
 }
 
 double paddingTopAndBottom(BuildContext context) {
+  /// Adds padding to the top and bottom of the form field.
   return MediaQuery.of(context).size.height * 0.01;
 }
