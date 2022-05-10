@@ -1,4 +1,5 @@
 import 'package:amplify_datastore/amplify_datastore.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import '../../models/Messages.dart';
 import './message_form.dart';
@@ -53,6 +54,29 @@ class _MessageDetailState extends State<MessageDetail> {
       });
   }
 
+  Future<void> markSeen(Messages message, userName) async {
+
+    try {
+      // Create a message with all the original message data
+      Messages updatedMessage = message.copyWith(
+        id: message.id,
+        sale: message.sale,
+        host: message.host,
+        customer: message.customer,
+        hostSent: message.hostSent,
+        text: message.text,
+        date: message.date,
+        seen: message.hostSent! ? message.host != userName : message.customer != userName
+      );
+
+      // Overwrite the current message with the new data.
+      await Amplify.DataStore.save(updatedMessage);
+
+    } catch (e) {
+      debugPrint('An error occurred while saving Messages: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -63,6 +87,10 @@ class _MessageDetailState extends State<MessageDetail> {
 
     if(_isLoading) {
       getMessageStream(userName.toString(), sale.toString(), customer.toString());
+    } else {
+      for(int i = 0; i < _messages.length; i++) {
+        markSeen(_messages[i], userName);
+      }
     }
     
     return (
