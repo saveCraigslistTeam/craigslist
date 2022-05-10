@@ -23,16 +23,18 @@ import 'package:amplify_core/amplify_core.dart';
 import 'Messages.dart';
 import 'Sale.dart';
 import 'SaleImage.dart';
+import 'Tag.dart';
 
 export 'Messages.dart';
 export 'Sale.dart';
 export 'SaleImage.dart';
+export 'Tag.dart';
 
 class ModelProvider implements ModelProviderInterface {
   @override
-  String version = "3e4530705ed16cfd9fa1a05e2fdcd47b";
+  String version = "3f02b51316b8293cd15129ac4f6a13ed";
   @override
-  List<ModelSchema> modelSchemas = [Messages.schema, Sale.schema, SaleImage.schema];
+  List<ModelSchema> modelSchemas = [Messages.schema, Sale.schema, SaleImage.schema, Tag.schema];
   static final ModelProvider _instance = ModelProvider();
   @override
   List<ModelSchema> customTypeSchemas = [];
@@ -47,6 +49,8 @@ class ModelProvider implements ModelProviderInterface {
         return Sale.classType;
       case "SaleImage":
         return SaleImage.classType;
+      case "Tag":
+        return Tag.classType;
       default:
         throw Exception("Failed to find model in model provider for model name: " + modelName);
     }

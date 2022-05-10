@@ -15,7 +15,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/ModelProvider.dart';
 import 'sale_detail.dart';
 import 'add_sale.dart';
-import 'services/image_container.dart';
 import 'services/fetch_image.dart';
 
 final oCcy = NumberFormat("#,##0.00", "en_US");
@@ -109,11 +108,14 @@ class SaleItem extends StatefulWidget {
 
 class _SaleItemState extends State<SaleItem> {
   late List<SaleImage> saleImages;
+  late List<Tag> tags;
   @override
   void initState() {
     saleImages = [];
+    tags = [];
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
       await getSaleImages(widget.sale);
+      await getSaleTags(widget.sale);
       setState(() {});
     });
   }
@@ -132,6 +134,7 @@ class _SaleItemState extends State<SaleItem> {
                 builder: (context) => SaleDetailView(
                     sale: widget.sale,
                     saleImages: saleImages,
+                    tags: tags,
                     customer: widget.customer)),
           );
         },
@@ -169,5 +172,14 @@ class _SaleItemState extends State<SaleItem> {
       saleImages = images;
     });
     return images;
+  }
+
+  Future<List<Tag>?> getSaleTags(Sale sale) async {
+    List<Tag> saleTags = (await Amplify.DataStore.query(Tag.classType,
+        where: Tag.SALEID.eq(sale.id)));
+    setState(() {
+      tags = saleTags;
+    });
+    return saleTags;
   }
 }

@@ -13,9 +13,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail_owner.dart';
 import 'add_sale.dart';
-import 'services/image_container.dart';
 import 'services/fetch_image.dart';
 
 final oCcy = NumberFormat("#,##0.00", "en_US");
