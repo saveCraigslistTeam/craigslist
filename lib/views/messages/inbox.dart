@@ -9,6 +9,11 @@ import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
 
 class InboxPage extends StatefulWidget {
+  /// Builds the inbox of most recent [messages] per unique conversation.
+  /// 
+  /// Messages are pulled from the [Messages] table in AWS [dataStore] they
+  /// are filtered and formatted to show up as a unique conversation [listTile]
+  /// for the user to interact with.
 
   final AmplifyDataStore dataStore;
   const InboxPage({Key? key, required this.dataStore}) : super(key: key);
@@ -19,7 +24,6 @@ class InboxPage extends StatefulWidget {
 
 class _InboxPageState extends State<InboxPage> {
 
-  String userName = '';
   List<Messages> _messages = [];
   bool _isLoading = true;
   late StreamSubscription<QuerySnapshot<Messages>> messageStream;
@@ -29,29 +33,26 @@ class _InboxPageState extends State<InboxPage> {
     super.initState();
   }
 
-  Future<void> getMessageStream() async {
+  Future<void> getMessageStream(String userName) async {
     messageStream = widget.dataStore.observeQuery(Messages.classType,
         where: (Messages.HOST.eq(userName) 
              | Messages.CUSTOMER.eq(userName)),
         sortBy: [ Messages.DATE.descending()])
           .listen((QuerySnapshot<Messages> snapshot) {
-
             setState(() {
               if (_isLoading) _isLoading = false;
               _messages = snapshot.items;
             });
-
         });
   }
 
   @override
   Widget build(BuildContext context) {
+    
     List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
-    userName = args[0].toString();
+    final String userName = args[0].toString();
 
-    if(_isLoading) {
-      getMessageStream();
-    }
+    if(_isLoading) getMessageStream(userName);
     
     return (
       Scaffold(
@@ -63,7 +64,7 @@ class _InboxPageState extends State<InboxPage> {
         ),
         body: _isLoading
             ? Center(child: CircularProgressIndicator(
-                color: Theme.of(context).primaryColor,))
+                color: Theme.of(context).primaryColor))
             : _messages.isNotEmpty
                 ? Column(
                     children: [
@@ -72,8 +73,7 @@ class _InboxPageState extends State<InboxPage> {
                         child: InboxList(
                             messages: filterRecentMessagesByGroup(_messages),
                             dataStore: widget.dataStore,
-                            userName: userName),
-                      ),
+                            userName: userName)),
                       Expanded(
                           flex: 2,
                           child: Container(
@@ -86,12 +86,16 @@ class _InboxPageState extends State<InboxPage> {
 }
 
 class InboxList extends StatelessWidget {
+  /// Builds the inbox items into a [ListView] for browsing by the user.
+  /// 
+  /// [ListView.builder] passes down the [messages] and the [userName] for
+  /// parsing and sorting. 
 
-  List<Messages> messages = [];
+  final List<Messages> messages;
   final AmplifyDataStore dataStore;
   final String userName;
 
-  InboxList(
+  const InboxList(
       {Key? key,
       required this.messages,
       required this.dataStore,
@@ -113,6 +117,13 @@ class InboxList extends StatelessWidget {
 }
 
 class InboxItem extends StatelessWidget {
+  /// Formats the messages into [ListTiles] surrounded by [ColordBoxes].
+  /// 
+  /// The [InboxItem] is formatted as a floating [ListTile] with the name
+  /// of the recipient and a portion of the text on the left hand side. On
+  /// the far right of the box the [date] or [time] of the last message is
+  /// in a column with a text to indicate to the user that the box is tappable.
+
   final List<Messages> messages;
   final Messages message;
   final AmplifyDataStore dataStore;
@@ -129,83 +140,113 @@ class InboxItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(6.0),
+      padding: const EdgeInsets.all(9.0),
       child: Material(
-        elevation: 3.0,
+        type: MaterialType.card,
+        elevation: 4.0,
         shadowColor: Colors.black,
-        shape: RoundedRectangleBorder(
-            side: BorderSide(color: Theme.of(context).primaryColor, width: 1),
-            borderRadius: BorderRadius.circular(10)),
-        child: (ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: (
+          ListTile(
             title: message.customer!= userName 
-                  ? leadingContent(message.customer, message.text)
-                  : leadingContent(message.host, message.text),
-            trailing: trailingContent(message.date),
+                  ? userNameAndMessageText(message.customer, message.text, context)
+                  : userNameAndMessageText(message.host, message.text, context),
+            trailing: formattedDate(message, userName, context),
             onTap: () => {
                   Navigator.pushNamed(context, '/msgDetail',
                       arguments: [userName, message.sale, message.customer])
-                })),
-      ),
+            },
+          ))
+      )
     );
   }
 }
 
-Widget leadingContent(String? customer, String? message) {
-  return (Column(
+
+Widget userNameAndMessageText(String? customer, 
+                              String? message, 
+                              BuildContext context) {
+  /// Formats the username of the text recipient and a portion of
+  /// the last text.
+  /// 
+  /// Returns a [Column] formatted with the [userName] as bold and on top
+  /// with the [text] formatted below the name. Max [userName] limit is 
+  /// 12 characters and max [text] limit is 30 characters. Will append
+  /// text's that are too long with elipses.
+  
+  return (
+    Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(customer!.length > 12 ? customer.substring(0, 12) : customer,
+        Text(customer!.length > 12 
+            ? customer.substring(0, 12) 
+            : customer,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        Text(message!.length > 30 ? message.substring(0, 30) + "..." : message,
-            style: const TextStyle(fontSize: 14))
-      ]));
+        Text(message!.length > 30 
+            ? message.substring(0, 30) + "..." 
+            : message,
+            style: TextStyle(fontSize: 14,
+                   color: Theme.of(context).primaryColor))
+      ])
+    );
 }
 
-Widget trailingContent(TemporalDateTime? date) {
-  DateTime parsedDate = DateTime.parse(date.toString());
-  String formattedDate;
-
-  if (withinCurrentDay(date!)) {
-    formattedDate = DateFormat.jm().format(parsedDate);
-  } else {
-    formattedDate = DateFormat.yMd().format(parsedDate);
-  }
-
-  return Text(formattedDate.length > 25
-      ? formattedDate.substring(0, 25)
-      : formattedDate);
+Widget formattedDate(Messages message, String userName, BuildContext context) {
+  /// Converts the date from TemporalDateTime to DateTime and formats it.
+  /// 
+  /// Returns [time] if the date is within the same [day] will return the
+  /// [day-month-year] if older than the current day.
+  
+  bool newMessage = (!message.seen! 
+                    && message.hostSent! 
+                    ? message.host != userName
+                    : message.customer != userName);
+  return (
+    Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+        withinCurrentDay(message.date!) 
+        ? Text(DateFormat.jm().format(DateTime.parse(message.date.toString())))
+        : Text(DateFormat.yMd().format(DateTime.parse(message.date.toString()))),
+        newMessage
+        ? const Text('New Message',
+             style: TextStyle(color: Colors.red)
+        )
+        : Text('Tap to View',
+             style: TextStyle(color: Theme.of(context).primaryColor)
+        ) 
+        ])
+  );
 }
 
 List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
+  /// Filters the list of messages to include the latest message from
+  /// each unique conversation.
+  /// 
+  /// Parsed list of [messages] will be returned with only the latest
+  /// unique [formattedMessages]
 
   List<Messages> formattedMessages = [];
-  List<String> visited = [];
   bool flag = true;
 
   for (int i = 0; i < messages.length; i++) {
-    String combined = '${messages[i].sale}${messages[i].customer}';
-    for (int j = 0; j < visited.length; j++) {
-      if (combined == visited[j]) {
-        for (int k = 0; k < formattedMessages.length; k++) {
-          if (formattedMessages[k].sale == messages[i].sale) {
-            DateTime currMessageDate =
-                DateTime.parse(messages[i].date.toString());
-            DateTime oldDate =
-                DateTime.parse(formattedMessages[k].date.toString());
-            formattedMessages[k] = currMessageDate.isAfter(oldDate)
-                ? messages[i]
-                : formattedMessages[k];
-          }
+    if(formattedMessages.isEmpty) formattedMessages.add(messages[i]);
+
+    for (int j = 0; j < formattedMessages.length; j++) {
+      if(formattedMessages[j].sale == messages[i].sale 
+         && formattedMessages[j].customer == messages[i].customer)
+        {
+          formattedMessages[j] = 
+            DateTime.parse(messages[i].date.toString())
+              .isAfter(DateTime.parse(formattedMessages[j].date.toString()))
+            ? messages[i]
+            : formattedMessages[j];
+            flag = false;
+            break;
         }
-        flag = false;
-      }
     }
-    if (flag) {
-      formattedMessages.add(messages[i]);
-      visited.add(combined);
-      flag = true;
-    }
+    if(flag) formattedMessages.add(messages[i]);
     flag = true;
   }
 
@@ -213,11 +254,13 @@ List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
 }
 
 bool withinCurrentDay(TemporalDateTime messageDate) {
-  DateTime currDate = DateTime.now();
-  DateTime parseMessageDate = DateTime.parse(messageDate.toString());
+  /// Verifies if the date of the message is within the current day.
+  /// 
+  /// Returns [true] if the date is within the current day.
+  /// Returns [false] if the date is older than the current day.
+  
+  final DateTime currDate = DateTime.now();
+  final DateTime parseMessageDate = DateTime.parse(messageDate.toString());
 
-  if (currDate.day < parseMessageDate.day) {
-    return false;
-  }
-  return true;
+  return currDate.day <= parseMessageDate.day;
 }
