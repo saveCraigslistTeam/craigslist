@@ -113,6 +113,7 @@ class InboxList extends StatelessWidget {
 }
 
 class InboxItem extends StatelessWidget {
+
   final List<Messages> messages;
   final Messages message;
   final AmplifyDataStore dataStore;
@@ -213,11 +214,13 @@ List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
 }
 
 bool withinCurrentDay(TemporalDateTime messageDate) {
+  /// Verifies if the date of the message is within the current day.
+  /// 
+  /// Returns [true] if the date is within the current day.
+  /// Returns [false] if the date is older than the current day.
+  
   DateTime currDate = DateTime.now();
   DateTime parseMessageDate = DateTime.parse(messageDate.toString());
 
-  if (currDate.day < parseMessageDate.day) {
-    return false;
-  }
-  return true;
+  return currDate.day < parseMessageDate.day;
 }
