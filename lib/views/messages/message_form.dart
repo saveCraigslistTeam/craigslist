@@ -99,6 +99,7 @@ Future<void> saveNewMessage(Messages messageData, String newMessage,
       host: messageData.host,
       customer: messageData.customer,
       hostSent: messageData.host == userName,
+      seen: false,
       text: newMessage,
       date: currDate);
 

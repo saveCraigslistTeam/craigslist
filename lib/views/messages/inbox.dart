@@ -73,8 +73,7 @@ class _InboxPageState extends State<InboxPage> {
                         child: InboxList(
                             messages: filterRecentMessagesByGroup(_messages),
                             dataStore: widget.dataStore,
-                            userName: userName),
-                      ),
+                            userName: userName)),
                       Expanded(
                           flex: 2,
                           child: Container(
@@ -152,7 +151,7 @@ class InboxItem extends StatelessWidget {
             title: message.customer!= userName 
                   ? userNameAndMessageText(message.customer, message.text, context)
                   : userNameAndMessageText(message.host, message.text, context),
-            trailing: formattedDate(message.date, context),
+            trailing: formattedDate(message, userName, context),
             onTap: () => {
                   Navigator.pushNamed(context, '/msgDetail',
                       arguments: [userName, message.sale, message.customer])
@@ -193,22 +192,31 @@ Widget userNameAndMessageText(String? customer,
     );
 }
 
-Widget formattedDate(TemporalDateTime? date, BuildContext context) {
+Widget formattedDate(Messages message, String userName, BuildContext context) {
   /// Converts the date from TemporalDateTime to DateTime and formats it.
   /// 
   /// Returns [time] if the date is within the same [day] will return the
   /// [day-month-year] if older than the current day.
-
+  
+  bool newMessage = (!message.seen! 
+                    && message.hostSent! 
+                    ? message.host != userName
+                    : message.customer != userName);
   return (
     Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-        withinCurrentDay(date!) 
-        ? Text(DateFormat.jm().format(DateTime.parse(date.toString())))
-        : Text(DateFormat.yMd().format(DateTime.parse(date.toString()))),
-        Text('Tap to View',
+        withinCurrentDay(message.date!) 
+        ? Text(DateFormat.jm().format(DateTime.parse(message.date.toString())))
+        : Text(DateFormat.yMd().format(DateTime.parse(message.date.toString()))),
+        newMessage
+        ? const Text('New Message',
+             style: TextStyle(color: Colors.red)
+        )
+        : Text('Tap to View',
              style: TextStyle(color: Theme.of(context).primaryColor)
-        )])
+        ) 
+        ])
   );
 }
 
