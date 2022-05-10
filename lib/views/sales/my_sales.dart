@@ -21,18 +21,16 @@ import 'services/fetch_image.dart';
 final oCcy = NumberFormat("#,##0.00", "en_US");
 
 class MySales extends StatefulWidget {
-  MySales(
-      {Key? key,
-      required this.DataStore,
-      required this.Storage,
-      required this.Auth,
-      required this.Role})
-      : super(key: key);
+  MySales({
+    Key? key,
+    required this.DataStore,
+    required this.Storage,
+    required this.Auth,
+  }) : super(key: key);
 
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
   final AmplifyAuthCognito Auth;
-  final String Role;
 
   @override
   _MySalesState createState() => _MySalesState();
@@ -50,13 +48,9 @@ class _MySalesState extends State<MySales> {
   }
 
   Future<void> getSalesStream() async {
-    Stream<QuerySnapshot<Sale>> query;
-    query = widget.Role == 'seller'
-        ? widget.DataStore.observeQuery(Sale.classType,
+    _subscription = widget.DataStore.observeQuery(Sale.classType,
             where: (Sale.USER.eq(username)))
-        : widget.DataStore.observeQuery(Sale.classType);
-
-    _subscription = query.listen((QuerySnapshot<Sale> snapshot) {
+        .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
         _sales = snapshot.items;
@@ -99,7 +93,6 @@ class _MySalesState extends State<MySales> {
 
 class SalesList extends StatelessWidget {
   final List<Sale> sales;
-
   SalesList({required this.sales});
 
   @override
@@ -108,18 +101,13 @@ class SalesList extends StatelessWidget {
         ? SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Column(
-                children: sales
-                    .map((sale) => SaleItem(
-                          sale: sale,
-                        ))
-                    .toList()))
+                children: sales.map((sale) => SaleItem(sale: sale)).toList()))
         : Center(child: Text('Tap the + button below to add a sale!'));
   }
 }
 
 class SaleItem extends StatefulWidget {
   final Sale sale;
-
   SaleItem({required this.sale});
 
   @override
@@ -135,18 +123,12 @@ class _SaleItemState extends State<SaleItem> {
       await getSaleImages(widget.sale);
       setState(() {});
     });
-
-    // super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return buildCard();
-  }
-
-  InkWell buildCard() {
     var heading = widget.sale.title;
-    var subheading = widget.sale.price;
+    var subheading = '\$${oCcy.format(int.parse(widget.sale.price!))}';
     var cardImage = fetchImage(saleImages);
     var supportingText = widget.sale.description;
     return InkWell(
@@ -171,7 +153,7 @@ class _SaleItemState extends State<SaleItem> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
-                    '\$${oCcy.format(int.parse(widget.sale.price!))}',
+                    subheading,
                     style: TextStyle(color: Colors.green),
                   ),
                   trailing: IconButton(

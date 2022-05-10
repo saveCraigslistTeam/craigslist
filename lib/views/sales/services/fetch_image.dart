@@ -5,9 +5,9 @@ Container fetchImage(saleImages) {
   if (saleImages.length >= 1) {
     return Container(
       child: CachedNetworkImage(
+          fit: BoxFit.contain,
           imageUrl: saleImages![0].imageURL.toString(),
-          placeholder: (context, url) =>
-              Image(image: NetworkImage(saleImages![0].imageURL.toString())),
+          placeholder: (context, url) => CircularProgressIndicator(),
           errorWidget: (context, url, error) =>
               Image.asset('assets/images/image_not_found.png')),
     );

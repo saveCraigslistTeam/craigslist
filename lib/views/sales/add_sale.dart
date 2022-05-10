@@ -141,7 +141,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
       final options = S3UploadFileOptions(
         accessLevel: StorageAccessLevel.guest,
       );
-
       final key = DateTime.now().toString();
       final file = File(imageFile);
       try {
