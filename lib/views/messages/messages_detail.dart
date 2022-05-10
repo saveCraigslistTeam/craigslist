@@ -88,8 +88,8 @@ class _MessageDetailState extends State<MessageDetail> {
             ),
         body: _messages.isNotEmpty 
         ? ScrollingMessagesSliver(data: _messages, 
-          dataStore: widget.dataStore, 
-          userName: userName.toString())
+                                  dataStore: widget.dataStore, 
+                                  userName: userName.toString())
         : NewMessageToSeller(sender: userName.toString(),
                             saleId: sale.toString(),
                             seller: customer.toString(),
@@ -125,8 +125,7 @@ class ColoredBox extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: alignment,
         children: <Widget>[
-          SafeArea(
-            child: Container(
+          Container(
               constraints: const BoxConstraints(
                 minWidth: 10, 
                 maxWidth: 250,
@@ -138,10 +137,9 @@ class ColoredBox extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10)
               ),
               child: Text(text, textAlign: textAlignment)
-            ),
-          ),       
-        ],)
-    );
+            ),       
+        ]
+      ));
   }
 }
 
@@ -258,12 +256,15 @@ class NewMessageToSeller extends StatelessWidget {
       children: [
         const Expanded(flex: 7,
               child: Center(child: Text('Message seller'))),
-        Expanded(flex: 3, child: MessageForm(
+              Expanded(flex: 3, 
+              child: Container(
+                  color: Theme.of(context).primaryColor,
+                  child: MessageForm(
                   messageData: createMessageData(),
                   dataStore: dataStore,
                   userName: sender)
                 )
-              ]
-          );
-  }
+              )
+            ]);
+    }
 }
