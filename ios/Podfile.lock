@@ -88,11 +88,19 @@ PODS:
   - AWSS3 (2.27.6):
     - AWSCore (= 2.27.6)
   - Flutter (1.0.0)
+  - FMDB (2.7.5):
+    - FMDB/standard (= 2.7.5)
+  - FMDB/standard (2.7.5)
   - image_picker_ios (0.0.1):
     - Flutter
   - ObjectMapper (4.2.0)
+  - path_provider_ios (0.0.1):
+    - Flutter
   - shared_preferences_ios (0.0.1):
     - Flutter
+  - sqflite (0.0.2):
+    - Flutter
+    - FMDB (>= 2.7.5)
   - SQLite.swift (0.13.2):
     - SQLite.swift/standard (= 0.13.2)
   - SQLite.swift/standard (0.13.2)
@@ -112,7 +120,9 @@ DEPENDENCIES:
   - amplify_storage_s3_ios (from `.symlinks/plugins/amplify_storage_s3_ios/ios`)
   - Flutter (from `Flutter`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
   - shared_preferences_ios (from `.symlinks/plugins/shared_preferences_ios/ios`)
+  - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
@@ -128,6 +138,7 @@ SPEC REPOS:
     - AWSPinpoint
     - AWSPluginsCore
     - AWSS3
+    - FMDB
     - ObjectMapper
     - SQLite.swift
     - Starscream
@@ -153,8 +164,12 @@ EXTERNAL SOURCES:
     :path: Flutter
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  path_provider_ios:
+    :path: ".symlinks/plugins/path_provider_ios/ios"
   shared_preferences_ios:
     :path: ".symlinks/plugins/shared_preferences_ios/ios"
+  sqflite:
+    :path: ".symlinks/plugins/sqflite/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -178,9 +193,12 @@ SPEC CHECKSUMS:
   AWSPluginsCore: 120cfa265293694921b6595fe00d1cb5ab558847
   AWSS3: 2b8d31de4ae07b8dc00ab26e805f389b328b20a3
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb
   ObjectMapper: 1eb41f610210777375fa806bf161dc39fb832b81
+  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
   shared_preferences_ios: 548a61f8053b9b8a49ac19c1ffbc8b92c50d68ad
+  sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   SQLite.swift: 4fc2be46c36392e3b87afe6fe7f1801c1daa07ef
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
   SwiftFormat: b70e3c776a74c67ce8bd140425a8c86d4a843759

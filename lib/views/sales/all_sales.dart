@@ -42,6 +42,10 @@ class _AllSalesState extends State<AllSales> {
   // Username of potential buyer
   String customer = '';
 
+  // Search Features
+  bool sortByDate = false;
+  bool sortByRelevance = false;
+
   @override
   void initState() {
     super.initState();
