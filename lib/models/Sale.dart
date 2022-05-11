@@ -17,7 +17,7 @@
 // Generated files can be excluded from analysis in analysis_options.yaml
 // For more info, see: https://dart.dev/guides/language/analysis-options#excluding-code-from-analysis
 
-// ignore_for_file: public_member_api_docs, file_names, unnecessary_new, prefer_if_null_operators, prefer_const_constructors, slash_for_doc_comments, annotate_overrides, non_constant_identifier_names, unnecessary_string_interpolations, prefer_adjacent_string_concatenation, unnecessary_const, dead_code
+// ignore_for_file: public_member_api_docs, annotate_overrides, dead_code, dead_codepublic_member_api_docs, depend_on_referenced_packages, file_names, library_private_types_in_public_api, no_leading_underscores_for_library_prefixes, no_leading_underscores_for_local_identifiers, non_constant_identifier_names, null_check_on_nullable_type_parameter, prefer_adjacent_string_concatenation, prefer_const_constructors, prefer_if_null_operators, prefer_interpolation_to_compose_strings, slash_for_doc_comments, sort_child_properties_last, unnecessary_const, unnecessary_constructor_name, unnecessary_late, unnecessary_new, unnecessary_null_aware_assignments, unnecessary_nullable_for_final_variable_declarations, unnecessary_string_interpolations, use_build_context_synchronously
 
 import 'ModelProvider.dart';
 import 'package:amplify_core/amplify_core.dart';
@@ -37,6 +37,7 @@ class Sale extends Model {
   final String? _price;
   final List<SaleImage>? _SaleImages;
   final String? _user;
+  final List<Tag>? _Tags;
   final TemporalDateTime? _createdAt;
   final TemporalDateTime? _updatedAt;
 
@@ -76,6 +77,10 @@ class Sale extends Model {
     return _user;
   }
   
+  List<Tag>? get Tags {
+    return _Tags;
+  }
+  
   TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -84,9 +89,9 @@ class Sale extends Model {
     return _updatedAt;
   }
   
-  const Sale._internal({required this.id, title, description, condition, zipcode, price, SaleImages, user, createdAt, updatedAt}): _title = title, _description = description, _condition = condition, _zipcode = zipcode, _price = price, _SaleImages = SaleImages, _user = user, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Sale._internal({required this.id, title, description, condition, zipcode, price, SaleImages, user, Tags, createdAt, updatedAt}): _title = title, _description = description, _condition = condition, _zipcode = zipcode, _price = price, _SaleImages = SaleImages, _user = user, _Tags = Tags, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Sale({String? id, String? title, String? description, String? condition, String? zipcode, String? price, List<SaleImage>? SaleImages, String? user}) {
+  factory Sale({String? id, String? title, String? description, String? condition, String? zipcode, String? price, List<SaleImage>? SaleImages, String? user, List<Tag>? Tags}) {
     return Sale._internal(
       id: id == null ? UUID.getUUID() : id,
       title: title,
@@ -95,7 +100,8 @@ class Sale extends Model {
       zipcode: zipcode,
       price: price,
       SaleImages: SaleImages != null ? List<SaleImage>.unmodifiable(SaleImages) : SaleImages,
-      user: user);
+      user: user,
+      Tags: Tags != null ? List<Tag>.unmodifiable(Tags) : Tags);
   }
   
   bool equals(Object other) {
@@ -113,7 +119,8 @@ class Sale extends Model {
       _zipcode == other._zipcode &&
       _price == other._price &&
       DeepCollectionEquality().equals(_SaleImages, other._SaleImages) &&
-      _user == other._user;
+      _user == other._user &&
+      DeepCollectionEquality().equals(_Tags, other._Tags);
   }
   
   @override
@@ -138,7 +145,7 @@ class Sale extends Model {
     return buffer.toString();
   }
   
-  Sale copyWith({String? id, String? title, String? description, String? condition, String? zipcode, String? price, List<SaleImage>? SaleImages, String? user}) {
+  Sale copyWith({String? id, String? title, String? description, String? condition, String? zipcode, String? price, List<SaleImage>? SaleImages, String? user, List<Tag>? Tags}) {
     return Sale._internal(
       id: id ?? this.id,
       title: title ?? this.title,
@@ -147,7 +154,8 @@ class Sale extends Model {
       zipcode: zipcode ?? this.zipcode,
       price: price ?? this.price,
       SaleImages: SaleImages ?? this.SaleImages,
-      user: user ?? this.user);
+      user: user ?? this.user,
+      Tags: Tags ?? this.Tags);
   }
   
   Sale.fromJson(Map<String, dynamic> json)  
@@ -164,11 +172,17 @@ class Sale extends Model {
           .toList()
         : null,
       _user = json['user'],
+      _Tags = json['Tags'] is List
+        ? (json['Tags'] as List)
+          .where((e) => e?['serializedData'] != null)
+          .map((e) => Tag.fromJson(new Map<String, dynamic>.from(e['serializedData'])))
+          .toList()
+        : null,
       _createdAt = json['createdAt'] != null ? TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'title': _title, 'description': _description, 'condition': _condition, 'zipcode': _zipcode, 'price': _price, 'SaleImages': _SaleImages?.map((SaleImage? e) => e?.toJson()).toList(), 'user': _user, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'title': _title, 'description': _description, 'condition': _condition, 'zipcode': _zipcode, 'price': _price, 'SaleImages': _SaleImages?.map((SaleImage? e) => e?.toJson()).toList(), 'user': _user, 'Tags': _Tags?.map((Tag? e) => e?.toJson()).toList(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
 
   static final QueryField ID = QueryField(fieldName: "sale.id");
@@ -181,6 +195,9 @@ class Sale extends Model {
     fieldName: "SaleImages",
     fieldType: ModelFieldType(ModelFieldTypeEnum.model, ofModelName: (SaleImage).toString()));
   static final QueryField USER = QueryField(fieldName: "user");
+  static final QueryField TAGS = QueryField(
+    fieldName: "Tags",
+    fieldType: ModelFieldType(ModelFieldTypeEnum.model, ofModelName: (Tag).toString()));
   static var schema = Model.defineSchema(define: (ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "Sale";
     modelSchemaDefinition.pluralName = "Sales";
@@ -239,6 +256,13 @@ class Sale extends Model {
       key: Sale.USER,
       isRequired: false,
       ofType: ModelFieldType(ModelFieldTypeEnum.string)
+    ));
+    
+    modelSchemaDefinition.addField(ModelFieldDefinition.hasMany(
+      key: Sale.TAGS,
+      isRequired: false,
+      ofModelName: (Tag).toString(),
+      associatedKey: Tag.SALEID
     ));
     
     modelSchemaDefinition.addField(ModelFieldDefinition.nonQueryField(

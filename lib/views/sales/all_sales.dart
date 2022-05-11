@@ -1,7 +1,8 @@
-// dart async library we will refer to when setting up real time updates
 import 'dart:async';
 import 'dart:core';
-import 'dart:io';
+import 'package:craigslist/views/sales/edit_sale.dart';
+import 'package:intl/intl.dart';
+
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
@@ -14,14 +15,17 @@ import 'package:image_picker/image_picker.dart';
 import '../../models/ModelProvider.dart';
 import 'sale_detail.dart';
 import 'add_sale.dart';
+import 'services/fetch_image.dart';
+
+final oCcy = NumberFormat("#,##0.00", "en_US");
 
 class AllSales extends StatefulWidget {
-  AllSales(
-      {Key? key,
-      required this.DataStore,
-      required this.Storage,
-      required this.Auth})
-      : super(key: key);
+  AllSales({
+    Key? key,
+    required this.DataStore,
+    required this.Storage,
+    required this.Auth,
+  }) : super(key: key);
 
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
@@ -32,23 +36,36 @@ class AllSales extends StatefulWidget {
 }
 
 class _AllSalesState extends State<AllSales> {
-  // subscription of Todo QuerySnapshots - to be initialized at runtime
   late StreamSubscription<QuerySnapshot<Sale>> _subscription;
-
-  // loading ui state - initially set to a loading state
   bool _isLoading = true;
-
-  // list of Todos - initially empty
   List<Sale> _sales = [];
-
   // Username of potential buyer
   String customer = '';
 
   @override
   void initState() {
-    // kick off app initialization
-    getSalesStream();
     super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<String?> args =
+        ModalRoute.of(context)!.settings.arguments as List<String?>;
+    customer = args[0].toString();
+
+    if (_isLoading) {
+      getSalesStream();
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xffA682FF),
+        title: Text("All Sales"),
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SalesList(sales: _sales, customer: customer),
+    );
   }
 
   Future<void> getSalesStream() async {
@@ -61,103 +78,108 @@ class _AllSalesState extends State<AllSales> {
       });
     });
   }
-
-  @override
-  Widget build(BuildContext context) {
-    List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
-    customer = args[0].toString();
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xffA682FF),
-        title: Text('All Sales'),
-      ),
-
-      // body: Center(child: CircularProgressIndicator()),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SalesList(sales: _sales, customer: customer),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
-  }
 }
 
 class SalesList extends StatelessWidget {
   final List<Sale> sales;
   final String customer;
-
-  SalesList({required this.sales,
-            required this.customer});
+  SalesList({required this.sales, required this.customer});
 
   @override
   Widget build(BuildContext context) {
     return sales.length >= 1
-        ? ListView(
-            padding: EdgeInsets.all(8),
-            children: sales.map((sale) => SaleItem(sale: sale, customer: customer)).toList())
-        : Center(child: Text('Tap button below to add a sale!'));
+        ? SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+                children: sales
+                    .map((sale) => SaleItem(sale: sale, customer: customer))
+                    .toList()))
+        : Center(child: Text('No sales in your area!'));
   }
 }
 
-class SaleItem extends StatelessWidget {
-  final double iconSize = 24.0;
+class SaleItem extends StatefulWidget {
+  SaleItem({required this.sale, required this.customer});
   final Sale sale;
   final String customer;
+  @override
+  State<SaleItem> createState() => _SaleItemState();
+}
 
-  SaleItem({required this.sale,
-          required this.customer});
-
-  void _favoriteSale(BuildContext context) async {}
-
-  Future<List<SaleImage>?> getSaleImage(Sale sale) async {
-    List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
-        where: SaleImage.SALEID.eq(sale.id)));
-    return images.isNotEmpty ? images : null;
+class _SaleItemState extends State<SaleItem> {
+  late List<SaleImage> saleImages;
+  late List<Tag> tags;
+  @override
+  void initState() {
+    saleImages = [];
+    tags = [];
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      await getSaleImages(widget.sale);
+      await getSaleTags(widget.sale);
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(sale.title!,
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                      Text('\$${sale.price}'),
-                    ],
-                  ),
-                  Spacer(),
-                  IconButton(
-                      icon: const Icon(Icons.favorite),
-                      tooltip: 'Favorite this sale',
-                      onPressed: () {
-                        _favoriteSale(context);
-                      })
-                ],
-              ),
-            ),
-          ]),
-        ),
-        onTap: () async {
-          List<SaleImage>? SaleImages = await getSaleImage(sale);
+    var heading = widget.sale.title;
+    var subheading = '\$${oCcy.format(int.parse(widget.sale.price!))}';
+    var cardImage = fetchImage(saleImages);
+    var supportingText = widget.sale.description;
+    return InkWell(
+        onTap: () {
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => SaleDetailView(
-                        sale: sale,
-                        saleImages: SaleImages,
-                        customer: customer
-                      )));
+            context,
+            MaterialPageRoute(
+                builder: (context) => SaleDetailView(
+                    sale: widget.sale,
+                    saleImages: saleImages,
+                    tags: tags,
+                    customer: widget.customer)),
+          );
         },
-      ),
-    );
+        child: Card(
+            shadowColor: const Color(0xffA682FF),
+            elevation: 4.0,
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text(
+                    heading!,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    subheading,
+                    style: TextStyle(color: Colors.green),
+                  ),
+                  trailing:
+                      IconButton(onPressed: () {}, icon: Icon(Icons.favorite)),
+                ),
+                cardImage,
+                Container(
+                  padding: EdgeInsets.all(16.0),
+                  alignment: Alignment.centerLeft,
+                  child: Text(supportingText!),
+                ),
+              ],
+            )));
+  }
+
+  Future<List<SaleImage>?> getSaleImages(Sale sale) async {
+    List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
+        where: SaleImage.SALEID.eq(sale.id)));
+    setState(() {
+      saleImages = images;
+    });
+    return images;
+  }
+
+  Future<List<Tag>?> getSaleTags(Sale sale) async {
+    List<Tag> saleTags = (await Amplify.DataStore.query(Tag.classType,
+        where: Tag.SALEID.eq(sale.id)));
+    setState(() {
+      tags = saleTags;
+    });
+    return saleTags;
   }
 }

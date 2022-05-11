@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:io';
 // flutter and ui libraries
+import 'package:craigslist/views/sales/services/parse_tags.dart';
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
@@ -12,7 +13,6 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail_owner.dart';
 
 class AddSaleForm extends StatefulWidget {
   AddSaleForm({Key? key, required this.username}) : super(key: key);
@@ -25,12 +25,15 @@ class AddSaleForm extends StatefulWidget {
 class _AddSaleFormState extends State<AddSaleForm> {
   late String imageURL;
   late String imageFile;
+  late List<String> tagLabels;
   final picker = ImagePicker();
 
   @override
   void initState() {
     imageURL = '';
     imageFile = '';
+    tagLabels = [];
+    _titleController.addListener(_parseTags);
     super.initState();
   }
 
@@ -58,12 +61,26 @@ class _AddSaleFormState extends State<AddSaleForm> {
         user: widget.username);
 
     try {
+      // upload the image to S3
       await uploadImage(imageFile);
+
+      // save the sale in DataStore
       await Amplify.DataStore.save(newSale);
+
+      // save the tags in DataStore
+      for (var label in tagLabels) {
+        await Amplify.DataStore.save(Tag(
+          label: label,
+          saleID: newSale.getId(),
+        ));
+      }
+
+      // Save the image URL in DataStore
       await Amplify.DataStore.save(SaleImage(
         imageURL: imageURL,
         saleID: newSale.getId(),
       ));
+
       // Close the form
       Navigator.of(context).pop();
     } catch (e) {
@@ -75,9 +92,14 @@ class _AddSaleFormState extends State<AddSaleForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xffA682FF),
         title: Text('Add Sale'),
         actions: <Widget>[
-          ElevatedButton(onPressed: _saveSale, child: Text('Save')),
+          ElevatedButton(
+            onPressed: _saveSale,
+            child: Text('Save'),
+            style: ElevatedButton.styleFrom(primary: Color(0xffA682FF)),
+          ),
         ],
       ),
       body: addSaleForm(),
@@ -109,6 +131,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
             TextFormField(
                 controller: _priceController,
                 decoration: InputDecoration(filled: true, labelText: 'Price')),
+            tagLabelList(),
             ElevatedButton(
                 onPressed: selectImage, child: Text('Select an Image')),
             imageDisplay(imageFile: imageFile),
@@ -118,9 +141,31 @@ class _AddSaleFormState extends State<AddSaleForm> {
     );
   }
 
+  Container tagLabelList() {
+    if (tagLabels.length >= 1) {
+      return Container(
+        child: Text(
+          'Tags: ' + tagLabels.join(", "),
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+        margin: const EdgeInsets.all(10.0),
+      );
+    } else {
+      return Container(child: Text('No tags!'));
+    }
+  }
+
+  _parseTags() {
+    String tags = _titleController.text;
+    setState(() {
+      tagLabels = tags.split(" ");
+    });
+  }
+
   Future<String?> getDownloadUrl(key) async {
     try {
-      S3GetUrlOptions options = S3GetUrlOptions(expires: 604799);
+      S3GetUrlOptions options = S3GetUrlOptions(
+          expires: 604799, accessLevel: StorageAccessLevel.guest);
       final GetUrlResult result =
           await Amplify.Storage.getUrl(options: options, key: key);
       debugPrint('Got URL: ${result.url}');
@@ -139,7 +184,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
       final options = S3UploadFileOptions(
         accessLevel: StorageAccessLevel.guest,
       );
-
       final key = DateTime.now().toString();
       final file = File(imageFile);
       try {

@@ -23,12 +23,12 @@ import 'package:amplify_core/amplify_core.dart';
 import 'package:flutter/foundation.dart';
 
 
-/** This is an auto generated class representing the SaleImage type in your schema. */
+/** This is an auto generated class representing the Tag type in your schema. */
 @immutable
-class SaleImage extends Model {
-  static const classType = const _SaleImageModelType();
+class Tag extends Model {
+  static const classType = const _TagModelType();
   final String id;
-  final String? _imageURL;
+  final String? _label;
   final String? _saleID;
   final TemporalDateTime? _createdAt;
   final TemporalDateTime? _updatedAt;
@@ -41,8 +41,8 @@ class SaleImage extends Model {
     return id;
   }
   
-  String? get imageURL {
-    return _imageURL;
+  String? get label {
+    return _label;
   }
   
   String get saleID {
@@ -66,12 +66,12 @@ class SaleImage extends Model {
     return _updatedAt;
   }
   
-  const SaleImage._internal({required this.id, imageURL, required saleID, createdAt, updatedAt}): _imageURL = imageURL, _saleID = saleID, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Tag._internal({required this.id, label, required saleID, createdAt, updatedAt}): _label = label, _saleID = saleID, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory SaleImage({String? id, String? imageURL, required String saleID}) {
-    return SaleImage._internal(
+  factory Tag({String? id, String? label, required String saleID}) {
+    return Tag._internal(
       id: id == null ? UUID.getUUID() : id,
-      imageURL: imageURL,
+      label: label,
       saleID: saleID);
   }
   
@@ -82,9 +82,9 @@ class SaleImage extends Model {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is SaleImage &&
+    return other is Tag &&
       id == other.id &&
-      _imageURL == other._imageURL &&
+      _label == other._label &&
       _saleID == other._saleID;
   }
   
@@ -95,9 +95,9 @@ class SaleImage extends Model {
   String toString() {
     var buffer = new StringBuffer();
     
-    buffer.write("SaleImage {");
+    buffer.write("Tag {");
     buffer.write("id=" + "$id" + ", ");
-    buffer.write("imageURL=" + "$_imageURL" + ", ");
+    buffer.write("label=" + "$_label" + ", ");
     buffer.write("saleID=" + "$_saleID" + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
@@ -106,30 +106,30 @@ class SaleImage extends Model {
     return buffer.toString();
   }
   
-  SaleImage copyWith({String? id, String? imageURL, String? saleID}) {
-    return SaleImage._internal(
+  Tag copyWith({String? id, String? label, String? saleID}) {
+    return Tag._internal(
       id: id ?? this.id,
-      imageURL: imageURL ?? this.imageURL,
+      label: label ?? this.label,
       saleID: saleID ?? this.saleID);
   }
   
-  SaleImage.fromJson(Map<String, dynamic> json)  
+  Tag.fromJson(Map<String, dynamic> json)  
     : id = json['id'],
-      _imageURL = json['imageURL'],
+      _label = json['label'],
       _saleID = json['saleID'],
       _createdAt = json['createdAt'] != null ? TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'imageURL': _imageURL, 'saleID': _saleID, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'label': _label, 'saleID': _saleID, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
 
-  static final QueryField ID = QueryField(fieldName: "saleImage.id");
-  static final QueryField IMAGEURL = QueryField(fieldName: "imageURL");
+  static final QueryField ID = QueryField(fieldName: "tag.id");
+  static final QueryField LABEL = QueryField(fieldName: "label");
   static final QueryField SALEID = QueryField(fieldName: "saleID");
   static var schema = Model.defineSchema(define: (ModelSchemaDefinition modelSchemaDefinition) {
-    modelSchemaDefinition.name = "SaleImage";
-    modelSchemaDefinition.pluralName = "SaleImages";
+    modelSchemaDefinition.name = "Tag";
+    modelSchemaDefinition.pluralName = "Tags";
     
     modelSchemaDefinition.authRules = [
       AuthRule(
@@ -145,13 +145,13 @@ class SaleImage extends Model {
     modelSchemaDefinition.addField(ModelFieldDefinition.id());
     
     modelSchemaDefinition.addField(ModelFieldDefinition.field(
-      key: SaleImage.IMAGEURL,
+      key: Tag.LABEL,
       isRequired: false,
       ofType: ModelFieldType(ModelFieldTypeEnum.string)
     ));
     
     modelSchemaDefinition.addField(ModelFieldDefinition.field(
-      key: SaleImage.SALEID,
+      key: Tag.SALEID,
       isRequired: true,
       ofType: ModelFieldType(ModelFieldTypeEnum.string)
     ));
@@ -172,11 +172,11 @@ class SaleImage extends Model {
   });
 }
 
-class _SaleImageModelType extends ModelType<SaleImage> {
-  const _SaleImageModelType();
+class _TagModelType extends ModelType<Tag> {
+  const _TagModelType();
   
   @override
-  SaleImage fromJson(Map<String, dynamic> jsonData) {
-    return SaleImage.fromJson(jsonData);
+  Tag fromJson(Map<String, dynamic> jsonData) {
+    return Tag.fromJson(jsonData);
   }
 }

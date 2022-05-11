@@ -1,6 +1,8 @@
-// dart async library we will refer to when setting up real time updates
 import 'dart:async';
 import 'dart:core';
+import 'package:craigslist/views/sales/edit_sale.dart';
+import 'package:intl/intl.dart';
+
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
@@ -11,16 +13,18 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail_owner.dart';
 import 'add_sale.dart';
+import 'services/fetch_image.dart';
+
+final oCcy = NumberFormat("#,##0.00", "en_US");
 
 class MySales extends StatefulWidget {
-  MySales(
-      {Key? key,
-      required this.DataStore,
-      required this.Storage,
-      required this.Auth})
-      : super(key: key);
+  MySales({
+    Key? key,
+    required this.DataStore,
+    required this.Storage,
+    required this.Auth,
+  }) : super(key: key);
 
   final AmplifyDataStore DataStore;
   final AmplifyStorageS3 Storage;
@@ -31,16 +35,9 @@ class MySales extends StatefulWidget {
 }
 
 class _MySalesState extends State<MySales> {
-  // subscription of Todo QuerySnapshots - to be initialized at runtime
   late StreamSubscription<QuerySnapshot<Sale>> _subscription;
-
-  // loading ui state - initially set to a loading state
   bool _isLoading = true;
-
-  // list of Todos - initially empty
   List<Sale> _sales = [];
-
-  // username of currently  logged in user
   String username = '';
 
   @override
@@ -61,126 +58,175 @@ class _MySalesState extends State<MySales> {
 
   @override
   Widget build(BuildContext context) {
-    // Import the arguments from previous screen.
-    List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
+    List<String?> args =
+        ModalRoute.of(context)!.settings.arguments as List<String?>;
     username = args[0].toString();
 
-    if(_isLoading) {
-      // kick off app initialization
+    if (_isLoading) {
       getSalesStream();
     }
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
-        title: Text('My Sales'),
+        title: Text("$username's Sales"),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => AddSaleForm(username: username)),
+                );
+              },
+              icon: Icon(Icons.add))
+        ],
       ),
-
-      // body: Center(child: CircularProgressIndicator()),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SalesList(sales: _sales),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => AddSaleForm(username: username)),
-          );
-        },
-        tooltip: 'Add Sale',
-        label: Row(
-          children: [Icon(Icons.add), Text('Add Sale')],
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
 
 class SalesList extends StatelessWidget {
   final List<Sale> sales;
-
   SalesList({required this.sales});
 
   @override
   Widget build(BuildContext context) {
     return sales.length >= 1
-        ? ListView(
-            padding: EdgeInsets.all(8),
-            children: sales.map((sale) => SaleItem(sale: sale)).toList())
-        : Center(child: Text('Tap button below to add a sale!'));
+        ? SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+                children: sales.map((sale) => SaleItem(sale: sale)).toList()))
+        : Center(child: Text('Tap the + button below to add a sale!'));
   }
 }
 
-class SaleItem extends StatelessWidget {
-  final double iconSize = 24.0;
+class SaleItem extends StatefulWidget {
   final Sale sale;
-
   SaleItem({required this.sale});
 
-  void _deleteSale(BuildContext context) async {
-    List<SaleImage> saleImage = (await Amplify.DataStore.query(
-        SaleImage.classType,
-        where: SaleImage.SALEID.eq(sale.id)));
-    try {
-      // Delete the sale and the associated image
-      await Amplify.DataStore.delete(sale);
-      await Amplify.DataStore.delete(saleImage[0]);
-    } catch (e) {
-      debugPrint('An error occurred while deleting Todo: $e');
-    }
-  }
+  @override
+  State<SaleItem> createState() => _SaleItemState();
+}
 
-  Future<List<SaleImage>?> getSaleImage(Sale sale) async {
-    List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
-        where: SaleImage.SALEID.eq(sale.id)));
-    String? image = images[0].imageURL;
-    return images;
+class _SaleItemState extends State<SaleItem> {
+  late List<SaleImage> saleImages;
+  @override
+  void initState() {
+    saleImages = [];
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      await getSaleImages(widget.sale);
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(sale.title!,
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                      Text('\$${sale.price}'),
-                    ],
-                  ),
-                  Spacer(),
-                  IconButton(
-                      icon: const Icon(Icons.delete),
-                      tooltip: 'Delete Sale',
-                      onPressed: () {
-                        _deleteSale(context);
-                      })
-                ],
-              ),
-            ),
-          ]),
-        ),
-        onTap: () async {
-          List<SaleImage>? SaleImages = await getSaleImage(sale);
+    var heading = widget.sale.title;
+    var subheading = '\$${oCcy.format(int.parse(widget.sale.price!))}';
+    var cardImage = fetchImage(saleImages);
+    var supportingText = widget.sale.description;
+    return InkWell(
+        onTap: () {
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => SaleDetailOwnerView(
-                        sale: sale,
-                        saleImages: SaleImages,
-                      )));
+            context,
+            MaterialPageRoute(
+                builder: (context) => EditSaleForm(
+                      sale: widget.sale,
+                      saleImages: saleImages,
+                    )),
+          );
         },
-      ),
+        child: Card(
+            shadowColor: const Color(0xffA682FF),
+            elevation: 4.0,
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text(
+                    heading!,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    subheading,
+                    style: TextStyle(color: Colors.green),
+                  ),
+                  trailing: IconButton(
+                      onPressed: () {
+                        showAlert(context);
+                      },
+                      icon: Icon(Icons.delete)),
+                ),
+                cardImage,
+                Container(
+                  padding: EdgeInsets.all(16.0),
+                  alignment: Alignment.centerLeft,
+                  child: Text(supportingText!),
+                ),
+              ],
+            )));
+  }
+
+  showAlert(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: Text("Cancel"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
     );
+    Widget continueButton = TextButton(
+      child: Text("Delete"),
+      onPressed: () {
+        _deleteSale(context);
+        Navigator.of(context).pop();
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: const Text(
+        "Delete Sale",
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      content: const Text("Are you sure you want to delete this sale?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  void _deleteSale(BuildContext context) async {
+    List<SaleImage> saleImage = (await Amplify.DataStore.query(
+        SaleImage.classType,
+        where: SaleImage.SALEID.eq(widget.sale.id)));
+    try {
+      // Delete the sale and the associated image
+      await Amplify.DataStore.delete(widget.sale);
+      await Amplify.DataStore.delete(saleImage[0]);
+    } catch (e) {
+      debugPrint('An error occurred while deleting Sale: $e');
+    }
+  }
+
+  Future<List<SaleImage>?> getSaleImages(Sale sale) async {
+    List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
+        where: SaleImage.SALEID.eq(sale.id)));
+    setState(() {
+      saleImages = images;
+    });
+    return images;
   }
 }

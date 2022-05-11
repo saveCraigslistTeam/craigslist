@@ -1,17 +1,21 @@
 // dart async library we will refer to when setting up real time updates
 import 'dart:core';
+import 'package:craigslist/views/sales/services/fetch_image.dart';
 import 'package:flutter/material.dart';
 import '../../models/ModelProvider.dart';
-import 'edit_sale.dart';
+import './services/convert_date.dart';
 
 class SaleDetailView extends StatefulWidget {
-  const SaleDetailView({Key? key, 
-  required this.sale, 
-  required this.saleImages,
-  required this.customer})
+  const SaleDetailView(
+      {Key? key,
+      required this.sale,
+      required this.saleImages,
+      required this.tags,
+      required this.customer})
       : super(key: key);
   final Sale sale;
   final List<SaleImage>? saleImages;
+  final List<Tag>? tags;
   final String customer;
 
   @override
@@ -28,54 +32,69 @@ class _SaleDetailViewState extends State<SaleDetailView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.sale.title}'), actions: <Widget>[
-        ElevatedButton(onPressed: () {
-          Navigator.pushNamed(context, '/msgDetail',
-                      arguments: [widget.customer, widget.sale.id, widget.sale.user]);
-        }, child: Text('Contact Seller'))
-      ]),
-      body: Center(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(25.0),
-              child: Text('Seller: ${widget.sale.user}'),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(25.0),
-              child: Text('Price: ${widget.sale.price}'),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(25.0),
-              child: Text('Description: ${widget.sale.description}'),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(25.0),
-              child: Text('Condition: ${widget.sale.condition}'),
-            ),
-            imageContainer(),
-          ],
+        appBar: AppBar(
+          backgroundColor: const Color(0xffA682FF),
+          title: Text('${widget.sale.title}'),
         ),
-      ),
-    );
+        body: Container(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                fetchImage(widget.saleImages),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text('${widget.sale.title}',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 25)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text('Seller: ${widget.sale.user}'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text('Price: ${widget.sale.price}'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text('Description: ${widget.sale.description}'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text('Condition: ${widget.sale.condition}'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text('Posted: ${convertDate(widget.sale.updatedAt)}'),
+                ),
+                ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/msgDetail', arguments: [
+                        widget.customer,
+                        widget.sale.id,
+                        widget.sale.user
+                      ]);
+                    },
+                    style: ElevatedButton.styleFrom(primary: Color(0xffA682FF)),
+                    icon: Icon(Icons.message, size: 18),
+                    label: Text('Message ${widget.sale.user}'))
+              ],
+            ),
+          ),
+        ));
   }
 
-  Padding imageContainer() {
-    if (widget.saleImages == null) {
-      return const Padding(
-        padding: EdgeInsets.all(25.0),
-        child: Text('No image to display'),
-      );
-    } else {
-      return Padding(
-          padding: const EdgeInsets.all(25.0),
-          child: Column(
-            children: [
-              Image.network(
-                widget.saleImages![0].imageURL.toString(),
-              ),
-            ],
-          ));
-    }
-  }
+  // Container tagLabelList() {
+  //   if (widget.tags!.length >= 1) {
+  //     return Container(
+  //       child: Text(
+  //         'Tags: ' + widget.tags!.join(", "),
+  //         style: TextStyle(fontWeight: FontWeight.bold),
+  //       ),
+  //       margin: const EdgeInsets.all(10.0),
+  //     );
+  //   } else {
+  //     return Container(child: Text('No tags!'));
+  //   }
+  // }
 }

@@ -12,7 +12,6 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail_owner.dart';
 
 class EditSaleForm extends StatefulWidget {
   const EditSaleForm({Key? key, required this.sale, required this.saleImages})
@@ -48,9 +47,15 @@ class _EditSaleFormState extends State<EditSaleForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xffA682FF),
         title: Text('Edit Sale'),
         actions: <Widget>[
-          ElevatedButton(onPressed: _saveSale, child: Text('Save')),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                primary: Color(0xffA682FF),
+              ),
+              onPressed: _saveSale,
+              child: Text('Save')),
         ],
       ),
       body: Container(
@@ -80,7 +85,11 @@ class _EditSaleFormState extends State<EditSaleForm> {
                   decoration:
                       InputDecoration(filled: true, labelText: 'Price')),
               ElevatedButton(
-                  onPressed: uploadImage, child: Text('Upload Image')),
+                  style: ElevatedButton.styleFrom(
+                    primary: Color(0xffA682FF),
+                  ),
+                  onPressed: uploadImage,
+                  child: Text('Upload Image')),
             ],
           ),
         ),
