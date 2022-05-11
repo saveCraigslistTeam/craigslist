@@ -20,7 +20,7 @@ import 'services/fetch_image.dart';
 final oCcy = NumberFormat("#,##0.00", "en_US");
 
 class AllSales extends StatefulWidget {
-  AllSales({
+  const AllSales({
     Key? key,
     required this.DataStore,
     required this.Storage,
@@ -43,8 +43,9 @@ class _AllSalesState extends State<AllSales> {
   String customer = '';
 
   // Search Features
-  bool sortByDate = false;
   bool sortByRelevance = false;
+  bool sortByDate = false;
+  bool sortByPrice = false;
 
   @override
   void initState() {
@@ -64,10 +65,10 @@ class _AllSalesState extends State<AllSales> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
-        title: Text("All Sales"),
+        title: const Text("All Sales"),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: const CircularProgressIndicator())
           : SalesList(sales: _sales, customer: customer),
     );
   }
@@ -85,25 +86,37 @@ class _AllSalesState extends State<AllSales> {
 }
 
 class SalesList extends StatelessWidget {
+  
   final List<Sale> sales;
   final String customer;
-  SalesList({required this.sales, required this.customer});
+  const SalesList({Key? key, required this.sales, required this.customer});
 
   @override
   Widget build(BuildContext context) {
-    return sales.length >= 1
-        ? SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-                children: sales
-                    .map((sale) => SaleItem(sale: sale, customer: customer))
-                    .toList()))
-        : Center(child: Text('No sales in your area!'));
+    return sales.isNotEmpty
+        ? Column(
+          children: [
+            Expanded(
+              flex: 7,
+              child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                      children: sales
+                          .map((sale) => SaleItem(sale: sale, customer: customer))
+                          .toList())),
+            ),
+            const Expanded(
+              flex: 3,
+              child: Search(),)
+          ],
+        )
+        : const Center(child: const Text('No sales in your area!'));
   }
 }
 
 class SaleItem extends StatefulWidget {
-  SaleItem({required this.sale, required this.customer});
+
+  const SaleItem({Key? key, required this.sale, required this.customer});
   final Sale sale;
   final String customer;
   @override
@@ -127,7 +140,7 @@ class _SaleItemState extends State<SaleItem> {
   @override
   Widget build(BuildContext context) {
     var heading = widget.sale.title;
-    var subheading = '\$${oCcy.format(int.parse(widget.sale.price!))}';
+    var subheading = '${widget.sale.price!}';
     var cardImage = fetchImage(saleImages);
     var supportingText = widget.sale.description;
     return InkWell(
@@ -150,18 +163,18 @@ class _SaleItemState extends State<SaleItem> {
                 ListTile(
                   title: Text(
                     heading!,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     subheading,
-                    style: TextStyle(color: Colors.green),
+                    style: const TextStyle(color: Colors.green),
                   ),
                   trailing:
-                      IconButton(onPressed: () {}, icon: Icon(Icons.favorite)),
+                      IconButton(onPressed: () {}, icon: const Icon(Icons.favorite)),
                 ),
                 cardImage,
                 Container(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   alignment: Alignment.centerLeft,
                   child: Text(supportingText!),
                 ),
@@ -186,4 +199,129 @@ class _SaleItemState extends State<SaleItem> {
     });
     return saleTags;
   }
+}
+
+// Search Features
+class Search extends StatelessWidget {
+  // final Function sortByNewest;
+  // final Function sortByClosestMatch;
+  // final Function sortByPrice;
+
+  const Search({Key? key,
+            // required this.sortByNewest,
+            // required this.sortByClosestMatch,
+            // required this.sortByPrice
+            }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    bool newOrOld = false;
+    bool matchOrAll = false;
+    bool lowOrHigh = false;
+
+    return Column(
+      children: [
+        Expanded(
+          flex: 2,
+          child: buttonRow(newOrOld, matchOrAll, lowOrHigh, context)),
+        Expanded(
+          flex: 8,
+          child: Form( 
+              key: formKey,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: paddingSides(context),
+                      vertical: paddingTopAndBottom(context)),
+                  child: Container(
+                    color: Colors.white,
+                    width: 350,
+                    child: TextFormField(
+                        decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 10), 
+                            suffixIcon: IconButton(
+                                icon: const Icon(Icons.search), 
+                                color: Theme.of(context).primaryColor,
+                                onPressed: () async {
+                                      if (formKey.currentState!.validate()) {
+                                        formKey.currentState!.save();
+                                        formKey.currentState?.reset();
+                                      }
+                                    }
+                                  )),
+                        maxLines: 3,
+                        minLines: 1,
+                        textInputAction: TextInputAction.done,
+                        keyboardType: TextInputType.text,
+                        onSaved: (value) {
+                          null;
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty || value == '') {
+                            return 'Please enter a message';
+                          } else {
+                            return null;
+                          }
+                        }),
+                  ),
+                ),
+              ]),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+Widget customButton(String label, BuildContext context) {
+  /// Creates a button with [label] and specified function.
+  final MaterialStateProperty<Color> buttonColor = 
+            MaterialStateProperty.all(Theme.of(context).primaryColor);
+
+  return (
+    ElevatedButton(
+      onPressed: (){}, 
+      child: Text(label),
+      style: ButtonStyle(backgroundColor: buttonColor)
+    )
+  );
+}
+
+Widget buttonRow(bool newOrOld, bool matchOrAll, bool lowOrHigh, BuildContext context) {
+  /// Adds three search buttons to the top of the search button.
+  String button1 = newOrOld ? 'Oldest' : 'Newest';
+  String button2 = matchOrAll ? 'All' : 'Closest Match';
+  String button3 = lowOrHigh ? 'Price Highest' : 'Price lowest';
+
+  return (
+    Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Spacer(flex:1),
+        customButton(button1, context), // Sort by newest or oldest.
+        const Spacer(flex:1),
+        customButton(button2, context), // Sort by All or closest match.
+        const Spacer(flex:1),
+        customButton(button3, context), // Sort by Highest and lowest price.
+        const Spacer(flex:1)
+      ],
+    )
+  );
+}
+
+double paddingSides(BuildContext context) {
+  /// Adds padding to the sides of the field 
+  return MediaQuery.of(context).size.width * 0.03;
+}
+
+double paddingTopAndBottom(BuildContext context) {
+  /// Adds padding to the top and bottom of the form field.
+  return MediaQuery.of(context).size.height * 0.01;
 }

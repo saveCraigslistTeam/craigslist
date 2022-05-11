@@ -49,7 +49,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
     String condition = _conditionController.text;
     String description = _descriptionController.text;
     String zipcode = _zipcodeController.text;
-    String price = _priceController.text;
+    double price = double.parse(_priceController.text);
+    TemporalDateTime newDate = TemporalDateTime.now();
 
     // create a new Sale from the form values
     Sale newSale = Sale(
@@ -57,7 +58,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
         description: description.isNotEmpty ? description : null,
         condition: condition.isNotEmpty ? condition : null,
         zipcode: zipcode.isNotEmpty ? zipcode : null,
-        price: price.isNotEmpty ? price : null,
+        price: price,
         user: widget.username);
 
     try {

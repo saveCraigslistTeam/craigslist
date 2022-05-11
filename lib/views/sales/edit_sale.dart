@@ -39,7 +39,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
         TextEditingController(text: widget.sale.description);
     _conditionController = TextEditingController(text: widget.sale.condition);
     _zipcodeController = TextEditingController(text: widget.sale.zipcode);
-    _priceController = TextEditingController(text: widget.sale.price);
+    _priceController = TextEditingController(text: widget.sale.price.toString());
     super.initState();
   }
 
@@ -117,7 +117,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
         description: description.isNotEmpty ? description : null,
         condition: condition.isNotEmpty ? condition : null,
         zipcode: zipcode.isNotEmpty ? zipcode : null,
-        price: price.isNotEmpty ? price : null,
+        price: double.parse(price)
       );
 
       // Save the updated sale in DataStore

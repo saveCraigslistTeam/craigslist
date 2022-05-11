@@ -63,10 +63,10 @@ class _SaleDetailViewState extends State<SaleDetailView> {
                   padding: const EdgeInsets.all(12),
                   child: Text('Condition: ${widget.sale.condition}'),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text('Posted: ${convertDate(widget.sale.updatedAt)}'),
-                ),
+                // Padding(
+                //   padding: const EdgeInsets.all(12),
+                //   child: Text('Posted: ${convertDate(widget.sale.updatedAt)}'),
+                // ),
                 ElevatedButton.icon(
                     onPressed: () {
                       Navigator.pushNamed(context, '/msgDetail', arguments: [

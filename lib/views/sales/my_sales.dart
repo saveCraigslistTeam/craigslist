@@ -95,7 +95,7 @@ class SalesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return sales.length >= 1
+    return sales.isNotEmpty
         ? SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Column(
@@ -121,12 +121,13 @@ class _SaleItemState extends State<SaleItem> {
       await getSaleImages(widget.sale);
       setState(() {});
     });
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     var heading = widget.sale.title;
-    var subheading = '\$${oCcy.format(int.parse(widget.sale.price!))}';
+    var subheading = '${widget.sale.price!}';
     var cardImage = fetchImage(saleImages);
     var supportingText = widget.sale.description;
     return InkWell(

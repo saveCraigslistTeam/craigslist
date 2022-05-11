@@ -118,10 +118,12 @@ class _MessageDetailState extends State<MessageDetail> {
         ? ScrollingMessagesSliver(data: _messages, 
                                   dataStore: widget.dataStore, 
                                   userName: userName.toString())
-        : NewMessageToSeller(sender: userName.toString(),
+        : userName.toString() != customer.toString() 
+          ? NewMessageToSeller(sender: userName.toString(),
                             saleId: sale.toString(),
                             seller: customer.toString(),
-                            dataStore: widget.dataStore,))
+                            dataStore: widget.dataStore,)
+            : const Center(child: Text('Error: Cannot message yourself.')))
       );
   }
 }
@@ -267,7 +269,8 @@ class NewMessageToSeller extends StatelessWidget {
 
   Messages createMessageData() {
 
-    Messages dummyMessage = Messages(sale: saleId,
+    Messages dummyMessage = Messages(
+      sale: saleId,
       host: seller,
       customer: sender,
       hostSent: false,
