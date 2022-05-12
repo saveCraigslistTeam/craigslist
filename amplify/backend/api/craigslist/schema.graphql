@@ -1,3 +1,15 @@
+type Sale @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  title: String
+  description: String
+  condition: String
+  zipcode: String
+  price: Float
+  user: String
+  Tags: [Tag] @hasMany(indexName: "bySale", fields: ["id"])
+  SaleImages: [SaleImage] @hasMany(indexName: "bySale", fields: ["id"])
+}
+
 type Tag @model @auth(rules: [{allow: public}]) {
   id: ID!
   label: String
@@ -6,30 +18,18 @@ type Tag @model @auth(rules: [{allow: public}]) {
 
 type Messages @model @auth(rules: [{allow: public}]) {
   id: ID!
-  sale: String
   host: String
   customer: String
   hostSent: Boolean
   text: String
   date: AWSDateTime
   seen: Boolean
+  sale: String
 }
 
 type SaleImage @model @auth(rules: [{allow: public}]) {
   id: ID!
   imageURL: String
   saleID: ID! @index(name: "bySale")
-}
-
-type Sale @model @auth(rules: [{allow: public}]) {
-  id: ID!
-  title: String
-  description: String
-  condition: String
-  zipcode: String
-  price: String
-  SaleImages: [SaleImage] @hasMany(indexName: "bySale", fields: ["id"])
-  user: String
-  Tags: [Tag] @hasMany(indexName: "bySale", fields: ["id"])
 }
  
