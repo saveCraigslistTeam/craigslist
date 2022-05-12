@@ -86,7 +86,6 @@ class _AllSalesState extends State<AllSales> {
 }
 
 class SalesList extends StatelessWidget {
-  
   final List<Sale> sales;
   final String customer;
   const SalesList({Key? key, required this.sales, required this.customer});
@@ -95,27 +94,28 @@ class SalesList extends StatelessWidget {
   Widget build(BuildContext context) {
     return sales.isNotEmpty
         ? Column(
-          children: [
-            Expanded(
-              flex: 7,
-              child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Column(
-                      children: sales
-                          .map((sale) => SaleItem(sale: sale, customer: customer))
-                          .toList())),
-            ),
-            const Expanded(
-              flex: 3,
-              child: Search(),)
-          ],
-        )
+            children: [
+              Expanded(
+                flex: 7,
+                child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: Column(
+                        children: sales
+                            .map((sale) =>
+                                SaleItem(sale: sale, customer: customer))
+                            .toList())),
+              ),
+              const Expanded(
+                flex: 3,
+                child: Search(),
+              )
+            ],
+          )
         : const Center(child: const Text('No sales in your area!'));
   }
 }
 
 class SaleItem extends StatefulWidget {
-
   const SaleItem({Key? key, required this.sale, required this.customer});
   final Sale sale;
   final String customer;
@@ -169,8 +169,8 @@ class _SaleItemState extends State<SaleItem> {
                     subheading,
                     style: const TextStyle(color: Colors.green),
                   ),
-                  trailing:
-                      IconButton(onPressed: () {}, icon: const Icon(Icons.favorite)),
+                  trailing: IconButton(
+                      onPressed: () {}, icon: const Icon(Icons.favorite)),
                 ),
                 cardImage,
                 Container(
@@ -207,15 +207,15 @@ class Search extends StatelessWidget {
   // final Function sortByClosestMatch;
   // final Function sortByPrice;
 
-  const Search({Key? key,
-            // required this.sortByNewest,
-            // required this.sortByClosestMatch,
-            // required this.sortByPrice
-            }) : super(key: key);
+  const Search({
+    Key? key,
+    // required this.sortByNewest,
+    // required this.sortByClosestMatch,
+    // required this.sortByPrice
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     bool newOrOld = false;
     bool matchOrAll = false;
@@ -224,55 +224,53 @@ class Search extends StatelessWidget {
     return Column(
       children: [
         Expanded(
-          flex: 2,
-          child: buttonRow(newOrOld, matchOrAll, lowOrHigh, context)),
+            flex: 2,
+            child: buttonRow(newOrOld, matchOrAll, lowOrHigh, context)),
         Expanded(
           flex: 8,
-          child: Form( 
-              key: formKey,
-              child: Row(
+          child: Form(
+            key: formKey,
+            child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: paddingSides(context),
-                      vertical: paddingTopAndBottom(context)),
-                  child: Container(
-                    color: Colors.white,
-                    width: 350,
-                    child: TextFormField(
-                        decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 10), 
-                            suffixIcon: IconButton(
-                                icon: const Icon(Icons.search), 
-                                color: Theme.of(context).primaryColor,
-                                onPressed: () async {
-                                      if (formKey.currentState!.validate()) {
-                                        formKey.currentState!.save();
-                                        formKey.currentState?.reset();
-                                      }
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: paddingSides(context),
+                        vertical: paddingTopAndBottom(context)),
+                    child: Container(
+                      color: Colors.white,
+                      width: 350,
+                      child: TextFormField(
+                          decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 10),
+                              suffixIcon: IconButton(
+                                  icon: const Icon(Icons.search),
+                                  color: Theme.of(context).primaryColor,
+                                  onPressed: () async {
+                                    if (formKey.currentState!.validate()) {
+                                      formKey.currentState!.save();
+                                      formKey.currentState?.reset();
                                     }
-                                  )),
-                        maxLines: 3,
-                        minLines: 1,
-                        textInputAction: TextInputAction.done,
-                        keyboardType: TextInputType.text,
-                        onSaved: (value) {
-                          null;
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty || value == '') {
-                            return 'Please enter a message';
-                          } else {
-                            return null;
-                          }
-                        }),
+                                  })),
+                          maxLines: 3,
+                          minLines: 1,
+                          textInputAction: TextInputAction.done,
+                          keyboardType: TextInputType.text,
+                          onSaved: (value) {
+                            null;
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty || value == '') {
+                              return 'Please enter a message';
+                            } else {
+                              return null;
+                            }
+                          }),
+                    ),
                   ),
-                ),
-              ]),
+                ]),
           ),
         )
       ],
@@ -282,42 +280,38 @@ class Search extends StatelessWidget {
 
 Widget customButton(String label, BuildContext context) {
   /// Creates a button with [label] and specified function.
-  final MaterialStateProperty<Color> buttonColor = 
-            MaterialStateProperty.all(Theme.of(context).primaryColor);
+  final MaterialStateProperty<Color> buttonColor =
+      MaterialStateProperty.all(Theme.of(context).primaryColor);
 
-  return (
-    ElevatedButton(
-      onPressed: (){}, 
+  return (ElevatedButton(
+      onPressed: () {},
       child: Text(label),
-      style: ButtonStyle(backgroundColor: buttonColor)
-    )
-  );
+      style: ButtonStyle(backgroundColor: buttonColor)));
 }
 
-Widget buttonRow(bool newOrOld, bool matchOrAll, bool lowOrHigh, BuildContext context) {
+Widget buttonRow(
+    bool newOrOld, bool matchOrAll, bool lowOrHigh, BuildContext context) {
   /// Adds three search buttons to the top of the search button.
   String button1 = newOrOld ? 'Oldest' : 'Newest';
   String button2 = matchOrAll ? 'All' : 'Closest Match';
   String button3 = lowOrHigh ? 'Price Highest' : 'Price lowest';
 
-  return (
-    Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Spacer(flex:1),
-        customButton(button1, context), // Sort by newest or oldest.
-        const Spacer(flex:1),
-        customButton(button2, context), // Sort by All or closest match.
-        const Spacer(flex:1),
-        customButton(button3, context), // Sort by Highest and lowest price.
-        const Spacer(flex:1)
-      ],
-    )
-  );
+  return (Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      const Spacer(flex: 1),
+      customButton(button1, context), // Sort by newest or oldest.
+      const Spacer(flex: 1),
+      customButton(button2, context), // Sort by All or closest match.
+      const Spacer(flex: 1),
+      customButton(button3, context), // Sort by Highest and lowest price.
+      const Spacer(flex: 1)
+    ],
+  ));
 }
 
 double paddingSides(BuildContext context) {
-  /// Adds padding to the sides of the field 
+  /// Adds padding to the sides of the field
   return MediaQuery.of(context).size.width * 0.03;
 }
 

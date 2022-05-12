@@ -114,27 +114,45 @@ class _AddSaleFormState extends State<AddSaleForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextFormField(
+            textFormField(
+                context: context,
                 controller: _titleController,
-                decoration: InputDecoration(filled: true, labelText: 'Title')),
-            TextFormField(
+                keyboard: TextInputType.text,
+                label: 'Title'),
+            textFormField(
+                context: context,
                 controller: _descriptionController,
-                decoration:
-                    InputDecoration(filled: true, labelText: 'Description')),
-            TextFormField(
+                keyboard: TextInputType.text,
+                label: 'Description'),
+            textFormField(
+                context: context,
                 controller: _conditionController,
-                decoration:
-                    InputDecoration(filled: true, labelText: 'Condition')),
-            TextFormField(
+                keyboard: TextInputType.text,
+                label: 'Condition'),
+            textFormField(
+                context: context,
                 controller: _zipcodeController,
-                decoration:
-                    InputDecoration(filled: true, labelText: 'Zipcode')),
-            TextFormField(
+                keyboard: TextInputType.number,
+                label: 'Zipcode'),
+            textFormField(
+                context: context,
                 controller: _priceController,
-                decoration: InputDecoration(filled: true, labelText: 'Price')),
+                keyboard: const TextInputType.numberWithOptions(decimal: false),
+                label: 'Price'),
             tagLabelList(),
             ElevatedButton(
-                onPressed: selectImage, child: Text('Select an Image')),
+                style: ElevatedButton.styleFrom(
+                    primary: Theme.of(context).primaryColor,
+                    fixedSize: const Size(200, 62),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(29),
+                    ),
+                    textStyle: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
+                onPressed: selectImage,
+                child: const Text(
+                  'Select an Image',
+                )),
             imageDisplay(imageFile: imageFile),
           ],
         ),
@@ -214,6 +232,48 @@ class _AddSaleFormState extends State<AddSaleForm> {
     setState(() {
       imageFile = pickedFile.path;
     });
+  }
+}
+
+class textFormField extends StatelessWidget {
+  const textFormField(
+      {Key? key,
+      required this.context,
+      required this.controller,
+      required this.label,
+      required this.keyboard})
+      : super(key: key);
+
+  final BuildContext context;
+  final TextEditingController controller;
+  final String label;
+  final TextInputType keyboard;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).primaryColor,
+          width: 2,
+        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(29),
+      ),
+      child: TextFormField(
+          keyboardType: keyboard,
+          controller: controller,
+          decoration: InputDecoration(
+              border: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              filled: false,
+              labelText: label,
+              labelStyle: TextStyle(fontSize: 17))),
+    );
   }
 }
 
