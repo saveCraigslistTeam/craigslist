@@ -10,7 +10,7 @@ import '../../models/Messages.dart';
 
 class MessageForm extends StatefulWidget {
   /// Creates an input box for the user to send a [message].
-  /// 
+  ///
   /// The [MessageForm] will be at the bottom 30% of the screeen
   /// it is a [TextFormField] with a [Icon.sent] button that will
   /// send the message to the AWS server.
@@ -33,17 +33,16 @@ class MessageForm extends StatefulWidget {
 class _MessageFormState extends State<MessageForm> {
   @override
   Widget build(BuildContext context) {
-    
     final formKey = GlobalKey<FormState>();
     String newMessage = '';
     String userName = widget.userName;
 
     return Form(
-          key: formKey,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      key: formKey,
+      child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Padding(
               padding: EdgeInsets.symmetric(
                   horizontal: paddingSides(context),
@@ -54,19 +53,18 @@ class _MessageFormState extends State<MessageForm> {
                 child: TextFormField(
                     decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 10), 
+                            vertical: 10, horizontal: 10),
                         suffixIcon: IconButton(
-                           icon: const Icon(Icons.send), 
-                           color: Theme.of(context).primaryColor,
-                           onPressed: () async {
-                                  if (formKey.currentState!.validate()) {
-                                    formKey.currentState!.save();
-                                    await saveNewMessage(widget.messageData, newMessage, userName);
-                                    formKey.currentState?.reset();
-                                  }
-                                }
-                             )),
+                            icon: const Icon(Icons.send),
+                            color: Theme.of(context).primaryColor,
+                            onPressed: () async {
+                              if (formKey.currentState!.validate()) {
+                                formKey.currentState!.save();
+                                await saveNewMessage(
+                                    widget.messageData, newMessage, userName);
+                                formKey.currentState?.reset();
+                              }
+                            })),
                     maxLines: 3,
                     minLines: 2,
                     textInputAction: TextInputAction.done,
@@ -88,10 +86,10 @@ class _MessageFormState extends State<MessageForm> {
   }
 }
 
-Future<void> saveNewMessage(Messages messageData, String newMessage, 
-                            String userName) async {
+Future<void> saveNewMessage(
+    Messages messageData, String newMessage, String userName) async {
   /// Sends the data of the new message to the AWS server.
-  
+
   TemporalDateTime currDate = TemporalDateTime.now();
 
   Messages outMessage = Messages(
@@ -105,14 +103,14 @@ Future<void> saveNewMessage(Messages messageData, String newMessage,
 
   try {
     await Amplify.DataStore.save(outMessage);
-    print('Message sent successfully');
+    debugPrint('Message sent successfully');
   } catch (e) {
-    print("An error occurred saving new message: $e");
+    debugPrint("An error occurred saving new message: $e");
   }
 }
 
 double paddingSides(BuildContext context) {
-  /// Adds padding to the sides of the field 
+  /// Adds padding to the sides of the field
   return MediaQuery.of(context).size.width * 0.03;
 }
 
