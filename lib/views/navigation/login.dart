@@ -14,22 +14,19 @@ class _LoginState extends State<Login> {
   //late LoginData _data;
   late SignupData signUpData;
   late LoginData loginData;
-  //bool _isLoggedIn = false;
-  late String confirmationCode;
+  bool isSignedIn = false;
+  //late String confirmationCode;
 
   Future<String?> _onLogin(loginData) async {
     try {
-      await Amplify.Auth.signIn(
+      final res = await Amplify.Auth.signIn(
         username: loginData.name,
         password: loginData.password,
       );
-      // final res = await Amplify.Auth.signIn(
-      //   username: loginData.name,
-      //   password: loginData.password,
-      // );
 
-      //_isLoggedIn = res.isSignedIn;
+      isSignedIn = res.isSignedIn;
     } on AuthException catch (e) {
+      isSignedIn ? Amplify.Auth.signOut() : isSignedIn = false;
       return '${e.message} - ${e.recoverySuggestion}';
     }
     return null;
@@ -134,7 +131,6 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-
     return FlutterLogin(
       title: 'Craigslist',
       onLogin: _onLogin,
@@ -145,12 +141,10 @@ class _LoginState extends State<Login> {
       onResendCode: _onResendCode,
       theme: LoginTheme(primaryColor: Theme.of(context).primaryColor),
       onSubmitAnimationCompleted: () {
-        Navigator.of(context).pushNamed('/home');
-        // _isLoggedIn
-        //     ? Navigator.of(context).pushReplacementNamed(
-        //         '/home',
-        //       )
-        //     : _isLoggedIn = false;
+        //Navigator.of(context).pushNamed('/home');
+        isSignedIn
+            ? Navigator.of(context).pushReplacementNamed('/home')
+            : Navigator.of(context).pushReplacementNamed('/');
         //arguments: _data,
       },
     );
