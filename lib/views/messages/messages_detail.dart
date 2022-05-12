@@ -182,9 +182,8 @@ Widget getListTile(int index, List<Messages> data, BuildContext context,
   /// [Coloredbox] will be grey if the user who sent the message is
   /// not the currently logged in user.
 
-  if (data[index].host == userName 
-      ? data[index].hostSent! 
-      : !data[index].hostSent!) {
+  if ((data[index].host == userName && data[index].hostSent!)
+      || (data[index].customer == userName && !data[index].hostSent!)) {
     return ListTile(
       title: ColoredBox(
           color: Theme.of(context).primaryColor, 
@@ -203,6 +202,8 @@ Widget getListTile(int index, List<Messages> data, BuildContext context,
   }
 }
 
+// ? data[index].hostSent! 
+//       : !data[index].hostSent!
 class ScrollingMessagesSliver extends StatelessWidget{
   /// Creates a [SliverList] of the conversation items in ascending order
   /// where the most recent message appears at the bottom.
