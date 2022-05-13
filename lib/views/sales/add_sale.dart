@@ -13,6 +13,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
+import 'package:rounded_loading_button/rounded_loading_button.dart';
 
 class AddSaleForm extends StatefulWidget {
   AddSaleForm({Key? key, required this.username}) : super(key: key);
@@ -27,13 +28,13 @@ class _AddSaleFormState extends State<AddSaleForm> {
   late String imageFile;
   late List<String> tagLabels;
   final picker = ImagePicker();
-
   @override
   void initState() {
     imageURL = '';
     imageFile = '';
     tagLabels = [];
     _titleController.addListener(_parseTags);
+
     super.initState();
   }
 
@@ -51,6 +52,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
     String zipcode = _zipcodeController.text;
     double price = double.parse(_priceController.text);
     TemporalDateTime newDate = TemporalDateTime.now();
+    final RoundedLoadingButtonController _btnController1 =
+        RoundedLoadingButtonController();
 
     // create a new Sale from the form values
     Sale newSale = Sale(
@@ -139,8 +142,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
                 controller: _priceController,
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
                 label: 'Price'),
-            // tagLabelList(),
-            chipList(),
+            chipList(context),
             ElevatedButton(
                 style: ElevatedButton.styleFrom(
                     primary: Theme.of(context).primaryColor,
@@ -180,6 +182,62 @@ class _AddSaleFormState extends State<AddSaleForm> {
     setState(() {
       tagLabels = tags.split(" ");
     });
+  }
+
+  void _deleteChip(tag) {
+    setState(() {
+      tagLabels.remove(tag);
+    });
+    return;
+  }
+
+  chipList(BuildContext context) {
+    return Wrap(spacing: 10, children: [
+      GestureDetector(
+        onTap: () {
+          _parseTags();
+        },
+        child: const Chip(
+          avatar: CircleAvatar(
+            backgroundColor: Colors.transparent,
+            child: Icon(
+              Icons.replay_rounded,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: Theme.of(context).primaryColor,
+          label: Text(
+            'Reset Tags',
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 7, horizontal: 10),
+        ),
+      ),
+      tagChipList()
+    ]);
+  }
+
+  tagChipList() {
+    return Wrap(
+      spacing: 10,
+      children: tagLabels
+          .map((tag) => Chip(
+                label: Text(
+                  tag,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17),
+                ),
+                backgroundColor: const Color.fromARGB(255, 4, 148, 134),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 7, horizontal: 10),
+                deleteIconColor: Colors.white,
+                onDeleted: () => _deleteChip(tag),
+              ))
+          .toList(),
+    );
   }
 
   Future<String?> getDownloadUrl(key) async {
@@ -233,37 +291,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
     setState(() {
       imageFile = pickedFile.path;
     });
-  }
-
-  Widget _buildChip(String label, Color color) {
-    return Chip(
-      labelPadding: EdgeInsets.all(2.0),
-      avatar: CircleAvatar(
-        backgroundColor: Colors.white70,
-        child: Text(label[0].toUpperCase()),
-      ),
-      label: Text(
-        label,
-        style: TextStyle(
-          color: Colors.white,
-        ),
-      ),
-      backgroundColor: color,
-      elevation: 6.0,
-      shadowColor: Colors.grey[60],
-      padding: EdgeInsets.all(8.0),
-    );
-  }
-
-  chipList() {
-    return Wrap(
-      spacing: 6.0,
-      runSpacing: 6.0,
-      children: [tagLabels],
-      // children: <Widget>[
-      //   _buildChip('Hacker', Color(0xFF007f5c)),
-      // ],
-    );
   }
 }
 
