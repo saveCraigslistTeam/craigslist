@@ -14,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
 import 'widgets/drop_down_menu.dart';
+import 'services/fetch_image.dart';
 
 class EditSaleForm extends StatefulWidget {
   const EditSaleForm({Key? key, required this.sale, required this.saleImages})
@@ -28,6 +29,7 @@ class EditSaleForm extends StatefulWidget {
 class _EditSaleFormState extends State<EditSaleForm> {
   late String imageURL;
   late String imageFile;
+  List<SaleImage> saleImages = [];
   late List<String> tagLabels;
   final picker = ImagePicker();
   late TextEditingController _titleController;
@@ -52,7 +54,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
 
   @override
   void initState() {
-    imageURL = '';
+    getSaleImages(widget.sale);
     imageFile = '';
     tagLabels = [];
     condition = widget.sale.condition!;
@@ -66,6 +68,15 @@ class _EditSaleFormState extends State<EditSaleForm> {
     _titleController.addListener(_parseTags);
     _parseTags();
     super.initState();
+  }
+
+  Future<List<SaleImage>?> getSaleImages(Sale sale) async {
+    List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
+        where: SaleImage.SALEID.eq(sale.id)));
+    setState(() {
+      saleImages = images;
+    });
+    return images;
   }
 
   Future<void> _saveSale() async {
@@ -90,13 +101,24 @@ class _EditSaleFormState extends State<EditSaleForm> {
           zipcode: zipcode.isNotEmpty ? zipcode : null,
           price: double.parse(price));
 
-      // Save the updated sale in DataStore
+      // upload the image to S3
+      // await uploadImage(imageFile);
+
+      // save the sale in DataStore
       await Amplify.DataStore.save(updatedSale);
 
-      await Amplify.DataStore.save(SaleImage(
-        imageURL: imageURL,
-        saleID: updatedSale.getId(),
-      ));
+      // save the tags in DataStore
+      for (var label in tagLabels) {
+        await Amplify.DataStore.save(Tag(
+          label: label,
+          saleID: updatedSale.getId(),
+        ));
+      }
+
+      // await Amplify.DataStore.save(SaleImage(
+      //   imageURL: imageURL,
+      //   saleID: updatedSale.getId(),
+      // ));
       // Close the form
       Navigator.of(context).pop();
       Navigator.popUntil(context, ModalRoute.withName('/mySales'));
@@ -160,7 +182,10 @@ class _EditSaleFormState extends State<EditSaleForm> {
                 initialValue: condition),
             chipList(),
             GestureDetector(
-                child: imageDisplay(imageFile: imageFile),
+                child: imageDisplay(
+                  saleImages: saleImages,
+                  imageFile: imageFile,
+                ),
                 onTap: () => {selectImage()}),
           ],
         ),
@@ -342,25 +367,18 @@ class textFormField extends StatelessWidget {
 }
 
 class imageDisplay extends StatelessWidget {
-  const imageDisplay({Key? key, required this.imageFile}) : super(key: key);
+  imageDisplay({Key? key, required this.saleImages, required this.imageFile})
+      : super(key: key);
+  final List<SaleImage> saleImages;
   final String imageFile;
 
+  Container image = Container();
   @override
   Widget build(BuildContext context) {
     if (imageFile != '') {
-      return Container(
-        height: MediaQuery.of(context).size.height * 0.25,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: FittedBox(
-            fit: BoxFit.contain,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50.0),
-              child: Image.file(File(imageFile)),
-            ),
-          ),
-        ),
-      );
+      image = Container(child: Image.file(File(imageFile)));
+    } else if (saleImages.length >= 1) {
+      image = fetchImage(saleImages);
     } else {
       return Padding(
           padding: EdgeInsets.all(8.0),
@@ -370,5 +388,18 @@ class imageDisplay extends StatelessWidget {
             size: MediaQuery.of(context).size.height * 0.2,
           ));
     }
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.25,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child:
+              ClipRRect(borderRadius: BorderRadius.circular(50.0), child: image
+                  // child: Image.file(File(imageFile)),
+                  ),
+        ),
+      ),
+    );
   }
 }
