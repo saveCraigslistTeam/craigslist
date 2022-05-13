@@ -28,36 +28,49 @@ class _AddSaleFormState extends State<AddSaleForm> {
   late String imageFile;
   late List<String> tagLabels;
   final picker = ImagePicker();
+  late String condition = '';
+  late String category = '';
+
+  conditionCallback(newCondition) {
+    setState(() {
+      condition = newCondition;
+    });
+  }
+
+  categoryCallback(newCategory) {
+    setState(() {
+      category = newCategory;
+    });
+  }
+
   @override
   void initState() {
     imageURL = '';
     imageFile = '';
     tagLabels = [];
     _titleController.addListener(_parseTags);
-
     super.initState();
   }
 
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _conditionController = TextEditingController();
   final _zipcodeController = TextEditingController();
   final _priceController = TextEditingController();
 
   Future<void> _saveSale() async {
     // get the current text field contents
     String title = _titleController.text;
-    String condition = _conditionController.text;
+    // String condition = _conditionController.text;
     String description = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     double price = double.parse(_priceController.text);
     TemporalDateTime newDate = TemporalDateTime.now();
-
     // create a new Sale from the form values
     Sale newSale = Sale(
         title: title,
         description: description.isNotEmpty ? description : null,
         condition: condition.isNotEmpty ? condition : null,
+        // category: category.isNotEmpty ? category : null,
         zipcode: zipcode.isNotEmpty ? zipcode : null,
         price: price,
         user: widget.username);
@@ -138,8 +151,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
                 controller: _priceController,
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
                 label: 'Price'),
-            DropDownMenu(mode: 'Category'),
-            DropDownMenu(mode: 'Condition'),
+            DropDownMenu(mode: 'Category', callback: categoryCallback),
+            DropDownMenu(mode: 'Condition', callback: conditionCallback),
             chipList(),
             GestureDetector(
                 child: imageDisplay(imageFile: imageFile),

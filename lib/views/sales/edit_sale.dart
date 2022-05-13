@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:io';
 // flutter and ui libraries
+import 'package:craigslist/views/sales/services/parse_tags.dart';
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
@@ -12,6 +13,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
+import 'widgets/drop_down_menu.dart';
 
 class EditSaleForm extends StatefulWidget {
   const EditSaleForm({Key? key, required this.sale, required this.saleImages})
@@ -24,77 +26,46 @@ class EditSaleForm extends StatefulWidget {
 }
 
 class _EditSaleFormState extends State<EditSaleForm> {
-  String? imageURL;
+  late String imageURL;
+  late String imageFile;
+  late List<String> tagLabels;
   final picker = ImagePicker();
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
   late TextEditingController _conditionController;
   late TextEditingController _zipcodeController;
   late TextEditingController _priceController;
+  late String condition = '';
+  late String category = '';
+
+  conditionCallback(newCondition) {
+    setState(() {
+      condition = newCondition;
+    });
+  }
+
+  categoryCallback(newCategory) {
+    setState(() {
+      category = newCategory;
+    });
+  }
 
   @override
   void initState() {
+    imageURL = '';
+    imageFile = '';
+    tagLabels = [];
+    condition = widget.sale.condition!;
     _titleController = TextEditingController(text: widget.sale.title);
     _descriptionController =
         TextEditingController(text: widget.sale.description);
     _conditionController = TextEditingController(text: widget.sale.condition);
     _zipcodeController = TextEditingController(text: widget.sale.zipcode);
-    _priceController = TextEditingController(text: widget.sale.price.toString());
+    _priceController =
+        TextEditingController(text: widget.sale.price.toString());
+    _titleController.addListener(_parseTags);
+    _parseTags();
     super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xffA682FF),
-        title: Text('Edit Sale'),
-        actions: <Widget>[
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                primary: Color(0xffA682FF),
-              ),
-              onPressed: _saveSale,
-              child: Text('Save')),
-        ],
-      ),
-      body: Container(
-        padding: EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                  controller: _titleController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Title')),
-              TextFormField(
-                  controller: _descriptionController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Description')),
-              TextFormField(
-                  controller: _conditionController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Condition')),
-              TextFormField(
-                  controller: _zipcodeController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Zipcode')),
-              TextFormField(
-                  controller: _priceController,
-                  decoration:
-                      InputDecoration(filled: true, labelText: 'Price')),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Color(0xffA682FF),
-                  ),
-                  onPressed: uploadImage,
-                  child: Text('Upload Image')),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Future<void> _saveSale() async {
@@ -112,34 +83,174 @@ class _EditSaleFormState extends State<EditSaleForm> {
 
       // Create a new sale object from original sale's id and form fields
       Sale updatedSale = originalSale.copyWith(
-        id: originalSale.id,
-        title: title.isNotEmpty ? title : null,
-        description: description.isNotEmpty ? description : null,
-        condition: condition.isNotEmpty ? condition : null,
-        zipcode: zipcode.isNotEmpty ? zipcode : null,
-        price: double.parse(price)
-      );
+          id: originalSale.id,
+          title: title.isNotEmpty ? title : null,
+          description: description.isNotEmpty ? description : null,
+          condition: condition.isNotEmpty ? condition : null,
+          zipcode: zipcode.isNotEmpty ? zipcode : null,
+          price: double.parse(price));
 
       // Save the updated sale in DataStore
       await Amplify.DataStore.save(updatedSale);
 
-      // await Amplify.DataStore.save(SaleImage(
-      //   imageURL: imageURL,
-      //   saleID: newSale.getId(),
-      // ));
+      await Amplify.DataStore.save(SaleImage(
+        imageURL: imageURL,
+        saleID: updatedSale.getId(),
+      ));
       // Close the form
-      // Navigator.of(context).pop();
+      Navigator.of(context).pop();
       Navigator.popUntil(context, ModalRoute.withName('/mySales'));
     } catch (e) {
       debugPrint('An error occurred while saving Sale: $e');
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xffA682FF),
+        title: Text('Add Sale'),
+        actions: <Widget>[
+          ElevatedButton(
+            onPressed: _saveSale,
+            child: const Text(
+              'Save',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(primary: Color(0xffA682FF)),
+          ),
+        ],
+      ),
+      body: addSaleForm(),
+    );
+  }
+
+  Container addSaleForm() {
+    return Container(
+      padding: EdgeInsets.all(8.0),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            textFormField(
+                context: context,
+                controller: _titleController,
+                keyboard: TextInputType.text,
+                label: 'Title'),
+            textFormField(
+                context: context,
+                controller: _descriptionController,
+                keyboard: TextInputType.text,
+                label: 'Description'),
+            textFormField(
+                context: context,
+                controller: _zipcodeController,
+                keyboard: TextInputType.number,
+                label: 'Zipcode'),
+            textFormField(
+                context: context,
+                controller: _priceController,
+                keyboard: const TextInputType.numberWithOptions(decimal: false),
+                label: 'Price'),
+            DropDownMenu(mode: 'Category', callback: categoryCallback),
+            DropDownMenu(
+                mode: 'Condition',
+                callback: conditionCallback,
+                initialValue: condition),
+            chipList(),
+            GestureDetector(
+                child: imageDisplay(imageFile: imageFile),
+                onTap: () => {selectImage()}),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Container tagLabelList() {
+    if (tagLabels.length >= 1) {
+      return Container(
+        child: Text(
+          'Tags: ' + tagLabels.join(", "),
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+        margin: const EdgeInsets.all(10.0),
+      );
+    } else {
+      return Container(child: Text('No tags!'));
+    }
+  }
+
+  _parseTags() {
+    String tags = _titleController.text;
+    setState(() {
+      tagLabels = tags.split(" ");
+    });
+  }
+
+  void _deleteChip(tag) {
+    setState(() {
+      tagLabels.remove(tag);
+    });
+    return;
+  }
+
+  chipList() {
+    return Wrap(spacing: 10, children: [
+      GestureDetector(
+        onTap: () {
+          _parseTags();
+        },
+        child: const Chip(
+          avatar: CircleAvatar(
+            backgroundColor: Colors.transparent,
+            child: Icon(
+              Icons.replay_rounded,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: const Color(0xffA682FF),
+          label: Text(
+            'Reset Tags',
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 7, horizontal: 10),
+        ),
+      ),
+      tagChipList()
+    ]);
+  }
+
+  tagChipList() {
+    return Wrap(
+      spacing: 10,
+      children: tagLabels
+          .map((tag) => Chip(
+                label: Text(
+                  tag,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17),
+                ),
+                backgroundColor: const Color.fromARGB(255, 4, 148, 134),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 7, horizontal: 10),
+                deleteIconColor: Colors.white,
+                onDeleted: () => _deleteChip(tag),
+              ))
+          .toList(),
+    );
+  }
+
   Future<String?> getDownloadUrl(key) async {
     try {
-      final GetUrlResult result = await Amplify.Storage.getUrl(key: key);
-      // NOTE: This code is only for demonstration
-      // Your debug console may truncate the debugPrinted url string
+      S3GetUrlOptions options = S3GetUrlOptions(
+          expires: 604799, accessLevel: StorageAccessLevel.guest);
+      final GetUrlResult result =
+          await Amplify.Storage.getUrl(options: options, key: key);
       debugPrint('Got URL: ${result.url}');
       setState(() {
         imageURL = result.url;
@@ -151,33 +262,113 @@ class _EditSaleFormState extends State<EditSaleForm> {
     }
   }
 
-  Future<void> uploadImage() async {
-    final options = S3UploadFileOptions(
-      accessLevel: StorageAccessLevel.guest,
-    );
+  Future<void> uploadImage(imageFile) async {
+    if (imageFile != '') {
+      final options = S3UploadFileOptions(
+        accessLevel: StorageAccessLevel.guest,
+      );
+      final key = DateTime.now().toString();
+      final file = File(imageFile);
+      try {
+        final UploadFileResult result = await Amplify.Storage.uploadFile(
+            options: options,
+            local: file,
+            key: key,
+            onProgress: (progress) {
+              debugPrint("Fraction completed: " +
+                  progress.getFractionCompleted().toString());
+            });
+        debugPrint('Successfully uploaded image: ${result.key}');
+        await getDownloadUrl(key);
+      } on StorageException catch (e) {
+        debugPrint('Error uploading image: $e');
+      }
+    }
+  }
 
+  Future<void> selectImage() async {
     // Select image from user's gallery
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) {
       debugPrint('No image selected');
       return;
     }
-    // Upload image with the current time as the key
-    final key = DateTime.now().toString();
-    final file = File(pickedFile.path);
-    try {
-      final UploadFileResult result = await Amplify.Storage.uploadFile(
-          options: options,
-          local: file,
-          key: key,
-          onProgress: (progress) {
-            debugPrint("Fraction completed: " +
-                progress.getFractionCompleted().toString());
-          });
-      debugPrint('Successfully uploaded image: ${result.key}');
-      getDownloadUrl(key);
-    } on StorageException catch (e) {
-      debugPrint('Error uploading image: $e');
+    setState(() {
+      imageFile = pickedFile.path;
+    });
+  }
+}
+
+class textFormField extends StatelessWidget {
+  const textFormField(
+      {Key? key,
+      required this.context,
+      required this.controller,
+      required this.label,
+      required this.keyboard})
+      : super(key: key);
+
+  final BuildContext context;
+  final TextEditingController controller;
+  final String label;
+  final TextInputType keyboard;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).primaryColor,
+          width: 2,
+        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(29),
+      ),
+      child: TextFormField(
+          keyboardType: keyboard,
+          controller: controller,
+          decoration: InputDecoration(
+              border: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              filled: false,
+              labelText: label,
+              labelStyle: TextStyle(fontSize: 17))),
+    );
+  }
+}
+
+class imageDisplay extends StatelessWidget {
+  const imageDisplay({Key? key, required this.imageFile}) : super(key: key);
+  final String imageFile;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageFile != '') {
+      return Container(
+        height: MediaQuery.of(context).size.height * 0.25,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50.0),
+              child: Image.file(File(imageFile)),
+            ),
+          ),
+        ),
+      );
+    } else {
+      return Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Icon(
+            Icons.add_a_photo_rounded,
+            color: Colors.grey,
+            size: MediaQuery.of(context).size.height * 0.2,
+          ));
     }
   }
 }

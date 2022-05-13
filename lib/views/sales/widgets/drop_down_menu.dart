@@ -2,9 +2,12 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
 class DropDownMenu extends StatefulWidget {
-  const DropDownMenu({Key? key, required this.mode}) : super(key: key);
+  DropDownMenu(
+      {Key? key, required this.mode, required this.callback, this.initialValue})
+      : super(key: key);
   final String mode;
-
+  final String? initialValue;
+  Function(String) callback;
   @override
   State<DropDownMenu> createState() => _DropDownMenuState();
 }
@@ -67,7 +70,11 @@ class _DropDownMenuState extends State<DropDownMenu> {
         : setState(() {
             items = conditions;
           });
-    super.initState();
+    widget.initialValue != ''
+        ? setState(() {
+            selectedValue = widget.initialValue;
+          })
+        : super.initState();
   }
 
   @override
@@ -106,6 +113,7 @@ class _DropDownMenuState extends State<DropDownMenu> {
               .toList(),
           value: selectedValue,
           onChanged: (value) {
+            widget.callback(value as String);
             setState(() {
               selectedValue = value as String;
             });
