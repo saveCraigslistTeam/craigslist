@@ -36,32 +36,58 @@ class AllSales extends StatefulWidget {
 }
 
 class _AllSalesState extends State<AllSales> {
+
   late StreamSubscription<QuerySnapshot<Sale>> _subscription;
   late StreamSubscription<QuerySnapshot<Tag>> _tagSubscription;
 
   bool _isLoading = true;
   List<Tag> _tags = [];
   List<Sale> _sales = [];
+
   // Username of potential buyer
   String customer = '';
 
   // Search Features
-  bool sortByRelevance = false;
-  bool newOrOld = false;
-  bool sortByPrice = false;
+  bool sortByRelevance = false; // All sales or only relevant sales
+  bool newOrOld = false;        // Sort by newest or oldest
+  bool sortByPrice = false;     // Sort by lowest price or highest price
 
   @override
   void initState() {
     super.initState();
   }
 
-  Future<void> getSalesStream() async {
+  Future<void> getAllSalesStream() async {
+    /// Performs an individual query by tags saleID and adds them
+    /// to the list.
+    List<QuerySortBy> queryItems = [];
+    
     _subscription = widget.DataStore.observeQuery(
       Sale.classType,
     ).listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
-        if (_isLoading) _isLoading = false;
         _sales = snapshot.items;
+        if (_isLoading) _isLoading = false;
+      });
+    });
+  }
+
+
+  Future<void> getSalesStream(String saleID) async {
+    /// Performs an individual query by tags saleID and adds them
+    /// to the list.
+    
+    _subscription = widget.DataStore.observeQuery(
+      Sale.classType,
+      where: Sale.ID.eq(saleID),
+      // sortBy: Sale.'updatedAt'.ascending()
+    ).listen((QuerySnapshot<Sale> snapshot) {
+      if(snapshot.items.isNotEmpty) {
+          _sales.add(snapshot.items[0]);
+      }
+      setState(() {
+        _sales = _sales;
+        if (_isLoading) _isLoading = false;
       });
     });
   }
@@ -73,14 +99,27 @@ class _AllSalesState extends State<AllSales> {
     
     _tagSubscription = widget.DataStore.observeQuery(
       Tag.classType,
-      where: Tag.LABEL.beginsWith(tagLabel)
+      where: Tag.LABEL.contains(tagLabel)
     ).listen((QuerySnapshot<Tag> snapshot) {
       setState(() {
-        if (_isLoading) _isLoading = false;
+        // if (!_isLoading) _isLoading = true;
+        _sales = [];
         _tags = snapshot.items;
+        for (var tag in _tags) {
+          getSalesStream(tag.saleID);
+        }
       });
-    });
+    }); 
   }
+
+  // List<QuerySortBy> getCurrentQueries() {
+  //   /// Takes the current tags and updates the queries for the search.
+  //   List<QuerySortBy> queries = [];
+
+  //   newOrOld ? queries.add(Sale.)
+
+  //   return queries;
+  // }
 
   void toggleSortByDate() {
     setState(() {
@@ -95,10 +134,6 @@ class _AllSalesState extends State<AllSales> {
         ModalRoute.of(context)!.settings.arguments as List<String?>;
     customer = args[0].toString();
 
-    if (_isLoading) {
-      getSalesStream();
-    }
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
@@ -109,7 +144,7 @@ class _AllSalesState extends State<AllSales> {
             _isLoading 
             ?  const Expanded(
                     flex: 7, 
-                    child: Center(child: CircularProgressIndicator()))
+                    child: Center(child: Text('Enter a search')))
             : Expanded(
               flex: 7,
               child: SalesList(sales: _sales, 
@@ -120,7 +155,8 @@ class _AllSalesState extends State<AllSales> {
             ),
             Expanded(
               flex: 3,
-              child: Search(toggleSortByDate: toggleSortByDate,
+              child: Search(tagSearchQuery: getSalesStreamByTag,
+                            toggleSortByDate: toggleSortByDate,
                             newOrOld: newOrOld))
           ],
         )
@@ -244,12 +280,15 @@ class _SaleItemState extends State<SaleItem> {
 
 // Search Features
 class Search extends StatelessWidget {
+  final Function tagSearchQuery;
+
   final Function toggleSortByDate;
   final bool newOrOld;
   // final Function sortByClosestMatch;
   // final Function sortByPrice;
 
   const Search({Key? key,
+            required this.tagSearchQuery,
             required this.toggleSortByDate,
             required this.newOrOld,
             // required this.sortByClosestMatch,
@@ -262,6 +301,7 @@ class Search extends StatelessWidget {
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     bool matchOrAll = false;
     bool lowOrHigh = false;
+    String tag = '';
 
     return Column(
       children: [
@@ -288,43 +328,44 @@ class Search extends StatelessWidget {
                     color: Colors.white,
                     width: 350,
                     child: TextFormField(
-                        decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 10), 
-                            suffixIcon: IconButton(
-                                icon: const Icon(Icons.search), 
-                                color: Theme.of(context).primaryColor,
-                                onPressed: () async {
-                                      if (formKey.currentState!.validate()) {
-                                        formKey.currentState!.save();
-                                        formKey.currentState?.reset();
-                                      }
-                                    }
-                                  )),
-                        maxLines: 3,
-                        minLines: 1,
-                        textInputAction: TextInputAction.done,
-                        keyboardType: TextInputType.text,
-                        onSaved: (value) {
-                          null;
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty || value == '') {
-                            return 'Please enter a message';
-                          } else {
-                            return null;
-                          }
-                        }),
-                  ),
-                ),
-              ]),
-          ),
+                      decoration: InputDecoration(
+                        contentPadding: 
+                          const EdgeInsets.symmetric(vertical: 10, horizontal: 10), 
+                        suffixIcon: IconButton(
+                            icon: const Icon(Icons.search), 
+                            color: Theme.of(context).primaryColor,
+                            onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    formKey.currentState!.save();
+                                    tagSearchQuery(tag);
+                                    formKey.currentState?.reset();
+                                  }
+                                }
+                              )),
+                      maxLines: 3,
+                      minLines: 1,
+                      textInputAction: TextInputAction.done,
+                      keyboardType: TextInputType.text,
+                      onSaved: (value) {
+                        tag = value!;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty || value == '') {
+                          return 'Please enter a message';
+                        } else {
+                          return null;
+                        }
+                      }
+                    )
+                  )
+                )
+              ])
+          )
         )
-      ],
-    );
+      ]);
   }
 }
+
 
 Widget customButton(String label, BuildContext context, Function func) {
   /// Creates a button with [label] and specified function.
