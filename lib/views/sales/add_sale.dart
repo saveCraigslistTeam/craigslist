@@ -139,7 +139,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
                 controller: _priceController,
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
                 label: 'Price'),
-            tagLabelList(),
+            // tagLabelList(),
+            chipList(),
             ElevatedButton(
                 style: ElevatedButton.styleFrom(
                     primary: Theme.of(context).primaryColor,
@@ -232,6 +233,37 @@ class _AddSaleFormState extends State<AddSaleForm> {
     setState(() {
       imageFile = pickedFile.path;
     });
+  }
+
+  Widget _buildChip(String label, Color color) {
+    return Chip(
+      labelPadding: EdgeInsets.all(2.0),
+      avatar: CircleAvatar(
+        backgroundColor: Colors.white70,
+        child: Text(label[0].toUpperCase()),
+      ),
+      label: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white,
+        ),
+      ),
+      backgroundColor: color,
+      elevation: 6.0,
+      shadowColor: Colors.grey[60],
+      padding: EdgeInsets.all(8.0),
+    );
+  }
+
+  chipList() {
+    return Wrap(
+      spacing: 6.0,
+      runSpacing: 6.0,
+      children: [tagLabels],
+      // children: <Widget>[
+      //   _buildChip('Hacker', Color(0xFF007f5c)),
+      // ],
+    );
   }
 }
 
