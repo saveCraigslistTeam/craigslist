@@ -101,7 +101,10 @@ class _AddSaleFormState extends State<AddSaleForm> {
         actions: <Widget>[
           ElevatedButton(
             onPressed: _saveSale,
-            child: Text('Save'),
+            child: const Text(
+              'Save',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
             style: ElevatedButton.styleFrom(primary: Color(0xffA682FF)),
           ),
         ],
@@ -142,7 +145,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
                 controller: _priceController,
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
                 label: 'Price'),
-            chipList(context),
+            chipList(),
+            imageDisplay(imageFile: imageFile),
             ElevatedButton(
                 style: ElevatedButton.styleFrom(
                     primary: Theme.of(context).primaryColor,
@@ -156,7 +160,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
                 child: const Text(
                   'Select an Image',
                 )),
-            imageDisplay(imageFile: imageFile),
           ],
         ),
       ),
@@ -191,7 +194,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
     return;
   }
 
-  chipList(BuildContext context) {
+  chipList() {
     return Wrap(spacing: 10, children: [
       GestureDetector(
         onTap: () {
@@ -205,7 +208,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
               color: Colors.white,
             ),
           ),
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: const Color(0xffA682FF),
           label: Text(
             'Reset Tags',
             style: TextStyle(
