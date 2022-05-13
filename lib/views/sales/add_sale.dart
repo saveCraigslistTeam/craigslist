@@ -13,7 +13,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'package:rounded_loading_button/rounded_loading_button.dart';
+import 'widgets/drop_down_menu.dart';
 
 class AddSaleForm extends StatefulWidget {
   AddSaleForm({Key? key, required this.username}) : super(key: key);
@@ -52,8 +52,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
     String zipcode = _zipcodeController.text;
     double price = double.parse(_priceController.text);
     TemporalDateTime newDate = TemporalDateTime.now();
-    final RoundedLoadingButtonController _btnController1 =
-        RoundedLoadingButtonController();
 
     // create a new Sale from the form values
     Sale newSale = Sale(
@@ -132,11 +130,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
                 label: 'Description'),
             textFormField(
                 context: context,
-                controller: _conditionController,
-                keyboard: TextInputType.text,
-                label: 'Condition'),
-            textFormField(
-                context: context,
                 controller: _zipcodeController,
                 keyboard: TextInputType.number,
                 label: 'Zipcode'),
@@ -145,6 +138,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
                 controller: _priceController,
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
                 label: 'Price'),
+            DropDownMenu(mode: 'Category'),
+            DropDownMenu(mode: 'Condition'),
             chipList(),
             GestureDetector(
                 child: imageDisplay(imageFile: imageFile),
@@ -302,7 +297,7 @@ class textFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: EdgeInsets.symmetric(vertical: 4),
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       decoration: BoxDecoration(
         border: Border.all(

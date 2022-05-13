@@ -23,7 +23,6 @@ class SaleDetailView extends StatefulWidget {
 }
 
 class _SaleDetailViewState extends State<SaleDetailView> {
-
   @override
   void initState() {
     super.initState();
@@ -63,10 +62,10 @@ class _SaleDetailViewState extends State<SaleDetailView> {
                   padding: const EdgeInsets.all(12),
                   child: Text('Condition: ${widget.sale.condition}'),
                 ),
-                // Padding(
-                //   padding: const EdgeInsets.all(12),
-                //   child: Text('Posted: ${convertDate(widget.sale.updatedAt)}'),
-                // ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text('Posted: ${convertDate(widget.sale)}'),
+                ),
                 ElevatedButton.icon(
                     onPressed: () {
                       Navigator.pushNamed(context, '/msgDetail', arguments: [
