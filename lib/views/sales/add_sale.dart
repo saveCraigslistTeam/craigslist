@@ -13,6 +13,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
+import 'widgets/drop_down_menu.dart';
 
 class AddSaleForm extends StatefulWidget {
   AddSaleForm({Key? key, required this.username}) : super(key: key);
@@ -27,6 +28,20 @@ class _AddSaleFormState extends State<AddSaleForm> {
   late String imageFile;
   late List<String> tagLabels;
   final picker = ImagePicker();
+  late String condition = '';
+  late String category = '';
+
+  conditionCallback(newCondition) {
+    setState(() {
+      condition = newCondition;
+    });
+  }
+
+  categoryCallback(newCategory) {
+    setState(() {
+      category = newCategory;
+    });
+  }
 
   @override
   void initState() {
@@ -39,24 +54,23 @@ class _AddSaleFormState extends State<AddSaleForm> {
 
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _conditionController = TextEditingController();
   final _zipcodeController = TextEditingController();
   final _priceController = TextEditingController();
 
   Future<void> _saveSale() async {
     // get the current text field contents
     String title = _titleController.text;
-    String condition = _conditionController.text;
+    // String condition = _conditionController.text;
     String description = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     double price = double.parse(_priceController.text);
     TemporalDateTime newDate = TemporalDateTime.now();
-
     // create a new Sale from the form values
     Sale newSale = Sale(
         title: title,
         description: description.isNotEmpty ? description : null,
         condition: condition.isNotEmpty ? condition : null,
+        // category: category.isNotEmpty ? category : null,
         zipcode: zipcode.isNotEmpty ? zipcode : null,
         price: price,
         user: widget.username);
@@ -98,7 +112,10 @@ class _AddSaleFormState extends State<AddSaleForm> {
         actions: <Widget>[
           ElevatedButton(
             onPressed: _saveSale,
-            child: Text('Save'),
+            child: const Text(
+              'Save',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
             style: ElevatedButton.styleFrom(primary: Color(0xffA682FF)),
           ),
         ],
@@ -114,28 +131,32 @@ class _AddSaleFormState extends State<AddSaleForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextFormField(
+            textFormField(
+                context: context,
                 controller: _titleController,
-                decoration: InputDecoration(filled: true, labelText: 'Title')),
-            TextFormField(
+                keyboard: TextInputType.text,
+                label: 'Title'),
+            textFormField(
+                context: context,
                 controller: _descriptionController,
-                decoration:
-                    InputDecoration(filled: true, labelText: 'Description')),
-            TextFormField(
-                controller: _conditionController,
-                decoration:
-                    InputDecoration(filled: true, labelText: 'Condition')),
-            TextFormField(
+                keyboard: TextInputType.text,
+                label: 'Description'),
+            textFormField(
+                context: context,
                 controller: _zipcodeController,
-                decoration:
-                    InputDecoration(filled: true, labelText: 'Zipcode')),
-            TextFormField(
+                keyboard: TextInputType.number,
+                label: 'Zipcode'),
+            textFormField(
+                context: context,
                 controller: _priceController,
-                decoration: InputDecoration(filled: true, labelText: 'Price')),
-            tagLabelList(),
-            ElevatedButton(
-                onPressed: selectImage, child: Text('Select an Image')),
-            imageDisplay(imageFile: imageFile),
+                keyboard: const TextInputType.numberWithOptions(decimal: false),
+                label: 'Price'),
+            DropDownMenu(mode: 'Category', callback: categoryCallback),
+            DropDownMenu(mode: 'Condition', callback: conditionCallback),
+            chipList(),
+            GestureDetector(
+                child: imageDisplay(imageFile: imageFile),
+                onTap: () => {selectImage()}),
           ],
         ),
       ),
@@ -161,6 +182,62 @@ class _AddSaleFormState extends State<AddSaleForm> {
     setState(() {
       tagLabels = tags.split(" ");
     });
+  }
+
+  void _deleteChip(tag) {
+    setState(() {
+      tagLabels.remove(tag);
+    });
+    return;
+  }
+
+  chipList() {
+    return Wrap(spacing: 10, children: [
+      GestureDetector(
+        onTap: () {
+          _parseTags();
+        },
+        child: const Chip(
+          avatar: CircleAvatar(
+            backgroundColor: Colors.transparent,
+            child: Icon(
+              Icons.replay_rounded,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: const Color(0xffA682FF),
+          label: Text(
+            'Reset Tags',
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 7, horizontal: 10),
+        ),
+      ),
+      tagChipList()
+    ]);
+  }
+
+  tagChipList() {
+    return Wrap(
+      spacing: 10,
+      children: tagLabels
+          .map((tag) => Chip(
+                label: Text(
+                  tag,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17),
+                ),
+                backgroundColor: const Color.fromARGB(255, 4, 148, 134),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 7, horizontal: 10),
+                deleteIconColor: Colors.white,
+                onDeleted: () => _deleteChip(tag),
+              ))
+          .toList(),
+    );
   }
 
   Future<String?> getDownloadUrl(key) async {
@@ -217,6 +294,48 @@ class _AddSaleFormState extends State<AddSaleForm> {
   }
 }
 
+class textFormField extends StatelessWidget {
+  const textFormField(
+      {Key? key,
+      required this.context,
+      required this.controller,
+      required this.label,
+      required this.keyboard})
+      : super(key: key);
+
+  final BuildContext context;
+  final TextEditingController controller;
+  final String label;
+  final TextInputType keyboard;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).primaryColor,
+          width: 2,
+        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(29),
+      ),
+      child: TextFormField(
+          keyboardType: keyboard,
+          controller: controller,
+          decoration: InputDecoration(
+              border: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              filled: false,
+              labelText: label,
+              labelStyle: TextStyle(fontSize: 17))),
+    );
+  }
+}
+
 class imageDisplay extends StatelessWidget {
   const imageDisplay({Key? key, required this.imageFile}) : super(key: key);
   final String imageFile;
@@ -224,11 +343,27 @@ class imageDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageFile != '') {
-      return Padding(
-          padding: const EdgeInsets.all(25.0),
-          child: Image.file(File(imageFile), fit: BoxFit.contain));
+      return Container(
+        height: MediaQuery.of(context).size.height * 0.25,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50.0),
+              child: Image.file(File(imageFile)),
+            ),
+          ),
+        ),
+      );
     } else {
-      return Container();
+      return Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Icon(
+            Icons.add_a_photo_rounded,
+            color: Colors.grey,
+            size: MediaQuery.of(context).size.height * 0.2,
+          ));
     }
   }
 }

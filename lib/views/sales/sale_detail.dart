@@ -23,7 +23,6 @@ class SaleDetailView extends StatefulWidget {
 }
 
 class _SaleDetailViewState extends State<SaleDetailView> {
-
   @override
   void initState() {
     super.initState();
