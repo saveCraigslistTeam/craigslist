@@ -37,19 +37,56 @@ class AllSales extends StatefulWidget {
 
 class _AllSalesState extends State<AllSales> {
   late StreamSubscription<QuerySnapshot<Sale>> _subscription;
+  late StreamSubscription<QuerySnapshot<Tag>> _tagSubscription;
+
   bool _isLoading = true;
+  List<Tag> _tags = [];
   List<Sale> _sales = [];
   // Username of potential buyer
   String customer = '';
 
   // Search Features
   bool sortByRelevance = false;
-  bool sortByDate = false;
+  bool newOrOld = false;
   bool sortByPrice = false;
 
   @override
   void initState() {
     super.initState();
+  }
+
+  Future<void> getSalesStream() async {
+    _subscription = widget.DataStore.observeQuery(
+      Sale.classType,
+    ).listen((QuerySnapshot<Sale> snapshot) {
+      setState(() {
+        if (_isLoading) _isLoading = false;
+        _sales = snapshot.items;
+      });
+    });
+  }
+
+  Future<void> getSalesStreamByTag(String tagLabel) async {
+    /// Pulls the tags that match the given label. This list will
+    /// be used to query the sales data. It is set to begins with
+    /// in order to pull any closely matched tags.
+    
+    _tagSubscription = widget.DataStore.observeQuery(
+      Tag.classType,
+      where: Tag.LABEL.beginsWith(tagLabel)
+    ).listen((QuerySnapshot<Tag> snapshot) {
+      setState(() {
+        if (_isLoading) _isLoading = false;
+        _tags = snapshot.items;
+      });
+    });
+  }
+
+  void toggleSortByDate() {
+    setState(() {
+      newOrOld = !newOrOld;
+      _isLoading = true;
+    });
   }
 
   @override
@@ -67,21 +104,27 @@ class _AllSalesState extends State<AllSales> {
         backgroundColor: const Color(0xffA682FF),
         title: const Text("All Sales"),
       ),
-      body: _isLoading
-          ? const Center(child: const CircularProgressIndicator())
-          : SalesList(sales: _sales, customer: customer),
+      body: Column(
+          children: [
+            _isLoading 
+            ?  const Expanded(
+                    flex: 7, 
+                    child: Center(child: CircularProgressIndicator()))
+            : Expanded(
+              flex: 7,
+              child: SalesList(sales: _sales, 
+                      customer: customer,
+                      toggleSortByDate: toggleSortByDate,
+                      newOrOld: newOrOld,
+                      ),
+            ),
+            Expanded(
+              flex: 3,
+              child: Search(toggleSortByDate: toggleSortByDate,
+                            newOrOld: newOrOld))
+          ],
+        )
     );
-  }
-
-  Future<void> getSalesStream() async {
-    _subscription = widget.DataStore.observeQuery(
-      Sale.classType,
-    ).listen((QuerySnapshot<Sale> snapshot) {
-      setState(() {
-        if (_isLoading) _isLoading = false;
-        _sales = snapshot.items;
-      });
-    });
   }
 }
 
@@ -89,28 +132,26 @@ class SalesList extends StatelessWidget {
   
   final List<Sale> sales;
   final String customer;
-  const SalesList({Key? key, required this.sales, required this.customer});
+  // Toggle the sort by date field
+  final Function toggleSortByDate;
+  final bool newOrOld;
+
+  SalesList({Key? key, 
+        required this.sales, 
+        required this.customer,
+        required this.toggleSortByDate,
+        required this.newOrOld});
 
   @override
   Widget build(BuildContext context) {
     return sales.isNotEmpty
-        ? Column(
-          children: [
-            Expanded(
-              flex: 7,
-              child: SingleChildScrollView(
+        ? SingleChildScrollView(
                   scrollDirection: Axis.vertical,
                   child: Column(
                       children: sales
                           .map((sale) => SaleItem(sale: sale, customer: customer))
-                          .toList())),
-            ),
-            const Expanded(
-              flex: 3,
-              child: Search(),)
-          ],
-        )
-        : const Center(child: const Text('No sales in your area!'));
+                          .toList()))
+        : const Center(child: Text('No sales match your criteria!'));
   }
 }
 
@@ -203,12 +244,14 @@ class _SaleItemState extends State<SaleItem> {
 
 // Search Features
 class Search extends StatelessWidget {
-  // final Function sortByNewest;
+  final Function toggleSortByDate;
+  final bool newOrOld;
   // final Function sortByClosestMatch;
   // final Function sortByPrice;
 
   const Search({Key? key,
-            // required this.sortByNewest,
+            required this.toggleSortByDate,
+            required this.newOrOld,
             // required this.sortByClosestMatch,
             // required this.sortByPrice
             }) : super(key: key);
@@ -217,7 +260,6 @@ class Search extends StatelessWidget {
   Widget build(BuildContext context) {
 
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    bool newOrOld = false;
     bool matchOrAll = false;
     bool lowOrHigh = false;
 
@@ -225,7 +267,11 @@ class Search extends StatelessWidget {
       children: [
         Expanded(
           flex: 2,
-          child: buttonRow(newOrOld, matchOrAll, lowOrHigh, context)),
+          child: buttonRow(newOrOld, 
+                          toggleSortByDate,
+                          matchOrAll, 
+                          lowOrHigh, 
+                          context)),
         Expanded(
           flex: 8,
           child: Form( 
@@ -280,21 +326,27 @@ class Search extends StatelessWidget {
   }
 }
 
-Widget customButton(String label, BuildContext context) {
+Widget customButton(String label, BuildContext context, Function func) {
   /// Creates a button with [label] and specified function.
   final MaterialStateProperty<Color> buttonColor = 
             MaterialStateProperty.all(Theme.of(context).primaryColor);
 
   return (
     ElevatedButton(
-      onPressed: (){}, 
+      onPressed: (){
+        func();
+      }, 
       child: Text(label),
       style: ButtonStyle(backgroundColor: buttonColor)
     )
   );
 }
 
-Widget buttonRow(bool newOrOld, bool matchOrAll, bool lowOrHigh, BuildContext context) {
+Widget buttonRow(bool newOrOld,
+                Function toggleSortByDate,
+                bool matchOrAll, 
+                bool lowOrHigh, 
+                BuildContext context) {
   /// Adds three search buttons to the top of the search button.
   String button1 = newOrOld ? 'Oldest' : 'Newest';
   String button2 = matchOrAll ? 'All' : 'Closest Match';
@@ -305,11 +357,11 @@ Widget buttonRow(bool newOrOld, bool matchOrAll, bool lowOrHigh, BuildContext co
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Spacer(flex:1),
-        customButton(button1, context), // Sort by newest or oldest.
+        customButton(button1, context, toggleSortByDate), // Sort by newest or oldest.
         const Spacer(flex:1),
-        customButton(button2, context), // Sort by All or closest match.
+        customButton(button2, context, toggleSortByDate), // Sort by All or closest match.
         const Spacer(flex:1),
-        customButton(button3, context), // Sort by Highest and lowest price.
+        customButton(button3, context, toggleSortByDate), // Sort by Highest and lowest price.
         const Spacer(flex:1)
       ],
     )
