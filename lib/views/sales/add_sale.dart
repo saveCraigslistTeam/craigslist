@@ -146,20 +146,9 @@ class _AddSaleFormState extends State<AddSaleForm> {
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
                 label: 'Price'),
             chipList(),
-            imageDisplay(imageFile: imageFile),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    primary: Theme.of(context).primaryColor,
-                    fixedSize: const Size(200, 62),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(29),
-                    ),
-                    textStyle: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold)),
-                onPressed: selectImage,
-                child: const Text(
-                  'Select an Image',
-                )),
+            GestureDetector(
+                child: imageDisplay(imageFile: imageFile),
+                onTap: () => {selectImage()}),
           ],
         ),
       ),
@@ -346,11 +335,27 @@ class imageDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageFile != '') {
-      return Padding(
-          padding: const EdgeInsets.all(25.0),
-          child: Image.file(File(imageFile), fit: BoxFit.contain));
+      return Container(
+        height: MediaQuery.of(context).size.height * 0.25,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(50.0),
+              child: Image.file(File(imageFile)),
+            ),
+          ),
+        ),
+      );
     } else {
-      return Container();
+      return Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Icon(
+            Icons.add_a_photo_rounded,
+            color: Colors.grey,
+            size: MediaQuery.of(context).size.height * 0.2,
+          ));
     }
   }
 }
