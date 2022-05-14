@@ -86,6 +86,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
     String description = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     String price = _priceController.text;
+    TemporalDateTime updated = TemporalDateTime.now();
 
     try {
       // fetch the sale that is going to be updated
@@ -99,7 +100,8 @@ class _EditSaleFormState extends State<EditSaleForm> {
           description: description.isNotEmpty ? description : null,
           condition: condition.isNotEmpty ? condition : null,
           zipcode: zipcode.isNotEmpty ? zipcode : null,
-          price: double.parse(price));
+          price: double.parse(price),
+          date: updated);
 
       // upload the image to S3
       // await uploadImage(imageFile);

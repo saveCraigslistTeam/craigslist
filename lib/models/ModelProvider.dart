@@ -32,7 +32,7 @@ export 'Tag.dart';
 
 class ModelProvider implements ModelProviderInterface {
   @override
-  String version = "1f329998bc208e722d30e5732e3b8bca";
+  String version = "eceaa6e955fe657d7eda59c07d7b683c";
   @override
   List<ModelSchema> modelSchemas = [Messages.schema, Sale.schema, SaleImage.schema, Tag.schema];
   static final ModelProvider _instance = ModelProvider();
