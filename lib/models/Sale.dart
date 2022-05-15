@@ -38,6 +38,8 @@ class Sale extends Model {
   final String? _user;
   final List<Tag>? _Tags;
   final List<SaleImage>? _SaleImages;
+  final String? _category;
+  final TemporalDateTime? _date;
   final TemporalDateTime? _createdAt;
   final TemporalDateTime? _updatedAt;
 
@@ -81,6 +83,14 @@ class Sale extends Model {
     return _SaleImages;
   }
   
+  String? get category {
+    return _category;
+  }
+  
+  TemporalDateTime? get date {
+    return _date;
+  }
+  
   TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -89,9 +99,9 @@ class Sale extends Model {
     return _updatedAt;
   }
   
-  const Sale._internal({required this.id, title, description, condition, zipcode, price, user, Tags, SaleImages, createdAt, updatedAt}): _title = title, _description = description, _condition = condition, _zipcode = zipcode, _price = price, _user = user, _Tags = Tags, _SaleImages = SaleImages, _createdAt = createdAt, _updatedAt = updatedAt;
+  const Sale._internal({required this.id, title, description, condition, zipcode, price, user, Tags, SaleImages, category, date, createdAt, updatedAt}): _title = title, _description = description, _condition = condition, _zipcode = zipcode, _price = price, _user = user, _Tags = Tags, _SaleImages = SaleImages, _category = category, _date = date, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory Sale({String? id, String? title, String? description, String? condition, String? zipcode, double? price, String? user, List<Tag>? Tags, List<SaleImage>? SaleImages}) {
+  factory Sale({String? id, String? title, String? description, String? condition, String? zipcode, double? price, String? user, List<Tag>? Tags, List<SaleImage>? SaleImages, String? category, TemporalDateTime? date}) {
     return Sale._internal(
       id: id == null ? UUID.getUUID() : id,
       title: title,
@@ -101,7 +111,9 @@ class Sale extends Model {
       price: price,
       user: user,
       Tags: Tags != null ? List<Tag>.unmodifiable(Tags) : Tags,
-      SaleImages: SaleImages != null ? List<SaleImage>.unmodifiable(SaleImages) : SaleImages);
+      SaleImages: SaleImages != null ? List<SaleImage>.unmodifiable(SaleImages) : SaleImages,
+      category: category,
+      date: date);
   }
   
   bool equals(Object other) {
@@ -120,7 +132,9 @@ class Sale extends Model {
       _price == other._price &&
       _user == other._user &&
       DeepCollectionEquality().equals(_Tags, other._Tags) &&
-      DeepCollectionEquality().equals(_SaleImages, other._SaleImages);
+      DeepCollectionEquality().equals(_SaleImages, other._SaleImages) &&
+      _category == other._category &&
+      _date == other._date;
   }
   
   @override
@@ -138,6 +152,8 @@ class Sale extends Model {
     buffer.write("zipcode=" + "$_zipcode" + ", ");
     buffer.write("price=" + (_price != null ? _price!.toString() : "null") + ", ");
     buffer.write("user=" + "$_user" + ", ");
+    buffer.write("category=" + "$_category" + ", ");
+    buffer.write("date=" + (_date != null ? _date!.format() : "null") + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
@@ -145,7 +161,7 @@ class Sale extends Model {
     return buffer.toString();
   }
   
-  Sale copyWith({String? id, String? title, String? description, String? condition, String? zipcode, double? price, String? user, List<Tag>? Tags, List<SaleImage>? SaleImages}) {
+  Sale copyWith({String? id, String? title, String? description, String? condition, String? zipcode, double? price, String? user, List<Tag>? Tags, List<SaleImage>? SaleImages, String? category, TemporalDateTime? date}) {
     return Sale._internal(
       id: id ?? this.id,
       title: title ?? this.title,
@@ -155,7 +171,9 @@ class Sale extends Model {
       price: price ?? this.price,
       user: user ?? this.user,
       Tags: Tags ?? this.Tags,
-      SaleImages: SaleImages ?? this.SaleImages);
+      SaleImages: SaleImages ?? this.SaleImages,
+      category: category ?? this.category,
+      date: date ?? this.date);
   }
   
   Sale.fromJson(Map<String, dynamic> json)  
@@ -178,11 +196,13 @@ class Sale extends Model {
           .map((e) => SaleImage.fromJson(new Map<String, dynamic>.from(e['serializedData'])))
           .toList()
         : null,
+      _category = json['category'],
+      _date = json['date'] != null ? TemporalDateTime.fromString(json['date']) : null,
       _createdAt = json['createdAt'] != null ? TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'title': _title, 'description': _description, 'condition': _condition, 'zipcode': _zipcode, 'price': _price, 'user': _user, 'Tags': _Tags?.map((Tag? e) => e?.toJson()).toList(), 'SaleImages': _SaleImages?.map((SaleImage? e) => e?.toJson()).toList(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'title': _title, 'description': _description, 'condition': _condition, 'zipcode': _zipcode, 'price': _price, 'user': _user, 'Tags': _Tags?.map((Tag? e) => e?.toJson()).toList(), 'SaleImages': _SaleImages?.map((SaleImage? e) => e?.toJson()).toList(), 'category': _category, 'date': _date?.format(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
 
   static final QueryField ID = QueryField(fieldName: "sale.id");
@@ -198,6 +218,8 @@ class Sale extends Model {
   static final QueryField SALEIMAGES = QueryField(
     fieldName: "SaleImages",
     fieldType: ModelFieldType(ModelFieldTypeEnum.model, ofModelName: (SaleImage).toString()));
+  static final QueryField CATEGORY = QueryField(fieldName: "category");
+  static final QueryField DATE = QueryField(fieldName: "date");
   static var schema = Model.defineSchema(define: (ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "Sale";
     modelSchemaDefinition.pluralName = "Sales";
@@ -263,6 +285,18 @@ class Sale extends Model {
       isRequired: false,
       ofModelName: (SaleImage).toString(),
       associatedKey: SaleImage.SALEID
+    ));
+    
+    modelSchemaDefinition.addField(ModelFieldDefinition.field(
+      key: Sale.CATEGORY,
+      isRequired: false,
+      ofType: ModelFieldType(ModelFieldTypeEnum.string)
+    ));
+    
+    modelSchemaDefinition.addField(ModelFieldDefinition.field(
+      key: Sale.DATE,
+      isRequired: false,
+      ofType: ModelFieldType(ModelFieldTypeEnum.dateTime)
     ));
     
     modelSchemaDefinition.addField(ModelFieldDefinition.nonQueryField(
