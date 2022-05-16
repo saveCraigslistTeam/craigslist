@@ -4,6 +4,9 @@ import 'package:craigslist/views/sales/services/fetch_image.dart';
 import 'package:flutter/material.dart';
 import '../../models/ModelProvider.dart';
 import './services/convert_date.dart';
+import 'package:intl/intl.dart';
+
+final oCcy = NumberFormat("#,##0", "en_US");
 
 class SaleDetailView extends StatefulWidget {
   const SaleDetailView(
@@ -52,7 +55,7 @@ class _SaleDetailViewState extends State<SaleDetailView> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(12),
-                  child: Text('Price: ${widget.sale.price}'),
+                  child: Text('Price: \$${oCcy.format(widget.sale.price!)}'),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(12),

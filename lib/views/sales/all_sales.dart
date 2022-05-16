@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:core';
 import 'package:craigslist/views/sales/edit_sale.dart';
+import 'package:craigslist/views/sales/services/convert_date.dart';
 import 'package:intl/intl.dart';
 // Sorting algorithm collections
 import 'package:collection/collection.dart';
@@ -18,7 +19,7 @@ import 'sale_detail.dart';
 import 'add_sale.dart';
 import 'services/fetch_image.dart';
 
-final oCcy = NumberFormat("#,##0.00", "en_US");
+final oCcy = NumberFormat("#,##0", "en_US");
 
 class AllSales extends StatefulWidget {
   const AllSales({
@@ -57,7 +58,7 @@ class _AllSalesState extends State<AllSales> {
   // Used for the sort to toggle between searching by date or by price.
   // both are unable to be used at the same time. True is date, false is
   // price.
-  bool dateOrPrice = false; 
+  bool dateOrPrice = false;
 
   @override
   void initState() {
@@ -66,13 +67,12 @@ class _AllSalesState extends State<AllSales> {
 
   Future<void> getAllSalesStream() async {
     /// Performs a query of all sales
-    
+
     List<QuerySortBy> sortQueries = getCurrentQueries();
 
-    _subscription = widget.DataStore.observeQuery(
-      Sale.classType,
-      sortBy: sortQueries
-    ).listen((QuerySnapshot<Sale> snapshot) {
+    _subscription =
+        widget.DataStore.observeQuery(Sale.classType, sortBy: sortQueries)
+            .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         _sales = snapshot.items;
         if (_isLoading) _isLoading = false;
@@ -94,8 +94,8 @@ class _AllSalesState extends State<AllSales> {
         for (var tag in _tags) {
           getSalesStream(tag.saleID);
         }
-        // _sales = dateOrPrice 
-        //          ? sortByNewest 
+        // _sales = dateOrPrice
+        //          ? sortByNewest
         //            ? sortByDate(false, _sales)
         //            : sortByDate(true, _sales)
         //          : _sales;
@@ -108,7 +108,7 @@ class _AllSalesState extends State<AllSales> {
   //   int j;
 
   //   for(int i = 1; i < sales.length; i++) {
-  //     key = sales[i]; 
+  //     key = sales[i];
 
   //     j = i -1;
   //     while(j >= 0 && key.price! < sales[j].price!){
@@ -143,9 +143,13 @@ class _AllSalesState extends State<AllSales> {
     /// Takes the current tags and updates the queries for the search.
     List<QuerySortBy> queries = [];
 
-    dateOrPrice 
-    ? sortByNewest ? queries.add(Sale.DATE.descending()) : queries.add(Sale.DATE.ascending())
-    : sortByPrice ? queries.add(Sale.PRICE.ascending()) : queries.add(Sale.PRICE.descending());
+    dateOrPrice
+        ? sortByNewest
+            ? queries.add(Sale.DATE.descending())
+            : queries.add(Sale.DATE.ascending())
+        : sortByPrice
+            ? queries.add(Sale.PRICE.ascending())
+            : queries.add(Sale.PRICE.descending());
 
     return queries;
   }
@@ -169,7 +173,7 @@ class _AllSalesState extends State<AllSales> {
   }
 
   void setTagString(String saleTag) {
-    /// Sets the tag string in order to be used by relevant methods 
+    /// Sets the tag string in order to be used by relevant methods
     /// not inside [Search].
     setState(() {
       tag = saleTag;
@@ -200,7 +204,7 @@ class _AllSalesState extends State<AllSales> {
     customer = args[0].toString();
 
     /// On the start of entering the sale page all sales are populated.
-    if(_isLoading && !sortByRelevance) {
+    if (_isLoading && !sortByRelevance) {
       getAllSalesStream();
     }
 
@@ -272,12 +276,13 @@ class SaleItem extends StatefulWidget {
 class _SaleItemState extends State<SaleItem> {
   late List<SaleImage> saleImages;
   late List<Tag> tags;
+  late StreamSubscription<QuerySnapshot<SaleImage>> _subscription;
+  bool _isLoading = true;
   @override
   void initState() {
     saleImages = [];
     tags = [];
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      await getSaleImages(widget.sale);
       await getSaleTags(widget.sale);
       setState(() {});
     });
@@ -286,9 +291,13 @@ class _SaleItemState extends State<SaleItem> {
   @override
   Widget build(BuildContext context) {
     var heading = widget.sale.title;
-    var subheading = '${widget.sale.price!}';
+    var subheading = '\$${oCcy.format(widget.sale.price!)}';
     var cardImage = fetchImage(saleImages);
-    var supportingText = widget.sale.description;
+    var supportingText = convertDate(widget.sale.updatedAt);
+    var trailingText = widget.sale.user;
+    if (_isLoading) {
+      getImageStream();
+    }
     return InkWell(
         onTap: () {
           Navigator.push(
@@ -302,30 +311,69 @@ class _SaleItemState extends State<SaleItem> {
           );
         },
         child: Card(
-            shadowColor: const Color(0xffA682FF),
-            elevation: 4.0,
+            shadowColor: Theme.of(context).shadowColor,
+            elevation: 6,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            margin: EdgeInsets.only(left: 15, right: 15, top: 7.5, bottom: 7.5),
             child: Column(
               children: [
                 ListTile(
+                  dense: true,
+                  tileColor: Theme.of(context).cardColor,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(10),
+                    ),
+                  ),
                   title: Text(
                     heading!,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
                   ),
                   subtitle: Text(
                     subheading,
-                    style: const TextStyle(color: Colors.green),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.green),
                   ),
-                  trailing: IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.favorite)),
+                  trailing: Text(trailingText!,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.blueGrey)),
                 ),
-                cardImage,
+                SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    child: cardImage),
                 Container(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(16.0),
                   alignment: Alignment.centerLeft,
-                  child: Text(supportingText!),
+                  child: Text(
+                    supportingText,
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
               ],
             )));
+  }
+
+  Future<void> getImageStream() async {
+    _subscription = Amplify.DataStore.observeQuery(SaleImage.classType,
+            where: SaleImage.SALEID.eq(widget.sale.id))
+        .listen((QuerySnapshot<SaleImage> snapshot) {
+      setState(() {
+        if (_isLoading) _isLoading = false;
+        saleImages = snapshot.items;
+      });
+    });
   }
 
   Future<List<SaleImage>?> getSaleImages(Sale sale) async {
@@ -351,45 +399,52 @@ class _SaleItemState extends State<SaleItem> {
 class Search extends StatelessWidget {
   /// Toggle the boolean that enables the All button.
   final Function setTagString;
+
   /// Tells the all button whether to enable (currently searching by tag) or
   /// disable (currently searching by all).
   final bool sortByRelevance;
+
   /// Toggles the tag search to off and then performs a search for all sales.
   final Function showAllSales;
 
   /// Toggle the boolean that changes the text for the newest oldest search.
   final Function toggleSortByDate;
+
   /// Boolean used to update the newest button to oldest so that the user can
   /// change the search criteria.
   final bool sortByNewest;
 
   /// Sets the toggle to sort the relevant search by price.
   final Function toggleSortByPrice;
+
   /// Boolean used to update the price button text so that the user can see the
   /// change in criteria.
   final bool sortByPrice;
 
-  const Search({
-    Key? key,
-    required this.setTagString,
-    required this.sortByRelevance,
-    required this.showAllSales,
-    required this.toggleSortByDate,
-    required this.sortByNewest,
-    required this.toggleSortByPrice,
-    required this.sortByPrice
-  }) : super(key: key);
+  const Search(
+      {Key? key,
+      required this.setTagString,
+      required this.sortByRelevance,
+      required this.showAllSales,
+      required this.toggleSortByDate,
+      required this.sortByNewest,
+      required this.toggleSortByPrice,
+      required this.sortByPrice})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     String tag = '';
 
-    Widget newestButton = customButton(sortByNewest ? 'Oldest' : 'Newest', 
-                                      context, toggleSortByDate);
-    Widget priceButton = customButton(sortByPrice ? 'Price Highest' : 'Price lowest',
-                                      context, toggleSortByPrice);
-    Widget allButton = customAllButton('All', sortByRelevance, context, showAllSales);
+    Widget newestButton = customButton(
+        sortByNewest ? 'Oldest' : 'Newest', context, toggleSortByDate);
+    Widget priceButton = customButton(
+        sortByPrice ? 'Price Highest' : 'Price lowest',
+        context,
+        toggleSortByPrice);
+    Widget allButton =
+        customAllButton('All', sortByRelevance, context, showAllSales);
 
     return Column(children: [
       Expanded(
@@ -459,18 +514,15 @@ Widget customButton(String label, BuildContext context, Function func) {
       style: ButtonStyle(backgroundColor: buttonColor)));
 }
 
-Widget customAllButton(String label,
-                bool isEnabled,
-                BuildContext context, 
-                Function func) {
+Widget customAllButton(
+    String label, bool isEnabled, BuildContext context, Function func) {
   /// Creates a button with [label] and specified function.
   final MaterialStateProperty<Color> buttonColor =
       MaterialStateProperty.all(Theme.of(context).primaryColor);
   final MaterialStateProperty<Color> offColor =
       MaterialStateProperty.all(Colors.grey);
 
-  return (
-    ElevatedButton(
+  return (ElevatedButton(
       onPressed: () {
         isEnabled ? func() : null;
       },
@@ -478,24 +530,22 @@ Widget customAllButton(String label,
       style: ButtonStyle(backgroundColor: isEnabled ? buttonColor : offColor)));
 }
 
-Widget buttonRow(Widget button1,
-                 Widget button2,
-                 Widget button3,
-                 BuildContext context) {
+Widget buttonRow(
+    Widget button1, Widget button2, Widget button3, BuildContext context) {
   /// Adds three search buttons to the top of the search button.
 
   return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      const Spacer(flex: 1),
-      button1, // Sort by newest or oldest.
-      const Spacer(flex: 1),
-      button2, // Sort by All or closest match.
-      const Spacer(flex: 1),
-      button3, // Sort by Highest and lowest price.
-      const Spacer(flex: 1)
-    ]);
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Spacer(flex: 1),
+        button1, // Sort by newest or oldest.
+        const Spacer(flex: 1),
+        button2, // Sort by All or closest match.
+        const Spacer(flex: 1),
+        button3, // Sort by Highest and lowest price.
+        const Spacer(flex: 1)
+      ]);
 }
 
 double paddingSides(BuildContext context) {
