@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:core';
 import 'package:craigslist/views/sales/edit_sale.dart';
 import 'package:intl/intl.dart';
-
+// Sorting algorithm collections
+import 'package:collection/collection.dart';
 // flutter and ui libraries
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
@@ -46,10 +47,17 @@ class _AllSalesState extends State<AllSales> {
   // Username of potential buyer
   String customer = '';
 
+  // Tag needed for search query
+  String tag = '';
+
   // Search Features
   bool sortByRelevance = false; // All sales or only relevant sales
-  bool newOrOld = false; // Sort by newest or oldest
+  bool sortByNewest = false; // Sort by newest or oldest
   bool sortByPrice = false; // Sort by lowest price or highest price
+  // Used for the sort to toggle between searching by date or by price.
+  // both are unable to be used at the same time. True is date, false is
+  // price.
+  bool dateOrPrice = false; 
 
   @override
   void initState() {
@@ -57,34 +65,16 @@ class _AllSalesState extends State<AllSales> {
   }
 
   Future<void> getAllSalesStream() async {
-    /// Performs an individual query by tags saleID and adds them
-    /// to the list.
-    List<QuerySortBy> queryItems = [];
+    /// Performs a query of all sales
+    
+    List<QuerySortBy> sortQueries = getCurrentQueries();
 
     _subscription = widget.DataStore.observeQuery(
       Sale.classType,
+      sortBy: sortQueries
     ).listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         _sales = snapshot.items;
-        if (_isLoading) _isLoading = false;
-      });
-    });
-  }
-
-  Future<void> getSalesStream(String saleID) async {
-    /// Performs an individual query by tags saleID and adds them
-    /// to the list.
-
-    _subscription = widget.DataStore.observeQuery(
-      Sale.classType,
-      where: Sale.ID.eq(saleID),
-      // sortBy: Sale.'updatedAt'.ascending()
-    ).listen((QuerySnapshot<Sale> snapshot) {
-      if (snapshot.items.isNotEmpty) {
-        _sales.add(snapshot.items[0]);
-      }
-      setState(() {
-        _sales = _sales;
         if (_isLoading) _isLoading = false;
       });
     });
@@ -109,27 +99,89 @@ class _AllSalesState extends State<AllSales> {
     });
   }
 
-  // List<QuerySortBy> getCurrentQueries() {
-  //   /// Takes the current tags and updates the queries for the search.
-  //   List<QuerySortBy> queries = [];
+  Future<void> getSalesStream(String saleID) async {
+    /// Performs an individual query by tags saleID and adds them
+    /// to the list. This is a helper function to the tag stream builder.
 
-  //   newOrOld ? queries.add(Sale.)
-
-  //   return queries;
-  // }
-
-  void toggleSortByDate() {
-    setState(() {
-      newOrOld = !newOrOld;
-      _isLoading = true;
+    _subscription = widget.DataStore.observeQuery(
+      Sale.classType,
+      where: Sale.ID.eq(saleID),
+    ).listen((QuerySnapshot<Sale> snapshot) {
+      if (snapshot.items.isNotEmpty) {
+        _sales.add(snapshot.items[0]);
+      }
+      setState(() {
+        _sales = _sales;
+        if (_isLoading) _isLoading = false;
+      });
     });
   }
+
+  List<QuerySortBy> getCurrentQueries() {
+    /// Takes the current tags and updates the queries for the search.
+    List<QuerySortBy> queries = [];
+
+    dateOrPrice 
+    ? sortByNewest ? queries.add(Sale.DATE.descending()) : queries.add(Sale.DATE.ascending())
+    : sortByPrice ? queries.add(Sale.PRICE.ascending()) : queries.add(Sale.PRICE.descending());
+
+    return queries;
+  }
+
+  void toggleSortByPrice() {
+    /// Toggles the sort by price to show lowest or highest price.
+    setState(() {
+      dateOrPrice = false;
+      sortByPrice = !sortByPrice;
+      !sortByRelevance ? getAllSalesStream() : enableAllButton(tag);
+    });
+  }
+
+  void toggleSortByDate() {
+    /// Toggles the sort by date boolean to show newest or oldest.
+    setState(() {
+      dateOrPrice = true;
+      sortByNewest = !sortByNewest;
+      !sortByRelevance ? getAllSalesStream() : enableAllButton(tag);
+    });
+  }
+
+  void setTagString(String saleTag) {
+    /// Sets the tag string in order to be used by relevant methods 
+    /// not inside [Search].
+    setState(() {
+      tag = saleTag;
+      enableAllButton(saleTag);
+    });
+  }
+
+  void enableAllButton(String tag) {
+    /// Enables the All button and allows interaction when this is toggled.
+    setState(() {
+      sortByRelevance = true;
+      getSalesStreamByTag(tag);
+    });
+  }
+
+  void showAllSales() {
+    /// Disables the All button and performs a search query for all sales.
+    setState(() {
+      sortByRelevance = false;
+      getAllSalesStream();
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
     List<String?> args =
         ModalRoute.of(context)!.settings.arguments as List<String?>;
     customer = args[0].toString();
+
+    /// On the start of entering the sale page all sales are populated.
+    if(_isLoading && !sortByRelevance) {
+      getAllSalesStream();
+    }
 
     return Scaffold(
         appBar: AppBar(
@@ -146,16 +198,19 @@ class _AllSalesState extends State<AllSales> {
                     child: SalesList(
                       sales: _sales,
                       customer: customer,
-                      toggleSortByDate: toggleSortByDate,
-                      newOrOld: newOrOld,
+                      sortByNewest: sortByNewest,
                     ),
                   ),
             Expanded(
                 flex: 3,
                 child: Search(
-                    tagSearchQuery: getSalesStreamByTag,
+                    setTagString: setTagString,
+                    sortByRelevance: sortByRelevance,
+                    showAllSales: showAllSales,
                     toggleSortByDate: toggleSortByDate,
-                    newOrOld: newOrOld))
+                    sortByNewest: sortByNewest,
+                    toggleSortByPrice: toggleSortByPrice,
+                    sortByPrice: sortByPrice))
           ],
         ));
   }
@@ -164,16 +219,13 @@ class _AllSalesState extends State<AllSales> {
 class SalesList extends StatelessWidget {
   final List<Sale> sales;
   final String customer;
-  // Toggle the sort by date field
-  final Function toggleSortByDate;
-  final bool newOrOld;
+  final bool sortByNewest;
 
   SalesList(
       {Key? key,
       required this.sales,
       required this.customer,
-      required this.toggleSortByDate,
-      required this.newOrOld});
+      required this.sortByNewest});
 
   @override
   Widget build(BuildContext context) {
@@ -276,34 +328,52 @@ class _SaleItemState extends State<SaleItem> {
 
 // Search Features
 class Search extends StatelessWidget {
-  final Function tagSearchQuery;
+  /// Toggle the boolean that enables the All button.
+  final Function setTagString;
+  /// Tells the all button whether to enable (currently searching by tag) or
+  /// disable (currently searching by all).
+  final bool sortByRelevance;
+  /// Toggles the tag search to off and then performs a search for all sales.
+  final Function showAllSales;
 
+  /// Toggle the boolean that changes the text for the newest oldest search.
   final Function toggleSortByDate;
-  final bool newOrOld;
-  // final Function sortByClosestMatch;
-  // final Function sortByPrice;
+  /// Boolean used to update the newest button to oldest so that the user can
+  /// change the search criteria.
+  final bool sortByNewest;
+
+  /// Sets the toggle to sort the relevant search by price.
+  final Function toggleSortByPrice;
+  /// Boolean used to update the price button text so that the user can see the
+  /// change in criteria.
+  final bool sortByPrice;
 
   const Search({
     Key? key,
-    required this.tagSearchQuery,
+    required this.setTagString,
+    required this.sortByRelevance,
+    required this.showAllSales,
     required this.toggleSortByDate,
-    required this.newOrOld,
-    // required this.sortByClosestMatch,
-    // required this.sortByPrice
+    required this.sortByNewest,
+    required this.toggleSortByPrice,
+    required this.sortByPrice
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    bool matchOrAll = false;
-    bool lowOrHigh = false;
     String tag = '';
+
+    Widget newestButton = customButton(sortByNewest ? 'Oldest' : 'Newest', 
+                                      context, toggleSortByDate);
+    Widget priceButton = customButton(sortByPrice ? 'Price Highest' : 'Price lowest',
+                                      context, toggleSortByPrice);
+    Widget allButton = customAllButton('All', sortByRelevance, context, showAllSales);
 
     return Column(children: [
       Expanded(
           flex: 2,
-          child: buttonRow(
-              newOrOld, toggleSortByDate, matchOrAll, lowOrHigh, context)),
+          child: buttonRow(newestButton, allButton, priceButton, context)),
       Expanded(
           flex: 8,
           child: Form(
@@ -330,7 +400,7 @@ class Search extends StatelessWidget {
                                           if (formKey.currentState!
                                               .validate()) {
                                             formKey.currentState!.save();
-                                            tagSearchQuery(tag);
+                                            setTagString(tag);
                                             formKey.currentState?.reset();
                                           }
                                         })),
@@ -368,28 +438,43 @@ Widget customButton(String label, BuildContext context, Function func) {
       style: ButtonStyle(backgroundColor: buttonColor)));
 }
 
-Widget buttonRow(bool newOrOld, Function toggleSortByDate, bool matchOrAll,
-    bool lowOrHigh, BuildContext context) {
-  /// Adds three search buttons to the top of the search button.
-  String button1 = newOrOld ? 'Oldest' : 'Newest';
-  String button2 = matchOrAll ? 'All' : 'Closest Match';
-  String button3 = lowOrHigh ? 'Price Highest' : 'Price lowest';
+Widget customAllButton(String label,
+                bool isEnabled,
+                BuildContext context, 
+                Function func) {
+  /// Creates a button with [label] and specified function.
+  final MaterialStateProperty<Color> buttonColor =
+      MaterialStateProperty.all(Theme.of(context).primaryColor);
+  final MaterialStateProperty<Color> offColor =
+      MaterialStateProperty.all(Colors.grey);
 
-  return (Row(
+  return (
+    ElevatedButton(
+      onPressed: () {
+        isEnabled ? func() : null;
+      },
+      child: Text(label),
+      style: ButtonStyle(backgroundColor: isEnabled ? buttonColor : offColor)));
+}
+
+Widget buttonRow(Widget button1,
+                 Widget button2,
+                 Widget button3,
+                 BuildContext context) {
+  /// Adds three search buttons to the top of the search button.
+
+  return Row(
     mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Spacer(flex: 1),
-      customButton(
-          button1, context, toggleSortByDate), // Sort by newest or oldest.
+      button1, // Sort by newest or oldest.
       const Spacer(flex: 1),
-      customButton(
-          button2, context, toggleSortByDate), // Sort by All or closest match.
+      button2, // Sort by All or closest match.
       const Spacer(flex: 1),
-      customButton(button3, context,
-          toggleSortByDate), // Sort by Highest and lowest price.
+      button3, // Sort by Highest and lowest price.
       const Spacer(flex: 1)
-    ],
-  ));
+    ]);
 }
 
 double paddingSides(BuildContext context) {
