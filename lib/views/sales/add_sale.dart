@@ -39,7 +39,9 @@ class _AddSaleFormState extends State<AddSaleForm> {
 
   categoryCallback(newCategory) {
     setState(() {
+      tagLabels.remove(category);
       category = newCategory;
+      tagLabels.add(category);
     });
   }
 
@@ -179,9 +181,11 @@ class _AddSaleFormState extends State<AddSaleForm> {
 
   _parseTags() {
     String tags = _titleController.text;
-    setState(() {
-      tagLabels = tags.split(" ");
-    });
+    if (tags != '') {
+      setState(() {
+        tagLabels = tags.split(" ");
+      });
+    }
   }
 
   void _deleteChip(tag) {
@@ -196,6 +200,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
       GestureDetector(
         onTap: () {
           _parseTags();
+          tagLabels.add(category);
         },
         child: const Chip(
           avatar: CircleAvatar(

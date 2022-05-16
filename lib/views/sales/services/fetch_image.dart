@@ -7,10 +7,12 @@ Container fetchImage(saleImages) {
         child: CachedNetworkImage(
       fit: BoxFit.contain,
       imageUrl: saleImages![0].imageURL.toString(),
-      placeholder: (context, url) => Center(child: Text('no image')),
-      errorWidget: (context, url, error) => Center(child: Text('no image')),
+      placeholder: (context, url) =>
+          Container(child: CircularProgressIndicator()),
+      errorWidget: (context, url, error) =>
+          Center(child: Image.asset('assets/images/image_not_found.png')),
     ));
   } else {
-    return Container(child: Image.asset('assets/images/image_not_found.png'));
+    return Container(child: CircularProgressIndicator());
   }
 }

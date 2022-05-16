@@ -16,7 +16,7 @@ import '../../models/ModelProvider.dart';
 import 'add_sale.dart';
 import 'services/fetch_image.dart';
 
-final oCcy = NumberFormat("#,##0.00", "en_US");
+final oCcy = NumberFormat("#,##0", "en_US");
 
 class MySales extends StatefulWidget {
   MySales({
@@ -114,22 +114,27 @@ class SaleItem extends StatefulWidget {
 
 class _SaleItemState extends State<SaleItem> {
   late List<SaleImage> saleImages;
+  late StreamSubscription<QuerySnapshot<SaleImage>> _subscription;
+  bool _isLoading = true;
   @override
   void initState() {
     saleImages = [];
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      await getSaleImages(widget.sale);
-      setState(() {});
-    });
+    // WidgetsBinding.instance?.addPostFrameCallback((_) async {
+    //   await getSaleImages(widget.sale);
+    //   setState(() {});
+    // });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     var heading = widget.sale.title;
-    var subheading = '${widget.sale.price!}';
+    var subheading = '\$${oCcy.format(widget.sale.price!)}';
     var cardImage = fetchImage(saleImages);
     var supportingText = widget.sale.description;
+    if (_isLoading) {
+      getImageStream();
+    }
     return InkWell(
         onTap: () {
           Navigator.push(
@@ -222,12 +227,22 @@ class _SaleItemState extends State<SaleItem> {
     }
   }
 
-  Future<List<SaleImage>?> getSaleImages(Sale sale) async {
-    List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
-        where: SaleImage.SALEID.eq(sale.id)));
-    setState(() {
-      saleImages = images;
+  Future<void> getImageStream() async {
+    _subscription = Amplify.DataStore.observeQuery(SaleImage.classType,
+            where: SaleImage.SALEID.eq(widget.sale.id))
+        .listen((QuerySnapshot<SaleImage> snapshot) {
+      setState(() {
+        if (_isLoading) _isLoading = false;
+        saleImages = snapshot.items;
+      });
     });
-    return images;
+    // Future<List<SaleImage>?> getSaleImages(Sale sale) async {
+    //   List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
+    //       where: SaleImage.SALEID.eq(sale.id)));
+    //   setState(() {
+    //     saleImages = images;
+    //   });
+    //   return images;
+    // }
   }
 }
