@@ -89,15 +89,37 @@ class _AllSalesState extends State<AllSales> {
             where: Tag.LABEL.contains(tagLabel))
         .listen((QuerySnapshot<Tag> snapshot) {
       setState(() {
-        // if (!_isLoading) _isLoading = true;
         _sales = [];
         _tags = snapshot.items;
         for (var tag in _tags) {
           getSalesStream(tag.saleID);
         }
+        // _sales = dateOrPrice 
+        //          ? sortByNewest 
+        //            ? sortByDate(false, _sales)
+        //            : sortByDate(true, _sales)
+        //          : _sales;
       });
     });
   }
+
+  // List<Sale> sortByDate(bool reversed, List<Sale> sales) {
+  //   Sale key;
+  //   int j;
+
+  //   for(int i = 1; i < sales.length; i++) {
+  //     key = sales[i]; 
+
+  //     j = i -1;
+  //     while(j >= 0 && key.price! < sales[j].price!){
+  //       sales[j + 1] = sales[j];
+  //       j-= 1;
+  //     }
+  //     sales[j + 1] = key;
+  //   }
+
+  //   return sales;
+  // }
 
   Future<void> getSalesStream(String saleID) async {
     /// Performs an individual query by tags saleID and adds them
@@ -171,7 +193,6 @@ class _AllSalesState extends State<AllSales> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     List<String?> args =
@@ -217,7 +238,7 @@ class _AllSalesState extends State<AllSales> {
 }
 
 class SalesList extends StatelessWidget {
-  final List<Sale> sales;
+  List<Sale> sales;
   final String customer;
   final bool sortByNewest;
 
@@ -465,7 +486,7 @@ Widget buttonRow(Widget button1,
 
   return Row(
     mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.start,
+    crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       const Spacer(flex: 1),
       button1, // Sort by newest or oldest.
