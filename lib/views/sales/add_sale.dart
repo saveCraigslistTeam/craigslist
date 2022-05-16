@@ -72,10 +72,11 @@ class _AddSaleFormState extends State<AddSaleForm> {
         title: title,
         description: description.isNotEmpty ? description : null,
         condition: condition.isNotEmpty ? condition : null,
-        // category: category.isNotEmpty ? category : null,
+        category: category.isNotEmpty ? category : null,
         zipcode: zipcode.isNotEmpty ? zipcode : null,
         price: price,
-        user: widget.username);
+        user: widget.username,
+        date: newDate);
 
     try {
       // upload the image to S3
