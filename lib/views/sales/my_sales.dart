@@ -119,10 +119,6 @@ class _SaleItemState extends State<SaleItem> {
   @override
   void initState() {
     saleImages = [];
-    // WidgetsBinding.instance?.addPostFrameCallback((_) async {
-    //   await getSaleImages(widget.sale);
-    //   setState(() {});
-    // });
     super.initState();
   }
 
@@ -147,30 +143,53 @@ class _SaleItemState extends State<SaleItem> {
           );
         },
         child: Card(
-            shadowColor: const Color(0xffA682FF),
-            elevation: 4.0,
+            shadowColor: Theme.of(context).shadowColor,
+            elevation: 6,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            margin: EdgeInsets.only(left: 15, right: 15, top: 7.5, bottom: 7.5),
             child: Column(
               children: [
                 ListTile(
+                  dense: true,
+                  tileColor: Theme.of(context).cardColor,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(10),
+                    ),
+                  ),
                   title: Text(
                     heading!,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
                   ),
                   subtitle: Text(
                     subheading,
-                    style: TextStyle(color: Colors.green),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.green),
                   ),
                   trailing: IconButton(
-                      onPressed: () {
-                        showAlert(context);
-                      },
-                      icon: Icon(Icons.delete)),
+                      onPressed: () => showAlert(context),
+                      icon: Icon(Icons.delete_rounded)),
                 ),
-                cardImage,
+                SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    child: cardImage),
                 Container(
                   padding: EdgeInsets.all(16.0),
                   alignment: Alignment.centerLeft,
-                  child: Text(supportingText!),
+                  child: Text(
+                    supportingText!,
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
               ],
             )));
@@ -236,13 +255,5 @@ class _SaleItemState extends State<SaleItem> {
         saleImages = snapshot.items;
       });
     });
-    // Future<List<SaleImage>?> getSaleImages(Sale sale) async {
-    //   List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
-    //       where: SaleImage.SALEID.eq(sale.id)));
-    //   setState(() {
-    //     saleImages = images;
-    //   });
-    //   return images;
-    // }
   }
 }
