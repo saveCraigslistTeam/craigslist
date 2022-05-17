@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:core';
 import 'package:craigslist/views/sales/edit_sale.dart';
 import 'package:craigslist/views/sales/services/convert_date.dart';
+import 'package:expandable/expandable.dart';
 import 'package:intl/intl.dart';
 // Sorting algorithm collections
 import 'package:collection/collection.dart';
@@ -19,7 +20,7 @@ import 'sale_detail.dart';
 import 'add_sale.dart';
 import 'services/fetch_image.dart';
 
-final oCcy = NumberFormat("#,##0", "en_US");
+final oCcy = NumberFormat("#,##0.00", "en_US");
 
 class AllSales extends StatefulWidget {
   const AllSales({
@@ -84,7 +85,6 @@ class _AllSalesState extends State<AllSales> {
     /// Pulls the tags that match the given label. This list will
     /// be used to query the sales data. It is set to begins with
     /// in order to pull any closely matched tags.
-
     _tagSubscription = widget.DataStore.observeQuery(Tag.classType,
             where: Tag.LABEL.contains(tagLabel))
         .listen((QuerySnapshot<Tag> snapshot) {
@@ -94,37 +94,13 @@ class _AllSalesState extends State<AllSales> {
         for (var tag in _tags) {
           getSalesStream(tag.saleID);
         }
-        // _sales = dateOrPrice
-        //          ? sortByNewest
-        //            ? sortByDate(false, _sales)
-        //            : sortByDate(true, _sales)
-        //          : _sales;
       });
     });
   }
 
-  // List<Sale> sortByDate(bool reversed, List<Sale> sales) {
-  //   Sale key;
-  //   int j;
-
-  //   for(int i = 1; i < sales.length; i++) {
-  //     key = sales[i];
-
-  //     j = i -1;
-  //     while(j >= 0 && key.price! < sales[j].price!){
-  //       sales[j + 1] = sales[j];
-  //       j-= 1;
-  //     }
-  //     sales[j + 1] = key;
-  //   }
-
-  //   return sales;
-  // }
-
   Future<void> getSalesStream(String saleID) async {
     /// Performs an individual query by tags saleID and adds them
     /// to the list. This is a helper function to the tag stream builder.
-
     _subscription = widget.DataStore.observeQuery(
       Sale.classType,
       where: Sale.ID.eq(saleID),
@@ -133,7 +109,13 @@ class _AllSalesState extends State<AllSales> {
         _sales.add(snapshot.items[0]);
       }
       setState(() {
-        _sales = _sales;
+        dateOrPrice
+            ? sortByNewest
+                ? _sales.sort((b, a) => a.date!.compareTo(b.date!))
+                : _sales.sort((a, b) => a.date!.compareTo(b.date!))
+            : sortByPrice
+                ? _sales.sort((a, b) => a.price!.compareTo(b.price!))
+                : _sales.sort((b, a) => a.price!.compareTo(b.price!));
         if (_isLoading) _isLoading = false;
       });
     });
@@ -274,14 +256,16 @@ class SaleItem extends StatefulWidget {
 }
 
 class _SaleItemState extends State<SaleItem> {
+  late StreamSubscription<QuerySnapshot<SaleImage>> _subscription;
   late List<SaleImage> saleImages;
   late List<Tag> tags;
-  late StreamSubscription<QuerySnapshot<SaleImage>> _subscription;
   bool _isLoading = true;
+
   @override
   void initState() {
     saleImages = [];
     tags = [];
+    getSaleImages(widget.sale);
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
       await getSaleTags(widget.sale);
       setState(() {});
@@ -289,91 +273,181 @@ class _SaleItemState extends State<SaleItem> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    var heading = widget.sale.title;
-    var subheading = '\$${oCcy.format(widget.sale.price!)}';
-    var cardImage = fetchImage(saleImages);
-    var supportingText = convertDate(widget.sale.updatedAt);
-    var trailingText = widget.sale.user;
-    if (_isLoading) {
-      getImageStream();
-    }
-    return InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => SaleDetailView(
-                    sale: widget.sale,
-                    saleImages: saleImages,
-                    tags: tags,
-                    customer: widget.customer)),
-          );
-        },
-        child: Card(
-            shadowColor: Theme.of(context).shadowColor,
-            elevation: 6,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            margin: EdgeInsets.only(left: 15, right: 15, top: 7.5, bottom: 7.5),
-            child: Column(
-              children: [
-                ListTile(
-                  dense: true,
-                  tileColor: Theme.of(context).cardColor,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(10),
-                    ),
-                  ),
-                  title: Text(
-                    heading!,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                    ),
-                  ),
-                  subtitle: Text(
-                    subheading,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.green),
-                  ),
-                  trailing: Text(trailingText!,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.blueGrey)),
-                ),
-                SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.3,
-                    child: cardImage),
-                Container(
-                  padding: EdgeInsets.all(16.0),
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    supportingText,
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
-            )));
+  void didUpdateWidget(SaleItem oldWidget) {
+    setState(() {
+      getSaleImages(widget.sale);
+    });
   }
 
-  Future<void> getImageStream() async {
-    _subscription = Amplify.DataStore.observeQuery(SaleImage.classType,
-            where: SaleImage.SALEID.eq(widget.sale.id))
-        .listen((QuerySnapshot<SaleImage> snapshot) {
-      setState(() {
-        if (_isLoading) _isLoading = false;
-        saleImages = snapshot.items;
-      });
-    });
+  @override
+  Widget build(BuildContext context) {
+    var heading = widget.sale.title;
+    var subheading = widget.sale.category!;
+    var price = '\$${oCcy.format(widget.sale.price!)}';
+    var seller = widget.sale.user;
+    var cardImage = fetchImage(saleImages);
+    var supportingText = widget.sale.description;
+
+    return ExpandableNotifier(
+        child: Padding(
+      padding: const EdgeInsets.all(10),
+      child: Stack(children: [
+        Card(
+          shadowColor: Theme.of(context).shadowColor,
+          elevation: 6,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: cardImage,
+              ),
+              ScrollOnExpand(
+                scrollOnExpand: true,
+                scrollOnCollapse: false,
+                child: ExpandablePanel(
+                  theme: const ExpandableThemeData(
+                    headerAlignment: ExpandablePanelHeaderAlignment.center,
+                    tapBodyToCollapse: true,
+                  ),
+                  header: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Text(
+                        heading!,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                        softWrap: true,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )),
+                  collapsed: Row(
+                    children: [
+                      Text(
+                        subheading,
+                        style: const TextStyle(
+                          color: Colors.blueGrey,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        softWrap: true,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Spacer(),
+                      Text(
+                        widget.sale.user!,
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColorDark,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        softWrap: true,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                  expanded: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(children: [
+                        Text(
+                          subheading,
+                          style: const TextStyle(
+                            color: Colors.blueGrey,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Spacer(),
+                        Text(
+                          widget.sale.user!,
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColorDark,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ]),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text('${widget.sale.description}'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Text('Condition: ${widget.sale.condition}'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text(
+                            'Posted ${convertDate(widget.sale.updatedAt)}'),
+                      ),
+                      ButtonBar(
+                        alignment: MainAxisAlignment.spaceAround,
+                        buttonHeight: 52.0,
+                        buttonMinWidth: 90.0,
+                        children: [
+                          IconButton(
+                              onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => EditSaleForm(
+                                              sale: widget.sale,
+                                              saleImages: saleImages,
+                                            )),
+                                  ),
+                              icon: Icon(
+                                Icons.edit_rounded,
+                                size: 35,
+                                color: Colors.grey[800],
+                              )),
+                        ],
+                      ),
+                    ],
+                  ),
+                  builder: (_, collapsed, expanded) {
+                    return Padding(
+                      padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      child: Expandable(
+                        collapsed: collapsed,
+                        expanded: expanded,
+                        theme: const ExpandableThemeData(crossFadePoint: 0),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+            decoration: BoxDecoration(
+                color: Colors.green,
+                border: Border.all(color: Colors.green),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(10))),
+            child: Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Text(price,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  )),
+            ))
+      ]),
+    ));
   }
 
   Future<List<SaleImage>?> getSaleImages(Sale sale) async {
@@ -382,7 +456,7 @@ class _SaleItemState extends State<SaleItem> {
     setState(() {
       saleImages = images;
     });
-    return images;
+    return saleImages;
   }
 
   Future<List<Tag>?> getSaleTags(Sale sale) async {
@@ -533,7 +607,6 @@ Widget customAllButton(
 Widget buttonRow(
     Widget button1, Widget button2, Widget button3, BuildContext context) {
   /// Adds three search buttons to the top of the search button.
-
   return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
