@@ -94,32 +94,10 @@ class _AllSalesState extends State<AllSales> {
         for (var tag in _tags) {
           getSalesStream(tag.saleID);
         }
-        // _sales = dateOrPrice 
-        //          ? sortByNewest 
-        //            ? sortByDate(false, _sales)
-        //            : sortByDate(true, _sales)
-        //          : _sales;
       });
     });
+    
   }
-
-  // List<Sale> sortByDate(bool reversed, List<Sale> sales) {
-  //   Sale key;
-  //   int j;
-
-  //   for(int i = 1; i < sales.length; i++) {
-  //     key = sales[i]; 
-
-  //     j = i -1;
-  //     while(j >= 0 && key.price! < sales[j].price!){
-  //       sales[j + 1] = sales[j];
-  //       j-= 1;
-  //     }
-  //     sales[j + 1] = key;
-  //   }
-
-  //   return sales;
-  // }
 
   Future<void> getSalesStream(String saleID) async {
     /// Performs an individual query by tags saleID and adds them
@@ -133,7 +111,14 @@ class _AllSalesState extends State<AllSales> {
         _sales.add(snapshot.items[0]);
       }
       setState(() {
-        _sales = _sales;
+        dateOrPrice 
+                 ? sortByNewest 
+                   ? _sales.sort((b,a) => a.date!.compareTo(b.date!))
+                   : _sales.sort((a,b) => a.date!.compareTo(b.date!))
+                    
+                 : sortByPrice 
+                   ? _sales.sort((a,b) => a.price!.compareTo(b.price!))
+                   : _sales.sort((b,a) => a.price!.compareTo(b.price!));
         if (_isLoading) _isLoading = false;
       });
     });
@@ -217,7 +202,8 @@ class _AllSalesState extends State<AllSales> {
                 : Expanded(
                     flex: 7,
                     child: SalesList(
-                      sales: _sales,
+                      sales: 
+                      _sales,
                       customer: customer,
                       sortByNewest: sortByNewest,
                     ),
@@ -272,6 +258,7 @@ class SaleItem extends StatefulWidget {
 class _SaleItemState extends State<SaleItem> {
   late List<SaleImage> saleImages;
   late List<Tag> tags;
+  
   @override
   void initState() {
     saleImages = [];
@@ -334,7 +321,7 @@ class _SaleItemState extends State<SaleItem> {
     setState(() {
       saleImages = images;
     });
-    return images;
+    return saleImages;
   }
 
   Future<List<Tag>?> getSaleTags(Sale sale) async {
