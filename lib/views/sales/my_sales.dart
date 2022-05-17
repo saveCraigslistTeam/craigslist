@@ -3,16 +3,11 @@ import 'dart:core';
 import 'package:craigslist/views/sales/edit_sale.dart';
 import 'package:craigslist/views/sales/services/convert_date.dart';
 import 'package:intl/intl.dart';
-
-// flutter and ui libraries
 import 'package:flutter/material.dart';
-// amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
-import 'package:image_picker/image_picker.dart';
-// amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
 import 'add_sale.dart';
 import 'services/fetch_image.dart';
@@ -251,7 +246,7 @@ class SaleItemState extends State<SaleItem> {
                               icon: Icon(
                                 Icons.delete_rounded,
                                 size: 35,
-                                color: Colors.grey[800],
+                                color: Colors.grey[500],
                               )),
                           IconButton(
                               onPressed: () => Navigator.push(
@@ -265,7 +260,7 @@ class SaleItemState extends State<SaleItem> {
                               icon: Icon(
                                 Icons.edit_rounded,
                                 size: 35,
-                                color: Colors.grey[800],
+                                color: Colors.grey[500],
                               )),
                         ],
                       ),

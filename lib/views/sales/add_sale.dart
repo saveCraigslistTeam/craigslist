@@ -134,6 +134,9 @@ class _AddSaleFormState extends State<AddSaleForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            GestureDetector(
+                child: imageDisplay(imageFile: imageFile),
+                onTap: () => {selectImage()}),
             textFormField(
                 context: context,
                 controller: _titleController,
@@ -157,9 +160,6 @@ class _AddSaleFormState extends State<AddSaleForm> {
             DropDownMenu(mode: 'Category', callback: categoryCallback),
             DropDownMenu(mode: 'Condition', callback: conditionCallback),
             chipList(),
-            GestureDetector(
-                child: imageDisplay(imageFile: imageFile),
-                onTap: () => {selectImage()}),
           ],
         ),
       ),
@@ -350,26 +350,28 @@ class imageDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     if (imageFile != '') {
       return Container(
-        height: MediaQuery.of(context).size.height * 0.25,
+        height: MediaQuery.of(context).size.height * 0.35,
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: FittedBox(
             fit: BoxFit.contain,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50.0),
-              child: Image.file(File(imageFile)),
-            ),
+            child: Image.file(File(imageFile)),
           ),
         ),
       );
     } else {
-      return Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Icon(
-            Icons.add_a_photo_rounded,
-            color: Colors.grey,
-            size: MediaQuery.of(context).size.height * 0.2,
-          ));
+      return Container(
+          padding: EdgeInsets.all(8),
+          height: MediaQuery.of(context).size.height * 0.25,
+          child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Icon(
+                    Icons.add_a_photo_rounded,
+                    color: Colors.grey,
+                    size: MediaQuery.of(context).size.height * 0.35,
+                  ))));
     }
   }
 }

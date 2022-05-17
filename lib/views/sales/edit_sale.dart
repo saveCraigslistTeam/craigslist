@@ -34,7 +34,6 @@ class _EditSaleFormState extends State<EditSaleForm> {
   final picker = ImagePicker();
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  late TextEditingController _conditionController;
   late TextEditingController _zipcodeController;
   late TextEditingController _priceController;
   late String condition = '';
@@ -58,10 +57,10 @@ class _EditSaleFormState extends State<EditSaleForm> {
     imageFile = '';
     tagLabels = [];
     condition = widget.sale.condition!;
+    category = widget.sale.category!;
     _titleController = TextEditingController(text: widget.sale.title);
     _descriptionController =
         TextEditingController(text: widget.sale.description);
-    _conditionController = TextEditingController(text: widget.sale.condition);
     _zipcodeController = TextEditingController(text: widget.sale.zipcode);
     _priceController =
         TextEditingController(text: widget.sale.price.toString());
@@ -82,7 +81,6 @@ class _EditSaleFormState extends State<EditSaleForm> {
   Future<void> _saveSale() async {
     // get the current text field contents
     String title = _titleController.text;
-    String condition = _conditionController.text;
     String description = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     String price = _priceController.text;
@@ -134,7 +132,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
-        title: Text('Add Sale'),
+        title: Text('Edit Sale'),
         actions: <Widget>[
           ElevatedButton(
             onPressed: _saveSale,
@@ -157,6 +155,12 @@ class _EditSaleFormState extends State<EditSaleForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            GestureDetector(
+                child: imageDisplay(
+                  saleImages: saleImages,
+                  imageFile: imageFile,
+                ),
+                onTap: () => {selectImage()}),
             textFormField(
                 context: context,
                 controller: _titleController,
@@ -177,18 +181,16 @@ class _EditSaleFormState extends State<EditSaleForm> {
                 controller: _priceController,
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
                 label: 'Price'),
-            DropDownMenu(mode: 'Category', callback: categoryCallback),
+            DropDownMenu(
+              mode: 'Category',
+              callback: categoryCallback,
+              initialValue: category,
+            ),
             DropDownMenu(
                 mode: 'Condition',
                 callback: conditionCallback,
                 initialValue: condition),
             chipList(),
-            GestureDetector(
-                child: imageDisplay(
-                  saleImages: saleImages,
-                  imageFile: imageFile,
-                ),
-                onTap: () => {selectImage()}),
           ],
         ),
       ),
@@ -368,6 +370,45 @@ class textFormField extends StatelessWidget {
   }
 }
 
+// class imageDisplay extends StatelessWidget {
+//   const imageDisplay({Key? key, required this.imageFile}) : super(key: key);
+//   final String imageFile;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     if (imageFile != '') {
+//       return Container(
+//         height: MediaQuery.of(context).size.height * 0.25,
+//         child: Padding(
+//           padding: const EdgeInsets.all(8),
+//           child: FittedBox(
+//             fit: BoxFit.contain,
+//             child: ClipRRect(
+//               borderRadius: BorderRadius.circular(15.0),
+//               child: Image.file(File(imageFile)),
+//             ),
+//           ),
+//         ),
+//       );
+//     } else {
+//       return Container(
+//           padding: EdgeInsets.all(8),
+//           height: MediaQuery.of(context).size.height * 0.25,
+//           child: Padding(
+//               padding: const EdgeInsets.all(8),
+//               child: FittedBox(
+//                   fit: BoxFit.contain,
+//                   child: ClipRRect(
+//                       borderRadius: BorderRadius.circular(15),
+//                       child: Icon(
+//                         Icons.add_a_photo_rounded,
+//                         color: Colors.grey,
+//                         size: MediaQuery.of(context).size.height * 0.2,
+//                       )))));
+//     }
+//   }
+// }
+
 class imageDisplay extends StatelessWidget {
   imageDisplay({Key? key, required this.saleImages, required this.imageFile})
       : super(key: key);
@@ -382,25 +423,26 @@ class imageDisplay extends StatelessWidget {
     } else if (saleImages.length >= 1) {
       image = fetchImage(saleImages);
     } else {
-      return Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Icon(
-            Icons.add_a_photo_rounded,
-            color: Colors.grey,
-            size: MediaQuery.of(context).size.height * 0.2,
-          ));
+      return Container(
+          padding: EdgeInsets.all(8),
+          height: MediaQuery.of(context).size.height * 0.25,
+          child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Icon(
+                        Icons.add_a_photo_rounded,
+                        color: Colors.grey,
+                        size: MediaQuery.of(context).size.height * 0.2,
+                      )))));
     }
     return Container(
-      height: MediaQuery.of(context).size.height * 0.25,
+      height: MediaQuery.of(context).size.height * 0.35,
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: FittedBox(
-          fit: BoxFit.contain,
-          child:
-              ClipRRect(borderRadius: BorderRadius.circular(50.0), child: image
-                  // child: Image.file(File(imageFile)),
-                  ),
-        ),
+        child: FittedBox(fit: BoxFit.contain, child: image),
       ),
     );
   }

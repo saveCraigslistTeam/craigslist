@@ -1,26 +1,18 @@
 import 'dart:async';
 import 'dart:core';
-import 'package:craigslist/views/sales/edit_sale.dart';
 import 'package:craigslist/views/sales/services/convert_date.dart';
 import 'package:expandable/expandable.dart';
 import 'package:intl/intl.dart';
-// Sorting algorithm collections
-import 'package:collection/collection.dart';
-// flutter and ui libraries
 import 'package:flutter/material.dart';
-// amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
-import 'package:image_picker/image_picker.dart';
-// amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail.dart';
-import 'add_sale.dart';
+import 'services/convert_price.dart';
 import 'services/fetch_image.dart';
 
-final oCcy = NumberFormat("#,##0.00", "en_US");
+final oCcy = NumberFormat("#,##0", "en_US");
 
 class AllSales extends StatefulWidget {
   const AllSales({
@@ -193,7 +185,7 @@ class _AllSalesState extends State<AllSales> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: const Color(0xffA682FF),
-          title: const Text("All Sales"),
+          title: const Text("Buy"),
         ),
         body: Column(
           children: [
@@ -272,6 +264,7 @@ class _SaleItemState extends State<SaleItem> {
     });
   }
 
+  // Fetch the sale's image URLs again when the cards are resorted
   @override
   void didUpdateWidget(SaleItem oldWidget) {
     setState(() {
@@ -283,7 +276,7 @@ class _SaleItemState extends State<SaleItem> {
   Widget build(BuildContext context) {
     var heading = widget.sale.title;
     var subheading = widget.sale.category!;
-    var price = '\$${oCcy.format(widget.sale.price!)}';
+    var price = convertPrice(widget.sale.price!);
     var seller = widget.sale.user;
     var cardImage = fetchImage(saleImages);
     var supportingText = widget.sale.description;
@@ -399,20 +392,22 @@ class _SaleItemState extends State<SaleItem> {
                         buttonHeight: 52.0,
                         buttonMinWidth: 90.0,
                         children: [
-                          IconButton(
-                              onPressed: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => EditSaleForm(
-                                              sale: widget.sale,
-                                              saleImages: saleImages,
-                                            )),
-                                  ),
-                              icon: Icon(
-                                Icons.edit_rounded,
-                                size: 35,
-                                color: Colors.grey[800],
-                              )),
+                          ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                  primary: Theme.of(context).primaryColorDark),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/msgDetail',
+                                    arguments: [
+                                      widget.customer,
+                                      widget.sale.id,
+                                      widget.sale.user
+                                    ]);
+                              },
+                              icon: const Icon(
+                                Icons.message_rounded,
+                                color: Colors.white,
+                              ),
+                              label: Text('Message ${widget.sale.user}'))
                         ],
                       ),
                     ],

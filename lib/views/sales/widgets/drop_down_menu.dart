@@ -6,8 +6,8 @@ class DropDownMenu extends StatefulWidget {
       {Key? key, required this.mode, required this.callback, this.initialValue})
       : super(key: key);
   final String mode;
-  final String? initialValue;
   Function(String) callback;
+  final String? initialValue;
   @override
   State<DropDownMenu> createState() => _DropDownMenuState();
 }
