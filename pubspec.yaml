@@ -28,7 +28,6 @@ dependencies:
   cached_network_image: ^3.2.0
   dropdown_button2: ^1.4.0
   collection: ^1.15.0
-  expansion_tile_card: ^1.1.0
   expandable: ^5.0.1
   
 dev_dependencies:
