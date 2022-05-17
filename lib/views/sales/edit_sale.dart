@@ -63,7 +63,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
         TextEditingController(text: widget.sale.description);
     _zipcodeController = TextEditingController(text: widget.sale.zipcode);
     _priceController =
-        TextEditingController(text: widget.sale.price.toString());
+        TextEditingController(text: widget.sale.price?.toInt().toString());
     _titleController.addListener(_parseTags);
     _parseTags();
     super.initState();
@@ -101,11 +101,32 @@ class _EditSaleFormState extends State<EditSaleForm> {
           price: double.parse(price),
           date: updated);
 
-      // upload the image to S3
-      // await uploadImage(imageFile);
-
       // save the sale in DataStore
       await Amplify.DataStore.save(updatedSale);
+
+      // Replace the original image
+      if (imageFile != '') {
+        // Delete the original image
+        (await Amplify.DataStore.query(SaleImage.classType,
+                where: SaleImage.SALEID.eq(widget.sale.id)))
+            .forEach((element) async {
+          try {
+            await Amplify.DataStore.delete(element);
+            print('Deleted a post');
+          } on DataStoreException catch (e) {
+            print('Delete failed: $e');
+          }
+        });
+
+        // upload the new image
+        await uploadImage(imageFile);
+
+        // save the image URL to DataStore
+        await Amplify.DataStore.save(SaleImage(
+          imageURL: imageURL,
+          saleID: updatedSale.getId(),
+        ));
+      }
 
       // save the tags in DataStore
       for (var label in tagLabels) {
@@ -115,10 +136,6 @@ class _EditSaleFormState extends State<EditSaleForm> {
         ));
       }
 
-      // await Amplify.DataStore.save(SaleImage(
-      //   imageURL: imageURL,
-      //   saleID: updatedSale.getId(),
-      // ));
       // Close the form
       Navigator.of(context).pop();
       Navigator.popUntil(context, ModalRoute.withName('/mySales'));
@@ -370,45 +387,6 @@ class textFormField extends StatelessWidget {
   }
 }
 
-// class imageDisplay extends StatelessWidget {
-//   const imageDisplay({Key? key, required this.imageFile}) : super(key: key);
-//   final String imageFile;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     if (imageFile != '') {
-//       return Container(
-//         height: MediaQuery.of(context).size.height * 0.25,
-//         child: Padding(
-//           padding: const EdgeInsets.all(8),
-//           child: FittedBox(
-//             fit: BoxFit.contain,
-//             child: ClipRRect(
-//               borderRadius: BorderRadius.circular(15.0),
-//               child: Image.file(File(imageFile)),
-//             ),
-//           ),
-//         ),
-//       );
-//     } else {
-//       return Container(
-//           padding: EdgeInsets.all(8),
-//           height: MediaQuery.of(context).size.height * 0.25,
-//           child: Padding(
-//               padding: const EdgeInsets.all(8),
-//               child: FittedBox(
-//                   fit: BoxFit.contain,
-//                   child: ClipRRect(
-//                       borderRadius: BorderRadius.circular(15),
-//                       child: Icon(
-//                         Icons.add_a_photo_rounded,
-//                         color: Colors.grey,
-//                         size: MediaQuery.of(context).size.height * 0.2,
-//                       )))));
-//     }
-//   }
-// }
-
 class imageDisplay extends StatelessWidget {
   imageDisplay({Key? key, required this.saleImages, required this.imageFile})
       : super(key: key);
@@ -438,11 +416,16 @@ class imageDisplay extends StatelessWidget {
                         size: MediaQuery.of(context).size.height * 0.2,
                       )))));
     }
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.35,
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: FittedBox(fit: BoxFit.contain, child: image),
+    return Center(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.35,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Stack(children: [
+            FittedBox(fit: BoxFit.contain, child: image),
+            Icon(Icons.add_a_photo_rounded, color: Colors.grey)
+          ]),
+        ),
       ),
     );
   }
