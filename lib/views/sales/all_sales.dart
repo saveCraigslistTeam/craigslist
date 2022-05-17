@@ -532,23 +532,38 @@ class Search extends StatelessWidget {
                             horizontal: paddingSides(context),
                             vertical: paddingTopAndBottom(context)),
                         child: Container(
-                            color: Colors.white,
+                            margin: const EdgeInsets.symmetric(vertical: 2),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Theme.of(context).primaryColor,
+                                width: 2,
+                              ),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(29),
+                            ),
                             width: 350,
                             child: TextFormField(
                                 decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 10, horizontal: 10),
-                                    suffixIcon: IconButton(
-                                        icon: const Icon(Icons.search),
-                                        color: Theme.of(context).primaryColor,
-                                        onPressed: () async {
-                                          if (formKey.currentState!
-                                              .validate()) {
-                                            formKey.currentState!.save();
-                                            setTagString(tag);
-                                            formKey.currentState?.reset();
-                                          }
-                                        })),
+                                  border: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  errorBorder: InputBorder.none,
+                                  disabledBorder: InputBorder.none,
+                                  filled: false,
+                                  labelText: 'Search',
+                                  labelStyle: const TextStyle(fontSize: 17),
+                                suffixIcon: IconButton(
+                                    icon: const Icon(Icons.search),
+                                    color: Theme.of(context).primaryColor,
+                                    onPressed: () async {
+                                      if (formKey.currentState!
+                                          .validate()) {
+                                        formKey.currentState!.save();
+                                        setTagString(tag);
+                                        formKey.currentState?.reset();
+                                      }
+                                    })),
                                 maxLines: 3,
                                 minLines: 1,
                                 textInputAction: TextInputAction.done,
@@ -596,7 +611,9 @@ Widget customAllButton(
         isEnabled ? func() : null;
       },
       child: Text(label),
-      style: ButtonStyle(backgroundColor: isEnabled ? buttonColor : offColor)));
+      style: ButtonStyle(
+        backgroundColor: isEnabled ? buttonColor : offColor,
+        )));
 }
 
 Widget buttonRow(
