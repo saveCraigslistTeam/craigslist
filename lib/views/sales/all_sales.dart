@@ -533,7 +533,8 @@ class Search extends StatelessWidget {
                             vertical: paddingTopAndBottom(context)),
                         child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 2),
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 2),
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: Theme.of(context).primaryColor,
@@ -545,25 +546,25 @@ class Search extends StatelessWidget {
                             width: 350,
                             child: TextFormField(
                                 decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  errorBorder: InputBorder.none,
-                                  disabledBorder: InputBorder.none,
-                                  filled: false,
-                                  labelText: 'Search',
-                                  labelStyle: const TextStyle(fontSize: 17),
-                                suffixIcon: IconButton(
-                                    icon: const Icon(Icons.search),
-                                    color: Theme.of(context).primaryColor,
-                                    onPressed: () async {
-                                      if (formKey.currentState!
-                                          .validate()) {
-                                        formKey.currentState!.save();
-                                        setTagString(tag);
-                                        formKey.currentState?.reset();
-                                      }
-                                    })),
+                                    border: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    errorBorder: InputBorder.none,
+                                    disabledBorder: InputBorder.none,
+                                    filled: false,
+                                    labelText: 'Search',
+                                    labelStyle: const TextStyle(fontSize: 17),
+                                    suffixIcon: IconButton(
+                                        icon: const Icon(Icons.search),
+                                        color: Theme.of(context).primaryColor,
+                                        onPressed: () async {
+                                          if (formKey.currentState!
+                                              .validate()) {
+                                            formKey.currentState!.save();
+                                            setTagString(tag);
+                                            formKey.currentState?.reset();
+                                          }
+                                        })),
                                 maxLines: 3,
                                 minLines: 1,
                                 textInputAction: TextInputAction.done,
@@ -613,7 +614,7 @@ Widget customAllButton(
       child: Text(label),
       style: ButtonStyle(
         backgroundColor: isEnabled ? buttonColor : offColor,
-        )));
+      )));
 }
 
 Widget buttonRow(

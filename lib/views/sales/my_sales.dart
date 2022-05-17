@@ -113,10 +113,18 @@ class SaleItemState extends State<SaleItem> {
   late List<SaleImage> saleImages;
   late StreamSubscription<QuerySnapshot<SaleImage>> _subscription;
   bool _isLoading = true;
+
   @override
   void initState() {
     saleImages = [];
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(SaleItem oldWidget) {
+    setState(() {
+      getImageStream();
+    });
   }
 
   @override
