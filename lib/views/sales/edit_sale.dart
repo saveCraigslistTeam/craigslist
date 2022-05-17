@@ -138,7 +138,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
 
       // Close the form
       Navigator.of(context).pop();
-      Navigator.popUntil(context, ModalRoute.withName('/mySales'));
+      // Navigator.popUntil(context, ModalRoute.withName('/mySales'));
     } catch (e) {
       debugPrint('An error occurred while saving Sale: $e');
     }

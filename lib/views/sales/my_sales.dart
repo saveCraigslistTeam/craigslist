@@ -127,6 +127,7 @@ class SaleItemState extends State<SaleItem> {
     var seller = widget.sale.user;
     var cardImage = fetchImage(saleImages);
     var supportingText = widget.sale.description;
+    var date = convertDate(widget.sale.date);
     if (_isLoading) {
       getImageStream();
     }
@@ -233,8 +234,7 @@ class SaleItemState extends State<SaleItem> {
                       ),
                       Padding(
                         padding: const EdgeInsets.all(10),
-                        child: Text(
-                            'Posted ${convertDate(widget.sale.updatedAt)}'),
+                        child: Text('Posted ${date}'),
                       ),
                       ButtonBar(
                         alignment: MainAxisAlignment.spaceAround,
