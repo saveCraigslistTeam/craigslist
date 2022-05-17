@@ -423,7 +423,11 @@ class imageDisplay extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           child: Stack(children: [
             FittedBox(fit: BoxFit.contain, child: image),
-            Icon(Icons.add_a_photo_rounded, color: Colors.grey)
+            const Icon(
+              Icons.add_a_photo_rounded,
+              color: Colors.grey,
+              size: 50,
+            )
           ]),
         ),
       ),
