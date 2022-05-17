@@ -94,9 +94,7 @@ class _MessageDetailState extends State<MessageDetail> {
     }
     
     return (
-      _isLoading 
-      ? const Center(child: Text("loading messages")) 
-      : Scaffold(
+      Scaffold(
         appBar: AppBar(
           title: _messages.isNotEmpty 
                 ? Text(
@@ -114,7 +112,10 @@ class _MessageDetailState extends State<MessageDetail> {
               ),
           backgroundColor: Theme.of(context).primaryColor,
             ),
-        body: _messages.isNotEmpty 
+        body: 
+        _isLoading 
+      ? const Center(child: Text("loading messages")) 
+      : _messages.isNotEmpty 
         ? ScrollingMessagesSliver(data: _messages, 
                                   dataStore: widget.dataStore, 
                                   userName: userName.toString())

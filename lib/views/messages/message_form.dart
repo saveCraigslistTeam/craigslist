@@ -48,25 +48,41 @@ class _MessageFormState extends State<MessageForm> {
                   horizontal: paddingSides(context),
                   vertical: paddingTopAndBottom(context)),
               child: Container(
-                color: Colors.white,
+                margin: const EdgeInsets.symmetric(vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor,
+                    width: 1,
+                  ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(29),
+                ),
                 width: 350,
                 child: TextFormField(
                     decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 10),
-                        suffixIcon: IconButton(
-                            icon: const Icon(Icons.send),
-                            color: Theme.of(context).primaryColor,
-                            onPressed: () async {
-                              if (formKey.currentState!.validate()) {
-                                formKey.currentState!.save();
-                                await saveNewMessage(
-                                    widget.messageData, newMessage, userName);
-                                formKey.currentState?.reset();
-                              }
-                            })),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    labelText: 'Send Message',
+                    labelStyle: const TextStyle(fontSize: 17),
+                    suffixIcon: IconButton(
+                        icon: const Icon(Icons.send),
+                        color: Theme.of(context).primaryColor,
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            formKey.currentState!.save();
+                            await saveNewMessage(
+                                widget.messageData, newMessage, userName);
+                            formKey.currentState?.reset();
+                          }
+                        })
+                    ),
                     maxLines: 3,
-                    minLines: 2,
+                    minLines: 1,
                     textInputAction: TextInputAction.done,
                     keyboardType: TextInputType.text,
                     onSaved: (value) {
