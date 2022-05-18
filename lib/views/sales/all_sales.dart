@@ -1,24 +1,18 @@
 import 'dart:async';
 import 'dart:core';
-import 'package:craigslist/views/sales/edit_sale.dart';
+import 'package:craigslist/views/sales/services/convert_date.dart';
+import 'package:expandable/expandable.dart';
 import 'package:intl/intl.dart';
-// Sorting algorithm collections
-import 'package:collection/collection.dart';
-// flutter and ui libraries
 import 'package:flutter/material.dart';
-// amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
-import 'package:image_picker/image_picker.dart';
-// amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
-import 'sale_detail.dart';
-import 'add_sale.dart';
+import 'services/convert_price.dart';
 import 'services/fetch_image.dart';
 
-final oCcy = NumberFormat("#,##0.00", "en_US");
+final oCcy = NumberFormat("#,##0", "en_US");
 
 class AllSales extends StatefulWidget {
   const AllSales({
@@ -57,7 +51,7 @@ class _AllSalesState extends State<AllSales> {
   // Used for the sort to toggle between searching by date or by price.
   // both are unable to be used at the same time. True is date, false is
   // price.
-  bool dateOrPrice = false; 
+  bool dateOrPrice = false;
 
   @override
   void initState() {
@@ -66,13 +60,12 @@ class _AllSalesState extends State<AllSales> {
 
   Future<void> getAllSalesStream() async {
     /// Performs a query of all sales
-    
+
     List<QuerySortBy> sortQueries = getCurrentQueries();
 
-    _subscription = widget.DataStore.observeQuery(
-      Sale.classType,
-      sortBy: sortQueries
-    ).listen((QuerySnapshot<Sale> snapshot) {
+    _subscription =
+        widget.DataStore.observeQuery(Sale.classType, sortBy: sortQueries)
+            .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         _sales = snapshot.items;
         if (_isLoading) _isLoading = false;
@@ -84,7 +77,6 @@ class _AllSalesState extends State<AllSales> {
     /// Pulls the tags that match the given label. This list will
     /// be used to query the sales data. It is set to begins with
     /// in order to pull any closely matched tags.
-
     _tagSubscription = widget.DataStore.observeQuery(Tag.classType,
             where: Tag.LABEL.contains(tagLabel))
         .listen((QuerySnapshot<Tag> snapshot) {
@@ -96,13 +88,11 @@ class _AllSalesState extends State<AllSales> {
         }
       });
     });
-    
   }
 
   Future<void> getSalesStream(String saleID) async {
     /// Performs an individual query by tags saleID and adds them
     /// to the list. This is a helper function to the tag stream builder.
-
     _subscription = widget.DataStore.observeQuery(
       Sale.classType,
       where: Sale.ID.eq(saleID),
@@ -111,14 +101,13 @@ class _AllSalesState extends State<AllSales> {
         _sales.add(snapshot.items[0]);
       }
       setState(() {
-        dateOrPrice 
-                 ? sortByNewest 
-                   ? _sales.sort((b,a) => a.date!.compareTo(b.date!))
-                   : _sales.sort((a,b) => a.date!.compareTo(b.date!))
-                    
-                 : sortByPrice 
-                   ? _sales.sort((a,b) => a.price!.compareTo(b.price!))
-                   : _sales.sort((b,a) => a.price!.compareTo(b.price!));
+        dateOrPrice
+            ? sortByNewest
+                ? _sales.sort((b, a) => a.date!.compareTo(b.date!))
+                : _sales.sort((a, b) => a.date!.compareTo(b.date!))
+            : sortByPrice
+                ? _sales.sort((a, b) => a.price!.compareTo(b.price!))
+                : _sales.sort((b, a) => a.price!.compareTo(b.price!));
         if (_isLoading) _isLoading = false;
       });
     });
@@ -128,9 +117,13 @@ class _AllSalesState extends State<AllSales> {
     /// Takes the current tags and updates the queries for the search.
     List<QuerySortBy> queries = [];
 
-    dateOrPrice 
-    ? sortByNewest ? queries.add(Sale.DATE.descending()) : queries.add(Sale.DATE.ascending())
-    : sortByPrice ? queries.add(Sale.PRICE.ascending()) : queries.add(Sale.PRICE.descending());
+    dateOrPrice
+        ? sortByNewest
+            ? queries.add(Sale.DATE.descending())
+            : queries.add(Sale.DATE.ascending())
+        : sortByPrice
+            ? queries.add(Sale.PRICE.ascending())
+            : queries.add(Sale.PRICE.descending());
 
     return queries;
   }
@@ -154,7 +147,7 @@ class _AllSalesState extends State<AllSales> {
   }
 
   void setTagString(String saleTag) {
-    /// Sets the tag string in order to be used by relevant methods 
+    /// Sets the tag string in order to be used by relevant methods
     /// not inside [Search].
     setState(() {
       tag = saleTag;
@@ -185,14 +178,14 @@ class _AllSalesState extends State<AllSales> {
     customer = args[0].toString();
 
     /// On the start of entering the sale page all sales are populated.
-    if(_isLoading && !sortByRelevance) {
+    if (_isLoading && !sortByRelevance) {
       getAllSalesStream();
     }
 
     return Scaffold(
         appBar: AppBar(
           backgroundColor: const Color(0xffA682FF),
-          title: const Text("All Sales"),
+          title: const Text("Buy"),
         ),
         body: Column(
           children: [
@@ -202,8 +195,7 @@ class _AllSalesState extends State<AllSales> {
                 : Expanded(
                     flex: 7,
                     child: SalesList(
-                      sales: 
-                      _sales,
+                      sales: _sales,
                       customer: customer,
                       sortByNewest: sortByNewest,
                     ),
@@ -256,63 +248,201 @@ class SaleItem extends StatefulWidget {
 }
 
 class _SaleItemState extends State<SaleItem> {
+  late StreamSubscription<QuerySnapshot<SaleImage>> _subscription;
   late List<SaleImage> saleImages;
   late List<Tag> tags;
-  
+  bool _isLoading = true;
+
   @override
   void initState() {
     saleImages = [];
     tags = [];
+    getSaleImages(widget.sale);
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      await getSaleImages(widget.sale);
       await getSaleTags(widget.sale);
       setState(() {});
+    });
+  }
+
+  // Fetch the sale's image URLs again when the cards are resorted
+  @override
+  void didUpdateWidget(SaleItem oldWidget) {
+    setState(() {
+      getSaleImages(widget.sale);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     var heading = widget.sale.title;
-    var subheading = '${widget.sale.price!}';
+    var subheading = widget.sale.category!;
+    var price = convertPrice(widget.sale.price!);
+    var seller = widget.sale.user;
     var cardImage = fetchImage(saleImages);
     var supportingText = widget.sale.description;
-    return InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => SaleDetailView(
-                    sale: widget.sale,
-                    saleImages: saleImages,
-                    tags: tags,
-                    customer: widget.customer)),
-          );
-        },
-        child: Card(
-            shadowColor: const Color(0xffA682FF),
-            elevation: 4.0,
-            child: Column(
-              children: [
-                ListTile(
-                  title: Text(
-                    heading!,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+
+    return ExpandableNotifier(
+        child: Padding(
+      padding: const EdgeInsets.all(10),
+      child: Stack(children: [
+        Card(
+          shadowColor: Theme.of(context).shadowColor,
+          elevation: 6,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: cardImage,
+              ),
+              ScrollOnExpand(
+                scrollOnExpand: true,
+                scrollOnCollapse: false,
+                child: ExpandablePanel(
+                  theme: const ExpandableThemeData(
+                    headerAlignment: ExpandablePanelHeaderAlignment.center,
+                    tapBodyToCollapse: true,
                   ),
-                  subtitle: Text(
-                    subheading,
-                    style: const TextStyle(color: Colors.green),
+                  header: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Text(
+                        heading!,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                        softWrap: true,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )),
+                  collapsed: Row(
+                    children: [
+                      Text(
+                        subheading,
+                        style: const TextStyle(
+                          color: Colors.blueGrey,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        softWrap: true,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Spacer(),
+                      Text(
+                        widget.sale.user!,
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColorDark,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        softWrap: true,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  trailing: IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.favorite)),
+                  expanded: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(children: [
+                        Text(
+                          subheading,
+                          style: const TextStyle(
+                            color: Colors.blueGrey,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Spacer(),
+                        Text(
+                          widget.sale.user!,
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColorDark,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ]),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text('${widget.sale.description}'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Text('Condition: ${widget.sale.condition}'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text(
+                            'Posted ${convertDate(widget.sale.updatedAt)}'),
+                      ),
+                      ButtonBar(
+                        alignment: MainAxisAlignment.spaceAround,
+                        buttonHeight: 52.0,
+                        buttonMinWidth: 90.0,
+                        children: [
+                          ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                  primary: Theme.of(context).primaryColorDark),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/msgDetail',
+                                    arguments: [
+                                      widget.customer,
+                                      widget.sale.id,
+                                      widget.sale.user
+                                    ]);
+                              },
+                              icon: const Icon(
+                                Icons.message_rounded,
+                                color: Colors.white,
+                              ),
+                              label: Text('Message ${widget.sale.user}'))
+                        ],
+                      ),
+                    ],
+                  ),
+                  builder: (_, collapsed, expanded) {
+                    return Padding(
+                      padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      child: Expandable(
+                        collapsed: collapsed,
+                        expanded: expanded,
+                        theme: const ExpandableThemeData(crossFadePoint: 0),
+                      ),
+                    );
+                  },
                 ),
-                cardImage,
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  alignment: Alignment.centerLeft,
-                  child: Text(supportingText!),
-                ),
-              ],
-            )));
+              ),
+            ],
+          ),
+        ),
+        Container(
+            decoration: BoxDecoration(
+                color: Colors.green,
+                border: Border.all(color: Colors.green),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(10))),
+            child: Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Text(price,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  )),
+            ))
+      ]),
+    ));
   }
 
   Future<List<SaleImage>?> getSaleImages(Sale sale) async {
@@ -338,45 +468,52 @@ class _SaleItemState extends State<SaleItem> {
 class Search extends StatelessWidget {
   /// Toggle the boolean that enables the All button.
   final Function setTagString;
+
   /// Tells the all button whether to enable (currently searching by tag) or
   /// disable (currently searching by all).
   final bool sortByRelevance;
+
   /// Toggles the tag search to off and then performs a search for all sales.
   final Function showAllSales;
 
   /// Toggle the boolean that changes the text for the newest oldest search.
   final Function toggleSortByDate;
+
   /// Boolean used to update the newest button to oldest so that the user can
   /// change the search criteria.
   final bool sortByNewest;
 
   /// Sets the toggle to sort the relevant search by price.
   final Function toggleSortByPrice;
+
   /// Boolean used to update the price button text so that the user can see the
   /// change in criteria.
   final bool sortByPrice;
 
-  const Search({
-    Key? key,
-    required this.setTagString,
-    required this.sortByRelevance,
-    required this.showAllSales,
-    required this.toggleSortByDate,
-    required this.sortByNewest,
-    required this.toggleSortByPrice,
-    required this.sortByPrice
-  }) : super(key: key);
+  const Search(
+      {Key? key,
+      required this.setTagString,
+      required this.sortByRelevance,
+      required this.showAllSales,
+      required this.toggleSortByDate,
+      required this.sortByNewest,
+      required this.toggleSortByPrice,
+      required this.sortByPrice})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     String tag = '';
 
-    Widget newestButton = customButton(sortByNewest ? 'Oldest' : 'Newest', 
-                                      context, toggleSortByDate);
-    Widget priceButton = customButton(sortByPrice ? 'Price Highest' : 'Price lowest',
-                                      context, toggleSortByPrice);
-    Widget allButton = customAllButton('All', sortByRelevance, context, showAllSales);
+    Widget newestButton = customButton(
+        sortByNewest ? 'Oldest' : 'Newest', context, toggleSortByDate);
+    Widget priceButton = customButton(
+        sortByPrice ? 'Price Highest' : 'Price lowest',
+        context,
+        toggleSortByPrice);
+    Widget allButton =
+        customAllButton('All', sortByRelevance, context, showAllSales);
 
     return Column(children: [
       Expanded(
@@ -396,7 +533,8 @@ class Search extends StatelessWidget {
                             vertical: paddingTopAndBottom(context)),
                         child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 2),
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 2),
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: Theme.of(context).primaryColor,
@@ -408,25 +546,25 @@ class Search extends StatelessWidget {
                             width: 350,
                             child: TextFormField(
                                 decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  errorBorder: InputBorder.none,
-                                  disabledBorder: InputBorder.none,
-                                  filled: false,
-                                  labelText: 'Search',
-                                  labelStyle: const TextStyle(fontSize: 17),
-                                suffixIcon: IconButton(
-                                    icon: const Icon(Icons.search),
-                                    color: Theme.of(context).primaryColor,
-                                    onPressed: () async {
-                                      if (formKey.currentState!
-                                          .validate()) {
-                                        formKey.currentState!.save();
-                                        setTagString(tag);
-                                        formKey.currentState?.reset();
-                                      }
-                                    })),
+                                    border: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    errorBorder: InputBorder.none,
+                                    disabledBorder: InputBorder.none,
+                                    filled: false,
+                                    labelText: 'Search',
+                                    labelStyle: const TextStyle(fontSize: 17),
+                                    suffixIcon: IconButton(
+                                        icon: const Icon(Icons.search),
+                                        color: Theme.of(context).primaryColor,
+                                        onPressed: () async {
+                                          if (formKey.currentState!
+                                              .validate()) {
+                                            formKey.currentState!.save();
+                                            setTagString(tag);
+                                            formKey.currentState?.reset();
+                                          }
+                                        })),
                                 maxLines: 3,
                                 minLines: 1,
                                 textInputAction: TextInputAction.done,
@@ -461,45 +599,39 @@ Widget customButton(String label, BuildContext context, Function func) {
       style: ButtonStyle(backgroundColor: buttonColor)));
 }
 
-Widget customAllButton(String label,
-                bool isEnabled,
-                BuildContext context, 
-                Function func) {
+Widget customAllButton(
+    String label, bool isEnabled, BuildContext context, Function func) {
   /// Creates a button with [label] and specified function.
   final MaterialStateProperty<Color> buttonColor =
       MaterialStateProperty.all(Theme.of(context).primaryColor);
   final MaterialStateProperty<Color> offColor =
       MaterialStateProperty.all(Colors.grey);
 
-  return (
-    ElevatedButton(
+  return (ElevatedButton(
       onPressed: () {
         isEnabled ? func() : null;
       },
       child: Text(label),
       style: ButtonStyle(
         backgroundColor: isEnabled ? buttonColor : offColor,
-        )));
+      )));
 }
 
-Widget buttonRow(Widget button1,
-                 Widget button2,
-                 Widget button3,
-                 BuildContext context) {
+Widget buttonRow(
+    Widget button1, Widget button2, Widget button3, BuildContext context) {
   /// Adds three search buttons to the top of the search button.
-
   return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      const Spacer(flex: 1),
-      button1, // Sort by newest or oldest.
-      const Spacer(flex: 1),
-      button2, // Sort by All or closest match.
-      const Spacer(flex: 1),
-      button3, // Sort by Highest and lowest price.
-      const Spacer(flex: 1)
-    ]);
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Spacer(flex: 1),
+        button1, // Sort by newest or oldest.
+        const Spacer(flex: 1),
+        button2, // Sort by All or closest match.
+        const Spacer(flex: 1),
+        button3, // Sort by Highest and lowest price.
+        const Spacer(flex: 1)
+      ]);
 }
 
 double paddingSides(BuildContext context) {

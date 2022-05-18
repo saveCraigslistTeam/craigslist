@@ -34,7 +34,6 @@ class _EditSaleFormState extends State<EditSaleForm> {
   final picker = ImagePicker();
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  late TextEditingController _conditionController;
   late TextEditingController _zipcodeController;
   late TextEditingController _priceController;
   late String condition = '';
@@ -58,13 +57,13 @@ class _EditSaleFormState extends State<EditSaleForm> {
     imageFile = '';
     tagLabels = [];
     condition = widget.sale.condition!;
+    category = widget.sale.category!;
     _titleController = TextEditingController(text: widget.sale.title);
     _descriptionController =
         TextEditingController(text: widget.sale.description);
-    _conditionController = TextEditingController(text: widget.sale.condition);
     _zipcodeController = TextEditingController(text: widget.sale.zipcode);
     _priceController =
-        TextEditingController(text: widget.sale.price.toString());
+        TextEditingController(text: widget.sale.price?.toInt().toString());
     _titleController.addListener(_parseTags);
     _parseTags();
     super.initState();
@@ -82,7 +81,6 @@ class _EditSaleFormState extends State<EditSaleForm> {
   Future<void> _saveSale() async {
     // get the current text field contents
     String title = _titleController.text;
-    String condition = _conditionController.text;
     String description = _descriptionController.text;
     String zipcode = _zipcodeController.text;
     String price = _priceController.text;
@@ -103,11 +101,32 @@ class _EditSaleFormState extends State<EditSaleForm> {
           price: double.parse(price),
           date: updated);
 
-      // upload the image to S3
-      // await uploadImage(imageFile);
-
       // save the sale in DataStore
       await Amplify.DataStore.save(updatedSale);
+
+      // Replace the original image
+      if (imageFile != '') {
+        // Delete the original image
+        (await Amplify.DataStore.query(SaleImage.classType,
+                where: SaleImage.SALEID.eq(widget.sale.id)))
+            .forEach((element) async {
+          try {
+            await Amplify.DataStore.delete(element);
+            print('Deleted a post');
+          } on DataStoreException catch (e) {
+            print('Delete failed: $e');
+          }
+        });
+
+        // upload the new image
+        await uploadImage(imageFile);
+
+        // save the image URL to DataStore
+        await Amplify.DataStore.save(SaleImage(
+          imageURL: imageURL,
+          saleID: updatedSale.getId(),
+        ));
+      }
 
       // save the tags in DataStore
       for (var label in tagLabels) {
@@ -117,13 +136,9 @@ class _EditSaleFormState extends State<EditSaleForm> {
         ));
       }
 
-      // await Amplify.DataStore.save(SaleImage(
-      //   imageURL: imageURL,
-      //   saleID: updatedSale.getId(),
-      // ));
       // Close the form
       Navigator.of(context).pop();
-      Navigator.popUntil(context, ModalRoute.withName('/mySales'));
+      // Navigator.popUntil(context, ModalRoute.withName('/mySales'));
     } catch (e) {
       debugPrint('An error occurred while saving Sale: $e');
     }
@@ -134,7 +149,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
-        title: Text('Add Sale'),
+        title: Text('Edit Sale'),
         actions: <Widget>[
           ElevatedButton(
             onPressed: _saveSale,
@@ -157,6 +172,12 @@ class _EditSaleFormState extends State<EditSaleForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            GestureDetector(
+                child: imageDisplay(
+                  saleImages: saleImages,
+                  imageFile: imageFile,
+                ),
+                onTap: () => {selectImage()}),
             textFormField(
                 context: context,
                 controller: _titleController,
@@ -177,18 +198,16 @@ class _EditSaleFormState extends State<EditSaleForm> {
                 controller: _priceController,
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
                 label: 'Price'),
-            DropDownMenu(mode: 'Category', callback: categoryCallback),
+            DropDownMenu(
+              mode: 'Category',
+              callback: categoryCallback,
+              initialValue: category,
+            ),
             DropDownMenu(
                 mode: 'Condition',
                 callback: conditionCallback,
                 initialValue: condition),
             chipList(),
-            GestureDetector(
-                child: imageDisplay(
-                  saleImages: saleImages,
-                  imageFile: imageFile,
-                ),
-                onTap: () => {selectImage()}),
           ],
         ),
       ),
@@ -382,24 +401,34 @@ class imageDisplay extends StatelessWidget {
     } else if (saleImages.length >= 1) {
       image = fetchImage(saleImages);
     } else {
-      return Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Icon(
-            Icons.add_a_photo_rounded,
-            color: Colors.grey,
-            size: MediaQuery.of(context).size.height * 0.2,
-          ));
+      return Container(
+          padding: EdgeInsets.all(8),
+          height: MediaQuery.of(context).size.height * 0.25,
+          child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Icon(
+                        Icons.add_a_photo_rounded,
+                        color: Colors.grey,
+                        size: MediaQuery.of(context).size.height * 0.2,
+                      )))));
     }
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.25,
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: FittedBox(
-          fit: BoxFit.contain,
-          child:
-              ClipRRect(borderRadius: BorderRadius.circular(50.0), child: image
-                  // child: Image.file(File(imageFile)),
-                  ),
+    return Center(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.35,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Stack(children: [
+            FittedBox(fit: BoxFit.contain, child: image),
+            const Icon(
+              Icons.add_a_photo_rounded,
+              color: Colors.grey,
+              size: 50,
+            )
+          ]),
         ),
       ),
     );

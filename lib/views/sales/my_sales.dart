@@ -1,22 +1,19 @@
 import 'dart:async';
 import 'dart:core';
 import 'package:craigslist/views/sales/edit_sale.dart';
+import 'package:craigslist/views/sales/services/convert_date.dart';
 import 'package:intl/intl.dart';
-
-// flutter and ui libraries
 import 'package:flutter/material.dart';
-// amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
-import 'package:image_picker/image_picker.dart';
-// amplify configuration and models that should have been generated for you
 import '../../models/ModelProvider.dart';
 import 'add_sale.dart';
 import 'services/fetch_image.dart';
+import 'package:expandable/expandable.dart';
 
-final oCcy = NumberFormat("#,##0.00", "en_US");
+final oCcy = NumberFormat("#,##0", "en_US");
 
 class MySales extends StatefulWidget {
   MySales({
@@ -47,7 +44,7 @@ class _MySalesState extends State<MySales> {
 
   Future<void> getSalesStream() async {
     _subscription = widget.DataStore.observeQuery(Sale.classType,
-            where: (Sale.USER.eq(username)))
+            sortBy: [Sale.DATE.descending()], where: (Sale.USER.eq(username)))
         .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
         if (_isLoading) _isLoading = false;
@@ -109,66 +106,205 @@ class SaleItem extends StatefulWidget {
   SaleItem({required this.sale});
 
   @override
-  State<SaleItem> createState() => _SaleItemState();
+  SaleItemState createState() => SaleItemState();
 }
 
-class _SaleItemState extends State<SaleItem> {
+class SaleItemState extends State<SaleItem> {
   late List<SaleImage> saleImages;
+  late StreamSubscription<QuerySnapshot<SaleImage>> _subscription;
+  bool _isLoading = true;
+
   @override
   void initState() {
     saleImages = [];
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      await getSaleImages(widget.sale);
-      setState(() {});
-    });
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(SaleItem oldWidget) {
+    setState(() {
+      getImageStream();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     var heading = widget.sale.title;
-    var subheading = '${widget.sale.price!}';
+    var subheading = widget.sale.category!;
+    var price = '\$${oCcy.format(widget.sale.price!)}';
+    var seller = widget.sale.user;
     var cardImage = fetchImage(saleImages);
     var supportingText = widget.sale.description;
-    return InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => EditSaleForm(
-                      sale: widget.sale,
-                      saleImages: saleImages,
-                    )),
-          );
-        },
-        child: Card(
-            shadowColor: const Color(0xffA682FF),
-            elevation: 4.0,
-            child: Column(
-              children: [
-                ListTile(
-                  title: Text(
-                    heading!,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+    var date = convertDate(widget.sale.date);
+    if (_isLoading) {
+      getImageStream();
+    }
+    return ExpandableNotifier(
+        child: Padding(
+      padding: const EdgeInsets.all(10),
+      child: Stack(children: [
+        Card(
+          shadowColor: Theme.of(context).shadowColor,
+          elevation: 6,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: cardImage,
+              ),
+              ScrollOnExpand(
+                scrollOnExpand: true,
+                scrollOnCollapse: false,
+                child: ExpandablePanel(
+                  theme: const ExpandableThemeData(
+                    headerAlignment: ExpandablePanelHeaderAlignment.center,
+                    tapBodyToCollapse: true,
                   ),
-                  subtitle: Text(
-                    subheading,
-                    style: TextStyle(color: Colors.green),
+                  header: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Text(
+                        heading!,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                        softWrap: true,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )),
+                  collapsed: Row(
+                    children: [
+                      Text(
+                        subheading,
+                        style: const TextStyle(
+                          color: Colors.blueGrey,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        softWrap: true,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Spacer(),
+                      Text(
+                        widget.sale.user!,
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColorDark,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                        softWrap: true,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  trailing: IconButton(
-                      onPressed: () {
-                        showAlert(context);
-                      },
-                      icon: Icon(Icons.delete)),
+                  expanded: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(children: [
+                        Text(
+                          subheading,
+                          style: const TextStyle(
+                            color: Colors.blueGrey,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Spacer(),
+                        Text(
+                          widget.sale.user!,
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColorDark,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ]),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text('${widget.sale.description}'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Text('Condition: ${widget.sale.condition}'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text('Posted ${date}'),
+                      ),
+                      ButtonBar(
+                        alignment: MainAxisAlignment.spaceAround,
+                        buttonHeight: 52.0,
+                        buttonMinWidth: 90.0,
+                        children: [
+                          IconButton(
+                              onPressed: () => showAlert(context),
+                              icon: Icon(
+                                Icons.delete_rounded,
+                                size: 35,
+                                color: Colors.grey[500],
+                              )),
+                          IconButton(
+                              onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => EditSaleForm(
+                                              sale: widget.sale,
+                                              saleImages: saleImages,
+                                            )),
+                                  ),
+                              icon: Icon(
+                                Icons.edit_rounded,
+                                size: 35,
+                                color: Colors.grey[500],
+                              )),
+                        ],
+                      ),
+                    ],
+                  ),
+                  builder: (_, collapsed, expanded) {
+                    return Padding(
+                      padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      child: Expandable(
+                        collapsed: collapsed,
+                        expanded: expanded,
+                        theme: const ExpandableThemeData(crossFadePoint: 0),
+                      ),
+                    );
+                  },
                 ),
-                cardImage,
-                Container(
-                  padding: EdgeInsets.all(16.0),
-                  alignment: Alignment.centerLeft,
-                  child: Text(supportingText!),
-                ),
-              ],
-            )));
+              ),
+            ],
+          ),
+        ),
+        Container(
+            decoration: BoxDecoration(
+                color: Colors.green,
+                border: Border.all(color: Colors.green),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(10))),
+            child: Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Text(price,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  )),
+            ))
+      ]),
+    ));
   }
 
   showAlert(BuildContext context) {
@@ -222,12 +358,14 @@ class _SaleItemState extends State<SaleItem> {
     }
   }
 
-  Future<List<SaleImage>?> getSaleImages(Sale sale) async {
-    List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
-        where: SaleImage.SALEID.eq(sale.id)));
-    setState(() {
-      saleImages = images;
+  Future<void> getImageStream() async {
+    _subscription = Amplify.DataStore.observeQuery(SaleImage.classType,
+            where: SaleImage.SALEID.eq(widget.sale.id))
+        .listen((QuerySnapshot<SaleImage> snapshot) {
+      setState(() {
+        if (_isLoading) _isLoading = false;
+        saleImages = snapshot.items;
+      });
     });
-    return images;
   }
 }

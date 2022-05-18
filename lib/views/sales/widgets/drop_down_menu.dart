@@ -6,8 +6,8 @@ class DropDownMenu extends StatefulWidget {
       {Key? key, required this.mode, required this.callback, this.initialValue})
       : super(key: key);
   final String mode;
-  final String? initialValue;
   Function(String) callback;
+  final String? initialValue;
   @override
   State<DropDownMenu> createState() => _DropDownMenuState();
 }
@@ -19,27 +19,26 @@ class _DropDownMenuState extends State<DropDownMenu> {
   List<String> categories = [
     'antiques',
     'appliances',
-    'arts+crafts',
+    'art',
     'auto parts',
     'aviation',
-    'baby+kid',
+    'baby',
     'barter',
-    'beauty & health',
+    'beauty',
     'bike parts',
     'bikes',
     'boat parts',
     'boats',
     'books',
     'business',
-    'cars & trucks',
-    'cds/dvd/vhs',
+    'cars',
     'cell phones',
-    'clothes+acc',
+    'clothes',
     'collectibles',
     'computer parts',
     'computers',
     'electronics',
-    'farm+garden',
+    'garden',
     'free',
     'furniture',
     'garage sale',
@@ -51,15 +50,13 @@ class _DropDownMenuState extends State<DropDownMenu> {
     'motorcycle parts',
     'motorcycles',
     'musical instruments',
-    'photo+video',
-    'rvs & camp',
     'sporting',
     'tickets',
     'tools',
-    'toys+games',
+    'toys',
     'trailers',
+    'trucks',
     'video gaming',
-    'wheels+tires'
   ];
   @override
   void initState() {
