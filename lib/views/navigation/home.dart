@@ -55,79 +55,75 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          // leading: const BackButton(color: Color.fromARGB(255, 166, 130, 255)),
-          title: const Text('Home'),
-          backgroundColor: const Color(0xffA682FF),
-          actions: [
-            IconButton(
-                onPressed: (() {
-                  signOut();
-                }),
-                icon: const Icon(Icons.exit_to_app_outlined))
-          ],
-          // centerTitle: true,
-        ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              const DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Color(0xffA682FF),
-                ),
-                child: Text(
-                  'Drawer Header',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.message),
-                title: const Text('Messages'),
-                onTap: () => {
-                  Navigator.pushNamed(context, '/inbox', arguments: [userName])
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.home),
-                title: const Text('Home'),
-                onTap: () => {Navigator.pushNamed(context, '/home')},
-              ),
-              ListTile(
-                leading: const Icon(Icons.shopping_bag),
-                title: const Text('My Sales'),
-                onTap: () => {
-                  Navigator.pushNamed(context, '/mySales',
-                      arguments: [userName])
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.shopping_bag),
-                title: const Text('Buy'),
-                onTap: () => {
-                  Navigator.pushNamed(context, '/allSales',
-                      arguments: [userName])
-                },
-              ),
-              const ListTile(
-                leading: Icon(Icons.account_circle),
-                title: Text('Account'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.settings),
-                title: const Text('Settings'),
-                onTap: () => {Navigator.pushNamed(context, '/home')},
-              ),
-            ],
+      appBar: AppBar(
+        // leading: const BackButton(color: Color.fromARGB(255, 166, 130, 255)),
+        title: const Text('Home'),
+        backgroundColor: const Color(0xffA682FF),
+        actions: [
+          IconButton(
+              onPressed: (() {
+                signOut();
+              }),
+              icon: const Icon(Icons.exit_to_app_outlined))
+        ],
+        // centerTitle: true,
+      ),
+      body: GridView(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 1,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8),
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          ListTile(
+            leading: const Icon(Icons.message),
+            title: const Text('Messages'),
+            onTap: () => {
+              Navigator.pushNamed(context, '/inbox', arguments: [userName])
+            },
           ),
-        ),
-        body: _loadingUserName
-            ? Center(
-                child: CircularProgressIndicator(
-                    color: Theme.of(context).primaryColor))
-            : Center(child: Text('User: $userName\'s home screen')));
+          // ListTile(
+          //   leading: const Icon(Icons.home),
+          //   title: const Text('Home'),
+          //   onTap: () => {Navigator.pushNamed(context, '/home')},
+          // ),
+          ListTile(
+            leading: const Icon(Icons.shopping_bag),
+            title: const Text('My Sales'),
+            onTap: () => {
+              Navigator.pushNamed(context, '/mySales', arguments: [userName])
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.shopping_bag),
+            title: const Text('Buy'),
+            onTap: () => {
+              Navigator.pushNamed(context, '/allSales', arguments: [userName])
+            },
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                    // Foreground color
+                    //onPrimary: Theme.of(context).colorScheme.onSecondaryContainer,
+                    // Background color
+                    //primary: Theme.of(context).colorScheme.secondaryContainer,
+                    )
+                .copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
+            onPressed: () => {Navigator.pushNamed(context, '/home')},
+            child: const Text('Filled Home'),
+          ),
+          // const ElevatedButton(
+          //   leading: Icon(Icons.account_circle),
+          //   title: Text('Account'),
+          // ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Settings'),
+            onTap: () => {Navigator.pushNamed(context, '/home')},
+          ),
+        ],
+      ),
+    );
   }
 }
