@@ -92,7 +92,7 @@ class _HomeState extends State<Home> {
             label: const Text('Messages'),
           ),
           ElevatedButton.icon(
-            icon: const Icon(Icons.shopping_bag),
+            icon: const Icon(Icons.monetization_on),
             onPressed: () => {
               Navigator.pushNamed(context, '/mySales', arguments: [userName])
             },
