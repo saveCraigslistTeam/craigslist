@@ -60,70 +60,123 @@ class _HomeState extends State<Home> {
         title: const Text('Home'),
         backgroundColor: const Color(0xffA682FF),
         actions: [
+          // IconButton(
+          //     //onPressed: (),
+          //     icon: const Icon(Icons.dark_mode_outlined)),
           IconButton(
               onPressed: (() {
                 signOut();
               }),
               icon: const Icon(Icons.exit_to_app_outlined))
         ],
-        // centerTitle: true,
+        centerTitle: true,
       ),
       body: GridView(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 1,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8),
-        padding: EdgeInsets.zero,
+            crossAxisCount: 1,
+            childAspectRatio: 5,
+            mainAxisSpacing: 90,
+            crossAxisSpacing: 1),
+        padding: const EdgeInsets.only(left: 100, right: 100),
         children: <Widget>[
-          ListTile(
-            leading: const Icon(Icons.message),
-            title: const Text('Messages'),
-            onTap: () => {
+          const SizedBox(
+            height: 25,
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.message),
+            onPressed: () => {
               Navigator.pushNamed(context, '/inbox', arguments: [userName])
             },
+            style: ElevatedButton.styleFrom(
+                primary: Color.fromARGB(255, 186, 128, 230)),
+            label: const Text('Messages'),
           ),
-          // ListTile(
-          //   leading: const Icon(Icons.home),
-          //   title: const Text('Home'),
-          //   onTap: () => {Navigator.pushNamed(context, '/home')},
-          // ),
-          ListTile(
-            leading: const Icon(Icons.shopping_bag),
-            title: const Text('My Sales'),
-            onTap: () => {
+          ElevatedButton.icon(
+            icon: const Icon(Icons.shopping_bag),
+            onPressed: () => {
               Navigator.pushNamed(context, '/mySales', arguments: [userName])
             },
+            style: ElevatedButton.styleFrom(
+                primary: Color.fromARGB(255, 186, 128, 230)),
+            label: const Text('My Sales'),
           ),
-          ListTile(
-            leading: const Icon(Icons.shopping_bag),
-            title: const Text('Buy'),
-            onTap: () => {
+          ElevatedButton.icon(
+            icon: const Icon(Icons.shopping_bag),
+            onPressed: () => {
               Navigator.pushNamed(context, '/allSales', arguments: [userName])
             },
-          ),
-          ElevatedButton(
             style: ElevatedButton.styleFrom(
-                    // Foreground color
-                    //onPrimary: Theme.of(context).colorScheme.onSecondaryContainer,
-                    // Background color
-                    //primary: Theme.of(context).colorScheme.secondaryContainer,
-                    )
-                .copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
-            onPressed: () => {Navigator.pushNamed(context, '/home')},
-            child: const Text('Filled Home'),
+                primary: Color.fromARGB(255, 186, 128, 230)),
+            label: const Text('Buy'),
           ),
-          // const ElevatedButton(
-          //   leading: Icon(Icons.account_circle),
-          //   title: Text('Account'),
+          // ElevatedButton.icon(
+          //   icon: const Icon(Icons.home),
+          //   onPressed: () => {Navigator.pushNamed(context, '/home')},
+          //   label: const Text('Home'),
           // ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () => {Navigator.pushNamed(context, '/home')},
+          ElevatedButton.icon(
+            icon: const Icon(Icons.person),
+            onPressed: () => {Navigator.pushNamed(context, '/account')},
+            label: const Text('Account'),
+            style: ElevatedButton.styleFrom(
+                primary: Color.fromARGB(255, 186, 128, 230)),
           ),
         ],
       ),
     );
   }
 }
+
+
+// const DrawerHeader(
+//                 decoration: BoxDecoration(
+//                   color: Color(0xffA682FF),
+//                 ),
+//                 child: Text(
+//                   'Drawer Header',
+//                   style: TextStyle(
+//                     color: Colors.white,
+//                     fontSize: 24,
+//                   ),
+//                 ),
+//               ),
+//               ListTile(
+//                 leading: const Icon(Icons.message),
+//                 title: const Text('Messages'),
+//                 onTap: () => {
+//                   Navigator.pushNamed(context, '/inbox', arguments: [userName])
+//                 },
+//               ),
+//               ListTile(
+//                 leading: const Icon(Icons.home),
+//                 title: const Text('Home'),
+//                 onTap: () => {Navigator.pushNamed(context, '/home')},
+//               ),
+//               ListTile(
+//                 leading: const Icon(Icons.shopping_bag),
+//                 title: const Text('My Sales'),
+//                 onTap: () => {
+//                   Navigator.pushNamed(context, '/mySales',
+//                       arguments: [userName])
+//                 },
+//               ),
+//               ListTile(
+//                 leading: const Icon(Icons.shopping_bag),
+//                 title: const Text('Buy'),
+//                 onTap: () => {
+//                   Navigator.pushNamed(context, '/allSales',
+//                       arguments: [userName])
+//                 },
+//               ),
+//               const ListTile(
+//                 leading: Icon(Icons.account_circle),
+//                 title: Text('Account'),
+//               ),
+//               ListTile(
+//                 leading: const Icon(Icons.settings),
+//                 title: const Text('Settings'),
+//                 onTap: () => {Navigator.pushNamed(context, '/home')},
+//               ),
+//             ],
+//           ),
+//         ),

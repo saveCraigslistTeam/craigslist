@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print
+import 'package:craigslist/theme/theme_constants.dart';
 import 'package:craigslist/theme/theme_manager.dart';
+import 'package:craigslist/views/navigation/account.dart';
 import 'package:craigslist/views/navigation/home.dart';
 import 'package:craigslist/views/messages/messages_detail.dart';
 import 'package:craigslist/views/navigation/login.dart';
@@ -20,6 +22,8 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import '../../../../models/ModelProvider.dart';
 // ignore: unused_import
 import 'package:amplify_authenticator/amplify_authenticator.dart';
+
+ThemeManager _themeManager = ThemeManager();
 
 class App extends StatefulWidget {
   static const String title = "craigslist";
@@ -44,6 +48,7 @@ class _AppState extends State<App> {
     final routes = {
       '/': (context) => const Login(),
       '/home': (context) => const Home(),
+      '/account': (context) => const Account(),
       '/mySales': (context) => MySales(
             DataStore: _dataStorePlugin,
             Storage: storage,
@@ -95,10 +100,30 @@ class _AppState extends State<App> {
           ),
         ),
       ),
-      themeMode: context.read<ThemeManager>().themeMode,
+      // theme: lightTheme,
+      // darkTheme: darkTheme,
+      // themeMode: _themeManager.themeMode,
       // initialRoute: '/mySales',
       initialRoute: '/',
       routes: routes,
     );
   }
 }
+
+
+// ThemeData(
+//         colorScheme: ColorScheme.fromSeed(
+//             brightness: Brightness.light,
+//             primary: const Color.fromRGBO(178, 235, 242, 1),
+//             onPrimary: Colors.black,
+//             secondary: const Color.fromRGBO(206, 147, 216, 1),
+//             onSecondary: Colors.black,
+//             error: Colors.purple,
+//             onError: Colors.purple,
+//             background: Colors.purple,
+//             onBackground: Colors.purple,
+//             surface: Colors.purple,
+//             onSurface: Colors.purple,
+//             seedColor: const Color.fromRGBO(206, 147, 216, 1)),
+//         useMaterial3: true,
+//       ),
