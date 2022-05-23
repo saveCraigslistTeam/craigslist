@@ -47,10 +47,12 @@ class _MessageDetailState extends State<MessageDetail> {
                 & Messages.SALE.eq(sale),
         sortBy: [Messages.DATE.ascending()])
         .listen((QuerySnapshot<Messages> snapshot) {
+          if(mounted) {
             setState(() {
               if (_isLoading) _isLoading = false;
               _messages = snapshot.items;
             });
+          }
       });
   }
 
@@ -66,7 +68,7 @@ class _MessageDetailState extends State<MessageDetail> {
         hostSent: message.hostSent,
         text: message.text,
         date: message.date,
-        seen: message.hostSent! ? message.host != userName : message.customer != userName
+        seen: message.hostSent! ? message.host! != userName : message.customer! != userName
       );
 
       // Overwrite the current message with the new data.

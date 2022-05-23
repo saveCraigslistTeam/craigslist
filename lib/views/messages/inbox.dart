@@ -39,10 +39,13 @@ class _InboxPageState extends State<InboxPage> {
              | Messages.CUSTOMER.eq(userName)),
         sortBy: [ Messages.DATE.descending()])
           .listen((QuerySnapshot<Messages> snapshot) {
+            if(mounted) {
+
             setState(() {
               if (_isLoading) _isLoading = false;
               _messages = snapshot.items;
             });
+          }
         });
   }
 
@@ -197,11 +200,11 @@ Widget formattedDate(Messages message, String userName, BuildContext context) {
   /// 
   /// Returns [time] if the date is within the same [day] will return the
   /// [day-month-year] if older than the current day.
-  
-  bool newMessage = (!message.seen! 
-                    && message.hostSent! 
-                    ? message.host != userName
-                    : message.customer != userName);
+  bool newMessage = message.seen! 
+                    ? false
+                    : message.hostSent! 
+                      ? message.customer! == userName 
+                      : message.host! == userName;
   return (
     Column(
         mainAxisAlignment: MainAxisAlignment.center,
