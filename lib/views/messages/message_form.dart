@@ -7,6 +7,7 @@ import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
 import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
+import './widgets/widgets.dart';
 
 class MessageForm extends StatefulWidget {
   /// Creates an input box for the user to send a [message].
@@ -31,6 +32,7 @@ class MessageForm extends StatefulWidget {
 }
 
 class _MessageFormState extends State<MessageForm> {
+
   @override
   Widget build(BuildContext context) {
     final formKey = GlobalKey<FormState>();
@@ -123,14 +125,4 @@ Future<void> saveNewMessage(
   } catch (e) {
     debugPrint("An error occurred saving new message: $e");
   }
-}
-
-double paddingSides(BuildContext context) {
-  /// Adds padding to the sides of the field
-  return MediaQuery.of(context).size.width * 0.03;
-}
-
-double paddingTopAndBottom(BuildContext context) {
-  /// Adds padding to the top and bottom of the form field.
-  return MediaQuery.of(context).size.height * 0.01;
 }

@@ -1,12 +1,14 @@
 import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
-import '../../models/Messages.dart';
-import './message_form.dart';
 // dart async library for setting up real time updates
 import 'dart:async';
 // amplify configuration and models
 import '../../models/ModelProvider.dart';
+// Custom packages
+import '../../models/Messages.dart';
+import './message_form.dart';
+import './widgets/widgets.dart';
 
 class MessageDetail extends StatefulWidget {
   /// Provides the details of the [messages] each conversation.
@@ -38,12 +40,11 @@ class _MessageDetailState extends State<MessageDetail> {
   Future<void> getMessageStream(String userName, 
                                 String sale, 
                                 String customer) async {
+
     messageStream = widget.dataStore
         .observeQuery(Messages.classType,
-        where: (Messages.HOST.eq(userName) 
-                  | Messages.CUSTOMER.eq(userName))
-                & (Messages.HOST.eq(customer) 
-                  | Messages.CUSTOMER.eq(customer))  
+        where: (Messages.HOST.eq(userName) | Messages.CUSTOMER.eq(userName))
+                & (Messages.HOST.eq(customer) | Messages.CUSTOMER.eq(customer))  
                 & Messages.SALE.eq(sale),
         sortBy: [Messages.DATE.ascending()])
         .listen((QuerySnapshot<Messages> snapshot) {
@@ -83,9 +84,16 @@ class _MessageDetailState extends State<MessageDetail> {
   Widget build(BuildContext context) {
 
     final List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
-    final String? userName = args[0];
-    final String? sale = args[1];
-    final String? customer = args[2];
+    final String userName = args[0]!;
+    final String sale = args[1]!;
+    final String customer = args[2]!;
+
+    // Sets the title to the correct recipient
+    final String messageTitle = _messages.isNotEmpty 
+                              ? "To: " + (_messages[0].host == userName 
+                                            ? _messages[0].customer!
+                                            : _messages[0].host!)
+                              : "To: $customer";
 
     if(_isLoading) {
       getMessageStream(userName.toString(), sale.toString(), customer.toString());
@@ -94,26 +102,10 @@ class _MessageDetailState extends State<MessageDetail> {
         if(!_messages[i].seen!) markSeen(_messages[i], userName);
       }
     }
-    
+
     return (
       Scaffold(
-        appBar: AppBar(
-          title: _messages.isNotEmpty 
-                ? Text(
-                  "To: " + (_messages[0].host == userName 
-                              ? _messages[0].customer.toString()
-                              : _messages[0].host.toString()))
-                : Center(child: Text("To: $customer")),
-          leading: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              child: GestureDetector(
-                onTap: () => {
-                  Navigator.of(context).pop()
-                },
-                child: const BackButton())
-              ),
-          backgroundColor: Theme.of(context).primaryColor,
-            ),
+        appBar: appBar(messageTitle, context),
         body: 
         _isLoading 
       ? const Center(child: Text("loading messages")) 
@@ -221,33 +213,44 @@ class ScrollingMessagesSliver extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     
-    return Column(children: [
-      Expanded(flex: 7, 
-        child: CustomScrollView(
-          controller: ScrollController(initialScrollOffset: 300), 
-          slivers: [SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, int index) {
-                return getListTile(index, data, context, userName);
-              },
-              childCount: data.length,
-              semanticIndexOffset: data.length
-            )
-          )]
-        )
-      ),
-        Expanded(flex: 3, 
-        child: Container(
-          color: Theme.of(context).primaryColor,
-          child: MessageForm(
-              messageData: data[0],
-              dataStore: dataStore,
-              userName: userName
+    return Column(
+      children: [
+        Expanded(
+          flex: 7, 
+          child: Column(
+            children: [
+              Expanded(
+                flex: 9,
+                child: CustomScrollView(
+                  reverse: false,
+                  cacheExtent: 10,
+                  controller: ScrollController(initialScrollOffset: data.length * 100), 
+                  slivers: [SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, int index) {
+                        return getListTile(index, data, context, userName);
+                      },
+                      childCount: data.length,
+                      semanticIndexOffset: 0
+                    )
+                  )]
+                ),
+              ),
+            ]
+          ),
+        ),
+          Expanded(flex: 3, 
+          child: Container(
+            color: Theme.of(context).primaryColor,
+            child: MessageForm(
+                messageData: data[0],
+                dataStore: dataStore,
+                userName: userName
+              )
             )
           )
-        )
-      ]);
-    }
+        ]);
+      }
   }
 
 
