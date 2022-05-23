@@ -91,7 +91,7 @@ class _MessageDetailState extends State<MessageDetail> {
       getMessageStream(userName.toString(), sale.toString(), customer.toString());
     } else {
       for(int i = 0; i < _messages.length; i++) {
-        markSeen(_messages[i], userName);
+        if(!_messages[i].seen!) markSeen(_messages[i], userName);
       }
     }
     
