@@ -65,7 +65,7 @@ class _AccountState extends State<Account> {
             onPressed: () => {deleteUser()},
             label: const Text('Delete Account'),
             style: ElevatedButton.styleFrom(
-                primary: Color.fromARGB(255, 186, 128, 230)),
+                primary: const Color.fromARGB(255, 186, 128, 230)),
           ),
         ],
       ),

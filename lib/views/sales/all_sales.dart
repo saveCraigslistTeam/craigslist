@@ -67,10 +67,12 @@ class _AllSalesState extends State<AllSales> {
     _subscription =
         widget.DataStore.observeQuery(Sale.classType, sortBy: sortQueries)
             .listen((QuerySnapshot<Sale> snapshot) {
-      setState(() {
+      if(mounted) {
+        setState(() {
         _sales = snapshot.items;
         if (_isLoading) _isLoading = false;
       });
+      }
     });
   }
 
@@ -81,13 +83,15 @@ class _AllSalesState extends State<AllSales> {
     _tagSubscription = widget.DataStore.observeQuery(Tag.classType,
             where: Tag.LABEL.contains(tagLabel))
         .listen((QuerySnapshot<Tag> snapshot) {
-      setState(() {
-        _sales = [];
-        _tags = snapshot.items;
-        for (var tag in _tags) {
-          getSalesStream(tag.saleID);
-        }
-      });
+      if(mounted) {
+        setState(() {
+          _sales = [];
+          _tags = snapshot.items;
+          for (var tag in _tags) {
+            getSalesStream(tag.saleID);
+          }
+        });
+      }
     });
   }
 
@@ -101,7 +105,8 @@ class _AllSalesState extends State<AllSales> {
       if (snapshot.items.isNotEmpty) {
         _sales.add(snapshot.items[0]);
       }
-      setState(() {
+      if(mounted) {
+        setState(() {
         dateOrPrice
             ? sortByNewest
                 ? _sales.sort((b, a) => a.date!.compareTo(b.date!))
@@ -111,6 +116,7 @@ class _AllSalesState extends State<AllSales> {
                 : _sales.sort((b, a) => a.price!.compareTo(b.price!));
         if (_isLoading) _isLoading = false;
       });
+      }
     });
   }
 
@@ -131,45 +137,56 @@ class _AllSalesState extends State<AllSales> {
 
   void toggleSortByPrice() {
     /// Toggles the sort by price to show lowest or highest price.
-    setState(() {
+    
+    if(mounted) {
+      setState(() {
       dateOrPrice = false;
       sortByPrice = !sortByPrice;
       !sortByRelevance ? getAllSalesStream() : enableAllButton(tag);
-    });
+      });
+    }
   }
 
   void toggleSortByDate() {
     /// Toggles the sort by date boolean to show newest or oldest.
-    setState(() {
+    if(mounted) {
+      setState(() {
       dateOrPrice = true;
       sortByNewest = !sortByNewest;
       !sortByRelevance ? getAllSalesStream() : enableAllButton(tag);
     });
+    }
   }
 
   void setTagString(String saleTag) {
     /// Sets the tag string in order to be used by relevant methods
     /// not inside [Search].
-    setState(() {
+    if(mounted) {
+      setState(() {
       tag = saleTag;
       enableAllButton(saleTag);
     });
+    }  
   }
 
   void enableAllButton(String tag) {
     /// Enables the All button and allows interaction when this is toggled.
-    setState(() {
+    if(mounted) {
+      setState(() {
       sortByRelevance = true;
       getSalesStreamByTag(tag);
     });
+    }
   }
 
   void showAllSales() {
     /// Disables the All button and performs a search query for all sales.
-    setState(() {
+    if(mounted) {
+      setState(() {
       sortByRelevance = false;
       getAllSalesStream();
     });
+    }
   }
 
   @override
@@ -263,16 +280,18 @@ class _SaleItemState extends State<SaleItem> {
     getSaleImages(widget.sale);
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
       await getSaleTags(widget.sale);
-      setState(() {});
+      if(mounted) setState(() {});
     });
   }
 
   // Fetch the sale's image URLs again when the cards are resorted
   @override
   void didUpdateWidget(SaleItem oldWidget) {
-    setState(() {
+    if(mounted) {
+      setState(() {
       getSaleImages(widget.sale);
     });
+    } 
   }
 
   @override
@@ -434,7 +453,7 @@ class _SaleItemState extends State<SaleItem> {
             decoration: BoxDecoration(
                 color: Colors.green,
                 border: Border.all(color: Colors.green),
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(10))),
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(10))),
             child: Padding(
               padding: const EdgeInsets.all(3.0),
               child: Text(price,
@@ -451,18 +470,22 @@ class _SaleItemState extends State<SaleItem> {
   Future<List<SaleImage>?> getSaleImages(Sale sale) async {
     List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
         where: SaleImage.SALEID.eq(sale.id)));
-    setState(() {
+    if(mounted) {
+      setState(() {
       saleImages = images;
     });
+    }
     return saleImages;
   }
 
   Future<List<Tag>?> getSaleTags(Sale sale) async {
     List<Tag> saleTags = (await Amplify.DataStore.query(Tag.classType,
         where: Tag.SALEID.eq(sale.id)));
-    setState(() {
+    if(mounted) {
+      setState(() {
       tags = saleTags;
     });
+    }
     return saleTags;
   }
 }
