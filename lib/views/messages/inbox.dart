@@ -7,6 +7,8 @@ import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
 import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
+// Custom Widgets for app
+import './widgets/widgets.dart';
 
 class InboxPage extends StatefulWidget {
   /// Builds the inbox of most recent [messages] per unique conversation.
@@ -24,25 +26,29 @@ class InboxPage extends StatefulWidget {
 
 class _InboxPageState extends State<InboxPage> {
 
+  late StreamSubscription<QuerySnapshot<Messages>> messageStream;
   List<Messages> _messages = [];
   bool _isLoading = true;
-  late StreamSubscription<QuerySnapshot<Messages>> messageStream;
-
+  
   @override
   void initState() {
     super.initState();
   }
 
   Future<void> getMessageStream(String userName) async {
+    /// Gets the message stream of any messages where the host or the
+    /// customer matches the userName.
     messageStream = widget.dataStore.observeQuery(Messages.classType,
         where: (Messages.HOST.eq(userName) 
              | Messages.CUSTOMER.eq(userName)),
         sortBy: [ Messages.DATE.descending()])
           .listen((QuerySnapshot<Messages> snapshot) {
-            setState(() {
-              if (_isLoading) _isLoading = false;
-              _messages = snapshot.items;
-            });
+            if(mounted) {
+              setState(() {
+                if (_isLoading) _isLoading = false;
+                _messages = snapshot.items;
+              });
+            }
         });
   }
 
@@ -50,40 +56,33 @@ class _InboxPageState extends State<InboxPage> {
   Widget build(BuildContext context) {
     
     List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
-    final String userName = args[0].toString();
+    final String userName = args[0]!;
 
     if(_isLoading) getMessageStream(userName);
     
-    return (
-      Scaffold(
-        appBar: AppBar(
-          leading: const BackButton(),
-          title: const Text('Inbox'),
-          backgroundColor: Theme.of(context).primaryColor,
-          centerTitle: true,
-        ),
-        body: _isLoading
-            ? Center(child: CircularProgressIndicator(
-                color: Theme.of(context).primaryColor))
-            : _messages.isNotEmpty
-                ? Column(
-                    children: [
-                      Expanded(
-                        flex: 8,
-                        child: InboxList(
-                            messages: filterRecentMessagesByGroup(_messages),
-                            dataStore: widget.dataStore,
-                            userName: userName)),
-                      Expanded(
-                          flex: 2,
-                          child: Container(
-                            color: Theme.of(context).primaryColor,
-                          ))
-                    ],
-                  )
-                : const Center(child: Text('No messages'))));
+    return Scaffold(
+      appBar: appBar('Inbox', context),
+      body: _isLoading
+        ? progressIndicator(context)
+        : _messages.isNotEmpty
+          ? Column(
+            children: [
+              Expanded(
+                flex: 8,
+                child: InboxList(
+                    messages: filterRecentMessagesByGroup(_messages),
+                    dataStore: widget.dataStore,
+                    userName: userName)),
+              Expanded(
+                  flex: 2,
+                  child: Container(
+                    color: Theme.of(context).primaryColor,
+                  ))
+              ]
+            )
+          : const Center(child: Text('No messages')));
+    }
   }
-}
 
 class InboxList extends StatelessWidget {
   /// Builds the inbox items into a [ListView] for browsing by the user.
@@ -107,11 +106,16 @@ class InboxList extends StatelessWidget {
     return (
       ListView.builder(
         itemCount: messages.length,
-        itemBuilder: (_, index) => InboxItem(
-            messages: messages,
-            message: messages[index],
-            dataStore: dataStore,
-            userName: userName))
+        itemBuilder: (_, index) => 
+        Semantics(
+          child: InboxItem(
+              messages: messages,
+              message: messages[index],
+              dataStore: dataStore,
+              userName: userName),
+          button: true,
+          onTapHint: 'Click to go to detailed messages view'
+        ))
     );
   }
 }
@@ -149,19 +153,17 @@ class InboxItem extends StatelessWidget {
         child: (
           ListTile(
             title: message.customer!= userName 
-                  ? userNameAndMessageText(message.customer, message.text, context)
-                  : userNameAndMessageText(message.host, message.text, context),
+              ? userNameAndMessageText(message.customer, message.text, context)
+              : userNameAndMessageText(message.host, message.text, context),
             trailing: formattedDate(message, userName, context),
             onTap: () => {
-                  Navigator.pushNamed(context, '/msgDetail',
-                      arguments: [userName, message.sale, message.customer])
-            },
-          ))
+              Navigator.pushNamed(context, '/msgDetail',
+                  arguments: [userName, message.sale, message.customer])
+            }))
       )
     );
   }
 }
-
 
 Widget userNameAndMessageText(String? customer, 
                               String? message, 
@@ -197,11 +199,11 @@ Widget formattedDate(Messages message, String userName, BuildContext context) {
   /// 
   /// Returns [time] if the date is within the same [day] will return the
   /// [day-month-year] if older than the current day.
-  
-  bool newMessage = (!message.seen! 
-                    && message.hostSent! 
-                    ? message.host != userName
-                    : message.customer != userName);
+  bool newMessage = message.seen! 
+                    ? false
+                    : message.hostSent! 
+                      ? message.customer! == userName 
+                      : message.host! == userName;
   return (
     Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -231,6 +233,7 @@ List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
   bool flag = true;
 
   for (int i = 0; i < messages.length; i++) {
+
     if(formattedMessages.isEmpty) formattedMessages.add(messages[i]);
 
     for (int j = 0; j < formattedMessages.length; j++) {
@@ -246,6 +249,7 @@ List<Messages> filterRecentMessagesByGroup(List<Messages> messages) {
             break;
         }
     }
+    
     if(flag) formattedMessages.add(messages[i]);
     flag = true;
   }

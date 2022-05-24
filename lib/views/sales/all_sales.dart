@@ -11,6 +11,7 @@ import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import '../../models/ModelProvider.dart';
 import 'services/convert_price.dart';
 import 'services/fetch_image.dart';
+import './search.dart';
 
 final oCcy = NumberFormat("#,##0", "en_US");
 
@@ -66,10 +67,12 @@ class _AllSalesState extends State<AllSales> {
     _subscription =
         widget.DataStore.observeQuery(Sale.classType, sortBy: sortQueries)
             .listen((QuerySnapshot<Sale> snapshot) {
-      setState(() {
+      if(mounted) {
+        setState(() {
         _sales = snapshot.items;
         if (_isLoading) _isLoading = false;
       });
+      }
     });
   }
 
@@ -80,13 +83,15 @@ class _AllSalesState extends State<AllSales> {
     _tagSubscription = widget.DataStore.observeQuery(Tag.classType,
             where: Tag.LABEL.contains(tagLabel))
         .listen((QuerySnapshot<Tag> snapshot) {
-      setState(() {
-        _sales = [];
-        _tags = snapshot.items;
-        for (var tag in _tags) {
-          getSalesStream(tag.saleID);
-        }
-      });
+      if(mounted) {
+        setState(() {
+          _sales = [];
+          _tags = snapshot.items;
+          for (var tag in _tags) {
+            getSalesStream(tag.saleID);
+          }
+        });
+      }
     });
   }
 
@@ -100,7 +105,8 @@ class _AllSalesState extends State<AllSales> {
       if (snapshot.items.isNotEmpty) {
         _sales.add(snapshot.items[0]);
       }
-      setState(() {
+      if(mounted) {
+        setState(() {
         dateOrPrice
             ? sortByNewest
                 ? _sales.sort((b, a) => a.date!.compareTo(b.date!))
@@ -110,6 +116,7 @@ class _AllSalesState extends State<AllSales> {
                 : _sales.sort((b, a) => a.price!.compareTo(b.price!));
         if (_isLoading) _isLoading = false;
       });
+      }
     });
   }
 
@@ -130,45 +137,56 @@ class _AllSalesState extends State<AllSales> {
 
   void toggleSortByPrice() {
     /// Toggles the sort by price to show lowest or highest price.
-    setState(() {
+    
+    if(mounted) {
+      setState(() {
       dateOrPrice = false;
       sortByPrice = !sortByPrice;
       !sortByRelevance ? getAllSalesStream() : enableAllButton(tag);
-    });
+      });
+    }
   }
 
   void toggleSortByDate() {
     /// Toggles the sort by date boolean to show newest or oldest.
-    setState(() {
+    if(mounted) {
+      setState(() {
       dateOrPrice = true;
       sortByNewest = !sortByNewest;
       !sortByRelevance ? getAllSalesStream() : enableAllButton(tag);
     });
+    }
   }
 
   void setTagString(String saleTag) {
     /// Sets the tag string in order to be used by relevant methods
     /// not inside [Search].
-    setState(() {
+    if(mounted) {
+      setState(() {
       tag = saleTag;
       enableAllButton(saleTag);
     });
+    }  
   }
 
   void enableAllButton(String tag) {
     /// Enables the All button and allows interaction when this is toggled.
-    setState(() {
+    if(mounted) {
+      setState(() {
       sortByRelevance = true;
       getSalesStreamByTag(tag);
     });
+    }
   }
 
   void showAllSales() {
     /// Disables the All button and performs a search query for all sales.
-    setState(() {
+    if(mounted) {
+      setState(() {
       sortByRelevance = false;
       getAllSalesStream();
     });
+    }
   }
 
   @override
@@ -216,6 +234,7 @@ class _AllSalesState extends State<AllSales> {
 }
 
 class SalesList extends StatelessWidget {
+  
   List<Sale> sales;
   final String customer;
   final bool sortByNewest;
@@ -224,7 +243,8 @@ class SalesList extends StatelessWidget {
       {Key? key,
       required this.sales,
       required this.customer,
-      required this.sortByNewest});
+      required this.sortByNewest}) 
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -260,16 +280,18 @@ class _SaleItemState extends State<SaleItem> {
     getSaleImages(widget.sale);
     WidgetsBinding.instance?.addPostFrameCallback((_) async {
       await getSaleTags(widget.sale);
-      setState(() {});
+      if(mounted) setState(() {});
     });
   }
 
   // Fetch the sale's image URLs again when the cards are resorted
   @override
   void didUpdateWidget(SaleItem oldWidget) {
-    setState(() {
+    if(mounted) {
+      setState(() {
       getSaleImages(widget.sale);
     });
+    } 
   }
 
   @override
@@ -431,7 +453,7 @@ class _SaleItemState extends State<SaleItem> {
             decoration: BoxDecoration(
                 color: Colors.green,
                 border: Border.all(color: Colors.green),
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(10))),
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(10))),
             child: Padding(
               padding: const EdgeInsets.all(3.0),
               child: Text(price,
@@ -448,198 +470,23 @@ class _SaleItemState extends State<SaleItem> {
   Future<List<SaleImage>?> getSaleImages(Sale sale) async {
     List<SaleImage> images = (await Amplify.DataStore.query(SaleImage.classType,
         where: SaleImage.SALEID.eq(sale.id)));
-    setState(() {
+    if(mounted) {
+      setState(() {
       saleImages = images;
     });
+    }
     return saleImages;
   }
 
   Future<List<Tag>?> getSaleTags(Sale sale) async {
     List<Tag> saleTags = (await Amplify.DataStore.query(Tag.classType,
         where: Tag.SALEID.eq(sale.id)));
-    setState(() {
+    if(mounted) {
+      setState(() {
       tags = saleTags;
     });
+    }
     return saleTags;
   }
 }
 
-// Search Features
-class Search extends StatelessWidget {
-  /// Toggle the boolean that enables the All button.
-  final Function setTagString;
-
-  /// Tells the all button whether to enable (currently searching by tag) or
-  /// disable (currently searching by all).
-  final bool sortByRelevance;
-
-  /// Toggles the tag search to off and then performs a search for all sales.
-  final Function showAllSales;
-
-  /// Toggle the boolean that changes the text for the newest oldest search.
-  final Function toggleSortByDate;
-
-  /// Boolean used to update the newest button to oldest so that the user can
-  /// change the search criteria.
-  final bool sortByNewest;
-
-  /// Sets the toggle to sort the relevant search by price.
-  final Function toggleSortByPrice;
-
-  /// Boolean used to update the price button text so that the user can see the
-  /// change in criteria.
-  final bool sortByPrice;
-
-  const Search(
-      {Key? key,
-      required this.setTagString,
-      required this.sortByRelevance,
-      required this.showAllSales,
-      required this.toggleSortByDate,
-      required this.sortByNewest,
-      required this.toggleSortByPrice,
-      required this.sortByPrice})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    String tag = '';
-
-    Widget newestButton = customButton(
-        sortByNewest ? 'Oldest' : 'Newest', context, toggleSortByDate);
-    Widget priceButton = customButton(
-        sortByPrice ? 'Price Highest' : 'Price lowest',
-        context,
-        toggleSortByPrice);
-    Widget allButton =
-        customAllButton('All', sortByRelevance, context, showAllSales);
-
-    return Column(children: [
-      Expanded(
-          flex: 2,
-          child: buttonRow(newestButton, allButton, priceButton, context)),
-      Expanded(
-          flex: 8,
-          child: Form(
-              key: formKey,
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: paddingSides(context),
-                            vertical: paddingTopAndBottom(context)),
-                        child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 2),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 2),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Theme.of(context).primaryColor,
-                                width: 2,
-                              ),
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(29),
-                            ),
-                            width: 350,
-                            child: TextFormField(
-                                decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    errorBorder: InputBorder.none,
-                                    disabledBorder: InputBorder.none,
-                                    filled: false,
-                                    labelText: 'Search',
-                                    labelStyle: const TextStyle(fontSize: 17),
-                                    suffixIcon: IconButton(
-                                        icon: const Icon(Icons.search),
-                                        color: Theme.of(context).primaryColor,
-                                        onPressed: () async {
-                                          if (formKey.currentState!
-                                              .validate()) {
-                                            formKey.currentState!.save();
-                                            setTagString(tag);
-                                            formKey.currentState?.reset();
-                                          }
-                                        })),
-                                maxLines: 3,
-                                minLines: 1,
-                                textInputAction: TextInputAction.done,
-                                keyboardType: TextInputType.text,
-                                onSaved: (value) {
-                                  tag = value!;
-                                },
-                                validator: (value) {
-                                  if (value == null ||
-                                      value.isEmpty ||
-                                      value == '') {
-                                    return 'Please enter a message';
-                                  } else {
-                                    return null;
-                                  }
-                                })))
-                  ])))
-    ]);
-  }
-}
-
-Widget customButton(String label, BuildContext context, Function func) {
-  /// Creates a button with [label] and specified function.
-  final MaterialStateProperty<Color> buttonColor =
-      MaterialStateProperty.all(Theme.of(context).primaryColor);
-
-  return (ElevatedButton(
-      onPressed: () {
-        func();
-      },
-      child: Text(label),
-      style: ButtonStyle(backgroundColor: buttonColor)));
-}
-
-Widget customAllButton(
-    String label, bool isEnabled, BuildContext context, Function func) {
-  /// Creates a button with [label] and specified function.
-  final MaterialStateProperty<Color> buttonColor =
-      MaterialStateProperty.all(Theme.of(context).primaryColor);
-  final MaterialStateProperty<Color> offColor =
-      MaterialStateProperty.all(Colors.grey);
-
-  return (ElevatedButton(
-      onPressed: () {
-        isEnabled ? func() : null;
-      },
-      child: Text(label),
-      style: ButtonStyle(
-        backgroundColor: isEnabled ? buttonColor : offColor,
-      )));
-}
-
-Widget buttonRow(
-    Widget button1, Widget button2, Widget button3, BuildContext context) {
-  /// Adds three search buttons to the top of the search button.
-  return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const Spacer(flex: 1),
-        button1, // Sort by newest or oldest.
-        const Spacer(flex: 1),
-        button2, // Sort by All or closest match.
-        const Spacer(flex: 1),
-        button3, // Sort by Highest and lowest price.
-        const Spacer(flex: 1)
-      ]);
-}
-
-double paddingSides(BuildContext context) {
-  /// Adds padding to the sides of the field
-  return MediaQuery.of(context).size.width * 0.03;
-}
-
-double paddingTopAndBottom(BuildContext context) {
-  /// Adds padding to the top and bottom of the form field.
-  return MediaQuery.of(context).size.height * 0.01;
-}

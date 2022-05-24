@@ -7,6 +7,7 @@ import 'package:amplify_datastore/amplify_datastore.dart';
 // amplify configuration and models
 import '../../models/ModelProvider.dart';
 import '../../models/Messages.dart';
+import './widgets/widgets.dart';
 
 class MessageForm extends StatefulWidget {
   /// Creates an input box for the user to send a [message].
@@ -31,6 +32,7 @@ class MessageForm extends StatefulWidget {
 }
 
 class _MessageFormState extends State<MessageForm> {
+
   @override
   Widget build(BuildContext context) {
     final formKey = GlobalKey<FormState>();
@@ -59,42 +61,51 @@ class _MessageFormState extends State<MessageForm> {
                   borderRadius: BorderRadius.circular(29),
                 ),
                 width: 350,
-                child: TextFormField(
-                    decoration: InputDecoration(
-                    border: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    filled: false,
-                    labelText: 'Send Message',
-                    labelStyle: const TextStyle(fontSize: 17),
-                    suffixIcon: IconButton(
-                        icon: const Icon(Icons.send),
-                        color: Theme.of(context).primaryColor,
-                        onPressed: () async {
-                          if (formKey.currentState!.validate()) {
-                            formKey.currentState!.save();
-                            await saveNewMessage(
-                                widget.messageData, newMessage, userName);
-                            formKey.currentState?.reset();
-                          }
-                        })
-                    ),
-                    maxLines: 3,
-                    minLines: 1,
-                    textInputAction: TextInputAction.done,
-                    keyboardType: TextInputType.text,
-                    onSaved: (value) {
-                      newMessage = value!;
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty || value == '') {
-                        return 'Please enter a message';
-                      } else {
-                        return null;
-                      }
-                    }),
+                child: Semantics(
+                  child: TextFormField(
+                      decoration: InputDecoration(
+                      border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      errorBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      filled: false,
+                      labelText: 'Send Message',
+                      labelStyle: const TextStyle(fontSize: 17),
+                      suffixIcon: Semantics(
+                        child: IconButton(
+                            icon: const Icon(Icons.send),
+                            color: Theme.of(context).primaryColor,
+                            onPressed: () async {
+                              if (formKey.currentState!.validate()) {
+                                formKey.currentState!.save();
+                                await saveNewMessage(
+                                    widget.messageData, newMessage, userName);
+                                formKey.currentState?.reset();
+                              }
+                            }),
+                        button: true,
+                        onTapHint: 'Click to submit new message',
+                      )),
+                      maxLines: 3,
+                      minLines: 1,
+                      textInputAction: TextInputAction.done,
+                      keyboardType: TextInputType.text,
+                      onSaved: (value) {
+                        newMessage = value!;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty || value == '') {
+                          return 'Please enter a message';
+                        } else {
+                          return null;
+                        }
+                      }),
+                  textField: true,
+                  focusable: true,
+                  multiline: true,
+                  label: 'Enter a new direct message.'
+                ),
               ),
             ),
           ]),
@@ -105,6 +116,9 @@ class _MessageFormState extends State<MessageForm> {
 Future<void> saveNewMessage(
     Messages messageData, String newMessage, String userName) async {
   /// Sends the data of the new message to the AWS server.
+  /// 
+  /// Utilizes the [Messages] model pulled from the AWS server
+  /// GraphQL datastore.
 
   TemporalDateTime currDate = TemporalDateTime.now();
 
@@ -123,14 +137,4 @@ Future<void> saveNewMessage(
   } catch (e) {
     debugPrint("An error occurred saving new message: $e");
   }
-}
-
-double paddingSides(BuildContext context) {
-  /// Adds padding to the sides of the field
-  return MediaQuery.of(context).size.width * 0.03;
-}
-
-double paddingTopAndBottom(BuildContext context) {
-  /// Adds padding to the top and bottom of the form field.
-  return MediaQuery.of(context).size.height * 0.01;
 }
