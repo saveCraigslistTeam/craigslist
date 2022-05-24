@@ -36,18 +36,19 @@ class _InboxPageState extends State<InboxPage> {
   }
 
   Future<void> getMessageStream(String userName) async {
+    /// Gets the message stream of any messages where the host or the
+    /// customer matches the userName.
     messageStream = widget.dataStore.observeQuery(Messages.classType,
         where: (Messages.HOST.eq(userName) 
              | Messages.CUSTOMER.eq(userName)),
         sortBy: [ Messages.DATE.descending()])
           .listen((QuerySnapshot<Messages> snapshot) {
             if(mounted) {
-
-            setState(() {
-              if (_isLoading) _isLoading = false;
-              _messages = snapshot.items;
-            });
-          }
+              setState(() {
+                if (_isLoading) _isLoading = false;
+                _messages = snapshot.items;
+              });
+            }
         });
   }
 
@@ -60,26 +61,26 @@ class _InboxPageState extends State<InboxPage> {
     if(_isLoading) getMessageStream(userName);
     
     return Scaffold(
-        appBar: appBar('Inbox', context),
-        body: _isLoading
-            ? progressIndicator(context)
-            : _messages.isNotEmpty
-              ? Column(
-                children: [
-                  Expanded(
-                    flex: 8,
-                    child: InboxList(
-                        messages: filterRecentMessagesByGroup(_messages),
-                        dataStore: widget.dataStore,
-                        userName: userName)),
-                  Expanded(
-                      flex: 2,
-                      child: Container(
-                        color: Theme.of(context).primaryColor,
-                      ))
-                  ]
-                )
-              : const Center(child: Text('No messages')));
+      appBar: appBar('Inbox', context),
+      body: _isLoading
+        ? progressIndicator(context)
+        : _messages.isNotEmpty
+          ? Column(
+            children: [
+              Expanded(
+                flex: 8,
+                child: InboxList(
+                    messages: filterRecentMessagesByGroup(_messages),
+                    dataStore: widget.dataStore,
+                    userName: userName)),
+              Expanded(
+                  flex: 2,
+                  child: Container(
+                    color: Theme.of(context).primaryColor,
+                  ))
+              ]
+            )
+          : const Center(child: Text('No messages')));
     }
   }
 
@@ -105,11 +106,16 @@ class InboxList extends StatelessWidget {
     return (
       ListView.builder(
         itemCount: messages.length,
-        itemBuilder: (_, index) => InboxItem(
-            messages: messages,
-            message: messages[index],
-            dataStore: dataStore,
-            userName: userName))
+        itemBuilder: (_, index) => 
+        Semantics(
+          child: InboxItem(
+              messages: messages,
+              message: messages[index],
+              dataStore: dataStore,
+              userName: userName),
+          button: true,
+          onTapHint: 'Click to go to detailed messages view'
+        ))
     );
   }
 }
@@ -158,7 +164,6 @@ class InboxItem extends StatelessWidget {
     );
   }
 }
-
 
 Widget userNameAndMessageText(String? customer, 
                               String? message, 

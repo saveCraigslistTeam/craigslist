@@ -125,15 +125,19 @@ class Search extends StatelessWidget {
 
 Widget customButton(String label, BuildContext context, Function func) {
   /// Creates a button with [label] and specified function.
+  
   final MaterialStateProperty<Color> buttonColor =
       MaterialStateProperty.all(Theme.of(context).primaryColor);
 
-  return (ElevatedButton(
-      onPressed: () {
-        func();
-      },
-      child: Text(label),
-      style: ButtonStyle(backgroundColor: buttonColor)));
+  return Semantics(
+        child: (ElevatedButton(
+          onPressed: () {
+            func();
+          },
+          child: Text(label),
+          style: ButtonStyle(backgroundColor: buttonColor))),
+        button: true
+  );
 }
 
 Widget customAllButton(
@@ -144,14 +148,19 @@ Widget customAllButton(
   final MaterialStateProperty<Color> offColor =
       MaterialStateProperty.all(Colors.grey);
 
-  return (ElevatedButton(
-      onPressed: () {
-        isEnabled ? func() : null;
-      },
-      child: Text(label),
-      style: ButtonStyle(
-        backgroundColor: isEnabled ? buttonColor : offColor,
-      )));
+  return Semantics(
+    child: (ElevatedButton(
+        onPressed: () {
+          isEnabled ? func() : null;
+        },
+        child: Text(label),
+        style: ButtonStyle(
+          backgroundColor: isEnabled ? buttonColor : offColor,
+        ))),
+    button: true,
+    onTapHint: "Searches for all current sales."
+               "If inactive, already on All search."
+  );
 }
 
 Widget buttonRow(

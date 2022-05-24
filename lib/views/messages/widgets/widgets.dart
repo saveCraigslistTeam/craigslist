@@ -6,7 +6,8 @@ PreferredSizeWidget? appBar(String title, BuildContext context) {
   /// the current color theme.
   
   return AppBar(
-    leading: const BackButton(),
+    leading: Semantics(child: const BackButton(),
+                       button: true),
     title: Text(title),
     backgroundColor: Theme.of(context).primaryColor,
     centerTitle: true,

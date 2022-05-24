@@ -195,7 +195,7 @@ Widget getListTile(int index, List<Messages> data, BuildContext context,
     return ListTile(
       title: ColoredBox(
           color: Theme.of(context).primaryColor, 
-          text: data[index].text.toString(),
+          text: data[index].text!,
           alignment: MainAxisAlignment.end,
           textAlignment: TextAlign.start)
     );
@@ -203,7 +203,7 @@ Widget getListTile(int index, List<Messages> data, BuildContext context,
     return ListTile(
       title: ColoredBox(
           color: Colors.grey.shade200, 
-          text: data[index].text.toString(),
+          text: data[index].text!,
           alignment: MainAxisAlignment.start,
           textAlignment: TextAlign.start)
     );
@@ -257,10 +257,10 @@ class ScrollingMessagesSliver extends StatelessWidget{
           child: Container(
             color: Theme.of(context).primaryColor,
             child: MessageForm(
-                messageData: data[0],
-                dataStore: dataStore,
-                userName: userName
-              )
+              messageData: data[0],
+              dataStore: dataStore,
+              userName: userName
+            )
             )
           )
         ]);
@@ -305,16 +305,16 @@ class NewMessageToSeller extends StatelessWidget {
     return Column(
       children: [
         const Expanded(flex: 7,
-              child: Center(child: Text('Message seller'))),
-              Expanded(flex: 3, 
-              child: Container(
-                  color: Theme.of(context).primaryColor,
-                  child: MessageForm(
-                  messageData: createMessageData(),
-                  dataStore: dataStore,
-                  userName: sender)
-                )
-              )
-            ]);
+          child: Center(child: Text('Message seller'))),
+          Expanded(flex: 3, 
+          child: Container(
+              color: Theme.of(context).primaryColor,
+              child: MessageForm(
+              messageData: createMessageData(),
+              dataStore: dataStore,
+              userName: sender)
+            )
+          )
+        ]);
     }
 }
