@@ -107,6 +107,9 @@ class _MessageFormState extends State<MessageForm> {
 Future<void> saveNewMessage(
     Messages messageData, String newMessage, String userName) async {
   /// Sends the data of the new message to the AWS server.
+  /// 
+  /// Utilizes the [Messages] model pulled from the AWS server
+  /// GraphQL datastore.
 
   TemporalDateTime currDate = TemporalDateTime.now();
 

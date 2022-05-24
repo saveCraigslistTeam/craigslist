@@ -40,6 +40,13 @@ class _MessageDetailState extends State<MessageDetail> {
   Future<void> getMessageStream(String userName, 
                                 String sale, 
                                 String customer) async {
+    /// Pulls conversation data from AWS datastore.
+    /// 
+    /// The [Messages] are parsed with the unique sale ID, the userName
+    /// of the currently logged in user, and the userName of the message
+    /// recipient. The recipient and user can either be the host of the [Sale]
+    /// or the potential customer. Data is sorted in ascending order so that the
+    /// most recent message appears at the bottom and populates downward.
 
     messageStream = widget.dataStore
         .observeQuery(Messages.classType,
@@ -58,7 +65,12 @@ class _MessageDetailState extends State<MessageDetail> {
   }
 
   Future<void> markSeen(Messages message, userName) async {
-
+    /// When the user first enters the conversation, all visible
+    /// [Messages] will be updated as seen. 
+    /// 
+    /// The seen message criteria is used to update the notification
+    /// of 'New Message' for the user.
+    
     try {
       // Create a message with all the original message data
       Messages updatedMessage = message.copyWith(
@@ -83,12 +95,14 @@ class _MessageDetailState extends State<MessageDetail> {
   @override
   Widget build(BuildContext context) {
 
-    final List<String?> args = ModalRoute.of(context)!.settings.arguments as List<String?>;
+    final List<String?> args = ModalRoute.of(context)!.settings.arguments 
+                               as List<String?>;
     final String userName = args[0]!;
     final String sale = args[1]!;
     final String customer = args[2]!;
 
-    // Sets the title to the correct recipient
+    // Sets the appBar title to the correct recipient based on the message
+    // and the user who is logged in.
     final String messageTitle = _messages.isNotEmpty 
                               ? "To: " + (_messages[0].host == userName 
                                             ? _messages[0].customer!
@@ -96,7 +110,7 @@ class _MessageDetailState extends State<MessageDetail> {
                               : "To: $customer";
 
     if(_isLoading) {
-      getMessageStream(userName.toString(), sale.toString(), customer.toString());
+      getMessageStream(userName, sale, customer);
     } else {
       for(int i = 0; i < _messages.length; i++) {
         if(!_messages[i].seen!) markSeen(_messages[i], userName);
@@ -106,20 +120,19 @@ class _MessageDetailState extends State<MessageDetail> {
     return (
       Scaffold(
         appBar: appBar(messageTitle, context),
-        body: 
-        _isLoading 
-      ? const Center(child: Text("loading messages")) 
-      : _messages.isNotEmpty 
-        ? ScrollingMessagesSliver(data: _messages, 
-                                  dataStore: widget.dataStore, 
-                                  userName: userName.toString())
-        : userName.toString() != customer.toString() 
-          ? NewMessageToSeller(sender: userName.toString(),
-                            saleId: sale.toString(),
-                            seller: customer.toString(),
-                            dataStore: widget.dataStore,)
-            : const Center(child: Text('Error: Cannot message yourself.')))
-      );
+        body: _isLoading 
+          ? const Center(child: Text("loading messages")) 
+          : _messages.isNotEmpty 
+            ? ScrollingMessagesSliver(data: _messages, 
+                                      dataStore: widget.dataStore, 
+                                      userName: userName)
+            : userName != customer 
+              ? NewMessageToSeller(sender: userName,
+                                saleId: sale,
+                                seller: customer,
+                                dataStore: widget.dataStore,)
+              : const Center(child: Text('Error: Cannot message yourself.')))
+          );
   }
 }
 
@@ -224,7 +237,8 @@ class ScrollingMessagesSliver extends StatelessWidget{
                 child: CustomScrollView(
                   reverse: false,
                   cacheExtent: 10,
-                  controller: ScrollController(initialScrollOffset: data.length * 100), 
+                  controller: ScrollController(
+                    initialScrollOffset: data.length * 100), 
                   slivers: [SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, int index) {
