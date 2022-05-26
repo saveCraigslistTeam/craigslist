@@ -2,12 +2,13 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
 class DropDownMenu extends StatefulWidget {
-  DropDownMenu(
+  const DropDownMenu(
       {Key? key, required this.mode, required this.callback, this.initialValue})
       : super(key: key);
   final String mode;
-  Function(String) callback;
+  final Function(String) callback;
   final String? initialValue;
+
   @override
   State<DropDownMenu> createState() => _DropDownMenuState();
 }
@@ -77,7 +78,7 @@ class _DropDownMenuState extends State<DropDownMenu> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: DropdownButtonHideUnderline(
         child: DropdownButton2(
           isExpanded: true,
@@ -112,20 +113,20 @@ class _DropDownMenuState extends State<DropDownMenu> {
           onChanged: (value) {
             widget.callback(value as String);
             setState(() {
-              selectedValue = value as String;
+              selectedValue = value;
             });
           },
           icon: const Icon(
             Icons.arrow_downward_rounded,
           ),
           iconSize: 24,
-          iconEnabledColor: Color(0xffA682FF),
+          iconEnabledColor: const Color(0xffA682FF),
           buttonHeight: 62,
           buttonWidth: 160,
           buttonPadding: const EdgeInsets.only(left: 14, right: 14),
           buttonDecoration: BoxDecoration(
             borderRadius: BorderRadius.circular(29),
-            border: Border.all(color: Color(0xffA682FF), width: 2),
+            border: Border.all(color: const Color(0xffA682FF), width: 2),
           ),
           buttonElevation: 0,
           itemHeight: 40,

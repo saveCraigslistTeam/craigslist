@@ -10,7 +10,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  bool _loadingUserName = true;
+
   String userName = '';
 
   @override
@@ -48,7 +48,6 @@ class _HomeState extends State<Home> {
 
     setState(() {
       userName = userEmail.substring(0, indexOfAt);
-      _loadingUserName = false;
     });
   }
 
@@ -88,7 +87,7 @@ class _HomeState extends State<Home> {
               Navigator.pushNamed(context, '/inbox', arguments: [userName])
             },
             style: ElevatedButton.styleFrom(
-                primary: Color.fromARGB(255, 186, 128, 230)),
+                primary: const Color.fromARGB(255, 186, 128, 230)),
             label: const Text('Messages'),
           ),
           ElevatedButton.icon(
@@ -97,7 +96,7 @@ class _HomeState extends State<Home> {
               Navigator.pushNamed(context, '/mySales', arguments: [userName])
             },
             style: ElevatedButton.styleFrom(
-                primary: Color.fromARGB(255, 186, 128, 230)),
+                primary: const Color.fromARGB(255, 186, 128, 230)),
             label: const Text('My Sales'),
           ),
           ElevatedButton.icon(
@@ -106,7 +105,7 @@ class _HomeState extends State<Home> {
               Navigator.pushNamed(context, '/allSales', arguments: [userName])
             },
             style: ElevatedButton.styleFrom(
-                primary: Color.fromARGB(255, 186, 128, 230)),
+                primary: const Color.fromARGB(255, 186, 128, 230)),
             label: const Text('Buy'),
           ),
           // ElevatedButton.icon(
@@ -119,7 +118,7 @@ class _HomeState extends State<Home> {
             onPressed: () => {Navigator.pushNamed(context, '/account')},
             label: const Text('Account'),
             style: ElevatedButton.styleFrom(
-                primary: Color.fromARGB(255, 186, 128, 230)),
+                primary: const Color.fromARGB(255, 186, 128, 230)),
           ),
         ],
       ),

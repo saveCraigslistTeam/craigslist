@@ -1,14 +1,10 @@
 // dart async library we will refer to when setting up real time updates
-import 'dart:async';
 import 'dart:core';
 import 'dart:io';
 // flutter and ui libraries
-import 'package:craigslist/views/sales/services/parse_tags.dart';
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:amplify_datastore/amplify_datastore.dart';
-import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
@@ -16,7 +12,7 @@ import '../../models/ModelProvider.dart';
 import 'widgets/drop_down_menu.dart';
 
 class AddSaleForm extends StatefulWidget {
-  AddSaleForm({Key? key, required this.username}) : super(key: key);
+  const AddSaleForm({Key? key, required this.username}) : super(key: key);
   final String username;
 
   @override
@@ -111,7 +107,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
-        title: Text('Add Sale'),
+        title: const Text('Add Sale'),
         actions: <Widget>[
           ElevatedButton(
             onPressed: _saveSale,
@@ -119,7 +115,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
               'Save',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
-            style: ElevatedButton.styleFrom(primary: Color(0xffA682FF)),
+            style: ElevatedButton.styleFrom(primary: const Color(0xffA682FF)),
           ),
         ],
       ),
@@ -129,30 +125,30 @@ class _AddSaleFormState extends State<AddSaleForm> {
 
   Container addSaleForm() {
     return Container(
-      padding: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.0),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             GestureDetector(
-                child: imageDisplay(imageFile: imageFile),
+                child: ImageDisplay(imageFile: imageFile),
                 onTap: () => {selectImage()}),
-            textFormField(
+            CustomTextFormField(
                 context: context,
                 controller: _titleController,
                 keyboard: TextInputType.text,
                 label: 'Title'),
-            textFormField(
+            CustomTextFormField(
                 context: context,
                 controller: _descriptionController,
                 keyboard: TextInputType.text,
                 label: 'Description'),
-            textFormField(
+            CustomTextFormField(
                 context: context,
                 controller: _zipcodeController,
                 keyboard: TextInputType.number,
                 label: 'Zipcode'),
-            textFormField(
+            CustomTextFormField(
                 context: context,
                 controller: _priceController,
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
@@ -167,17 +163,13 @@ class _AddSaleFormState extends State<AddSaleForm> {
   }
 
   Container tagLabelList() {
-    if (tagLabels.length >= 1) {
       return Container(
         child: Text(
           'Tags: ' + tagLabels.join(", "),
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         margin: const EdgeInsets.all(10.0),
       );
-    } else {
-      return Container(child: Text('No tags!'));
-    }
   }
 
   _parseTags() {
@@ -211,7 +203,7 @@ class _AddSaleFormState extends State<AddSaleForm> {
               color: Colors.white,
             ),
           ),
-          backgroundColor: const Color(0xffA682FF),
+          backgroundColor: Color(0xffA682FF),
           label: Text(
             'Reset Tags',
             style: TextStyle(
@@ -300,8 +292,8 @@ class _AddSaleFormState extends State<AddSaleForm> {
   }
 }
 
-class textFormField extends StatelessWidget {
-  const textFormField(
+class CustomTextFormField extends StatelessWidget {
+  const CustomTextFormField(
       {Key? key,
       required this.context,
       required this.controller,
@@ -316,8 +308,8 @@ class textFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 4),
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       decoration: BoxDecoration(
         border: Border.all(
           color: Theme.of(context).primaryColor,
@@ -337,19 +329,19 @@ class textFormField extends StatelessWidget {
               disabledBorder: InputBorder.none,
               filled: false,
               labelText: label,
-              labelStyle: TextStyle(fontSize: 17))),
+              labelStyle: const TextStyle(fontSize: 17))),
     );
   }
 }
 
-class imageDisplay extends StatelessWidget {
-  const imageDisplay({Key? key, required this.imageFile}) : super(key: key);
+class ImageDisplay extends StatelessWidget {
+  const ImageDisplay({Key? key, required this.imageFile}) : super(key: key);
   final String imageFile;
 
   @override
   Widget build(BuildContext context) {
     if (imageFile != '') {
-      return Container(
+      return SizedBox(
         height: MediaQuery.of(context).size.height * 0.35,
         child: Padding(
           padding: const EdgeInsets.all(8),
@@ -361,7 +353,7 @@ class imageDisplay extends StatelessWidget {
       );
     } else {
       return Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           height: MediaQuery.of(context).size.height * 0.25,
           child: Padding(
               padding: const EdgeInsets.all(8),

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:core';
 import 'package:craigslist/views/sales/services/convert_date.dart';
 import 'package:expandable/expandable.dart';
@@ -18,22 +17,20 @@ final oCcy = NumberFormat("#,##0", "en_US");
 class AllSales extends StatefulWidget {
   const AllSales({
     Key? key,
-    required this.DataStore,
-    required this.Storage,
-    required this.Auth,
+    required this.dataStore,
+    required this.storage,
+    required this.auth,
   }) : super(key: key);
 
-  final AmplifyDataStore DataStore;
-  final AmplifyStorageS3 Storage;
-  final AmplifyAuthCognito Auth;
+  final AmplifyDataStore dataStore;
+  final AmplifyStorageS3 storage;
+  final AmplifyAuthCognito auth;
 
   @override
   _AllSalesState createState() => _AllSalesState();
 }
 
 class _AllSalesState extends State<AllSales> {
-  late StreamSubscription<QuerySnapshot<Sale>> _subscription;
-  late StreamSubscription<QuerySnapshot<Tag>> _tagSubscription;
 
   bool _isLoading = true;
   List<Tag> _tags = [];
@@ -64,8 +61,7 @@ class _AllSalesState extends State<AllSales> {
 
     List<QuerySortBy> sortQueries = getCurrentQueries();
 
-    _subscription =
-        widget.DataStore.observeQuery(Sale.classType, sortBy: sortQueries)
+      widget.dataStore.observeQuery(Sale.classType, sortBy: sortQueries)
             .listen((QuerySnapshot<Sale> snapshot) {
       if(mounted) {
         setState(() {
@@ -80,7 +76,7 @@ class _AllSalesState extends State<AllSales> {
     /// Pulls the tags that match the given label. This list will
     /// be used to query the sales data. It is set to begins with
     /// in order to pull any closely matched tags.
-    _tagSubscription = widget.DataStore.observeQuery(Tag.classType,
+    widget.dataStore.observeQuery(Tag.classType,
             where: Tag.LABEL.contains(tagLabel))
         .listen((QuerySnapshot<Tag> snapshot) {
       if(mounted) {
@@ -98,7 +94,7 @@ class _AllSalesState extends State<AllSales> {
   Future<void> getSalesStream(String saleID) async {
     /// Performs an individual query by tags saleID and adds them
     /// to the list. This is a helper function to the tag stream builder.
-    _subscription = widget.DataStore.observeQuery(
+    widget.dataStore.observeQuery(
       Sale.classType,
       where: Sale.ID.eq(saleID),
     ).listen((QuerySnapshot<Sale> snapshot) {
@@ -235,11 +231,11 @@ class _AllSalesState extends State<AllSales> {
 
 class SalesList extends StatelessWidget {
   
-  List<Sale> sales;
+  final List<Sale> sales;
   final String customer;
   final bool sortByNewest;
 
-  SalesList(
+  const SalesList(
       {Key? key,
       required this.sales,
       required this.customer,
@@ -260,7 +256,10 @@ class SalesList extends StatelessWidget {
 }
 
 class SaleItem extends StatefulWidget {
-  const SaleItem({Key? key, required this.sale, required this.customer});
+  const SaleItem({Key? key, 
+                required this.sale, 
+                required this.customer})
+                : super(key: key);
   final Sale sale;
   final String customer;
   @override
@@ -268,10 +267,8 @@ class SaleItem extends StatefulWidget {
 }
 
 class _SaleItemState extends State<SaleItem> {
-  late StreamSubscription<QuerySnapshot<SaleImage>> _subscription;
   late List<SaleImage> saleImages;
   late List<Tag> tags;
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -282,16 +279,7 @@ class _SaleItemState extends State<SaleItem> {
       await getSaleTags(widget.sale);
       if(mounted) setState(() {});
     });
-  }
-
-  // Fetch the sale's image URLs again when the cards are resorted
-  @override
-  void didUpdateWidget(SaleItem oldWidget) {
-    if(mounted) {
-      setState(() {
-      getSaleImages(widget.sale);
-    });
-    } 
+    super.initState();
   }
 
   @override
@@ -299,9 +287,7 @@ class _SaleItemState extends State<SaleItem> {
     var heading = widget.sale.title;
     var subheading = widget.sale.category!;
     var price = convertPrice(widget.sale.price!);
-    var seller = widget.sale.user;
     var cardImage = fetchImage(saleImages);
-    var supportingText = widget.sale.description;
 
     return ExpandableNotifier(
         child: Padding(
@@ -329,7 +315,7 @@ class _SaleItemState extends State<SaleItem> {
                     tapBodyToCollapse: true,
                   ),
                   header: Padding(
-                      padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
                       child: Text(
                         heading!,
                         style: const TextStyle(
@@ -354,7 +340,7 @@ class _SaleItemState extends State<SaleItem> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      Spacer(),
+                      const Spacer(),
                       Text(
                         widget.sale.user!,
                         style: TextStyle(
@@ -383,7 +369,7 @@ class _SaleItemState extends State<SaleItem> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Text(
                           widget.sale.user!,
                           style: TextStyle(
@@ -436,7 +422,7 @@ class _SaleItemState extends State<SaleItem> {
                   ),
                   builder: (_, collapsed, expanded) {
                     return Padding(
-                      padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
                       child: Expandable(
                         collapsed: collapsed,
                         expanded: expanded,
