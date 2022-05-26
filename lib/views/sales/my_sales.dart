@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:core';
 import 'package:craigslist/views/sales/edit_sale.dart';
 import 'package:craigslist/views/sales/services/convert_date.dart';
@@ -16,23 +15,22 @@ import 'package:expandable/expandable.dart';
 final oCcy = NumberFormat("#,##0", "en_US");
 
 class MySales extends StatefulWidget {
-  MySales({
+  const MySales({
     Key? key,
-    required this.DataStore,
-    required this.Storage,
-    required this.Auth,
+    required this.dataStore,
+    required this.storage,
+    required this.auth,
   }) : super(key: key);
 
-  final AmplifyDataStore DataStore;
-  final AmplifyStorageS3 Storage;
-  final AmplifyAuthCognito Auth;
+  final AmplifyDataStore dataStore;
+  final AmplifyStorageS3 storage;
+  final AmplifyAuthCognito auth;
 
   @override
   _MySalesState createState() => _MySalesState();
 }
 
 class _MySalesState extends State<MySales> {
-  late StreamSubscription<QuerySnapshot<Sale>> _subscription;
   bool _isLoading = true;
   List<Sale> _sales = [];
   String username = '';
@@ -43,7 +41,7 @@ class _MySalesState extends State<MySales> {
   }
 
   Future<void> getSalesStream() async {
-    _subscription = widget.DataStore.observeQuery(Sale.classType,
+    widget.dataStore.observeQuery(Sale.classType,
             sortBy: [Sale.DATE.descending()], where: (Sale.USER.eq(username)))
         .listen((QuerySnapshot<Sale> snapshot) {
       setState(() {
@@ -76,11 +74,11 @@ class _MySalesState extends State<MySales> {
                       builder: (context) => AddSaleForm(username: username)),
                 );
               },
-              icon: Icon(Icons.add))
+              icon: const Icon(Icons.add))
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SalesList(sales: _sales),
     );
   }
@@ -88,7 +86,7 @@ class _MySalesState extends State<MySales> {
 
 class SalesList extends StatelessWidget {
   final List<Sale> sales;
-  SalesList({required this.sales});
+  const SalesList({Key? key, required this.sales}) : super(key: key) ;
 
   @override
   Widget build(BuildContext context) {
@@ -97,13 +95,13 @@ class SalesList extends StatelessWidget {
             scrollDirection: Axis.vertical,
             child: Column(
                 children: sales.map((sale) => SaleItem(sale: sale)).toList()))
-        : Center(child: Text('Tap the + button below to add a sale!'));
+        : const Center(child: Text('Tap the + button below to add a sale!'));
   }
 }
 
 class SaleItem extends StatefulWidget {
   final Sale sale;
-  SaleItem({required this.sale});
+  const SaleItem({Key? key, required this.sale}) : super(key: key);
 
   @override
   SaleItemState createState() => SaleItemState();
@@ -111,7 +109,6 @@ class SaleItem extends StatefulWidget {
 
 class SaleItemState extends State<SaleItem> {
   late List<SaleImage> saleImages;
-  late StreamSubscription<QuerySnapshot<SaleImage>> _subscription;
   bool _isLoading = true;
 
   @override
@@ -121,20 +118,11 @@ class SaleItemState extends State<SaleItem> {
   }
 
   @override
-  void didUpdateWidget(SaleItem oldWidget) {
-    setState(() {
-      getImageStream();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     var heading = widget.sale.title;
     var subheading = widget.sale.category!;
     var price = '\$${oCcy.format(widget.sale.price!)}';
-    var seller = widget.sale.user;
     var cardImage = fetchImage(saleImages);
-    var supportingText = widget.sale.description;
     var date = convertDate(widget.sale.date);
     if (_isLoading) {
       getImageStream();
@@ -165,7 +153,7 @@ class SaleItemState extends State<SaleItem> {
                     tapBodyToCollapse: true,
                   ),
                   header: Padding(
-                      padding: EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
                       child: Text(
                         heading!,
                         style: const TextStyle(
@@ -190,7 +178,7 @@ class SaleItemState extends State<SaleItem> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      Spacer(),
+                      const Spacer(),
                       Text(
                         widget.sale.user!,
                         style: TextStyle(
@@ -219,7 +207,7 @@ class SaleItemState extends State<SaleItem> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Text(
                           widget.sale.user!,
                           style: TextStyle(
@@ -242,7 +230,7 @@ class SaleItemState extends State<SaleItem> {
                       ),
                       Padding(
                         padding: const EdgeInsets.all(10),
-                        child: Text('Posted ${date}'),
+                        child: Text('Posted $date'),
                       ),
                       ButtonBar(
                         alignment: MainAxisAlignment.spaceAround,
@@ -276,7 +264,7 @@ class SaleItemState extends State<SaleItem> {
                   ),
                   builder: (_, collapsed, expanded) {
                     return Padding(
-                      padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
                       child: Expandable(
                         collapsed: collapsed,
                         expanded: expanded,
@@ -293,7 +281,7 @@ class SaleItemState extends State<SaleItem> {
             decoration: BoxDecoration(
                 color: Colors.green,
                 border: Border.all(color: Colors.green),
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(10))),
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(10))),
             child: Padding(
               padding: const EdgeInsets.all(3.0),
               child: Text(price,
@@ -310,13 +298,13 @@ class SaleItemState extends State<SaleItem> {
   showAlert(BuildContext context) {
     // set up the buttons
     Widget cancelButton = TextButton(
-      child: Text("Cancel"),
+      child: const Text("Cancel"),
       onPressed: () {
         Navigator.of(context).pop();
       },
     );
     Widget continueButton = TextButton(
-      child: Text("Delete"),
+      child: const Text("Delete"),
       onPressed: () {
         _deleteSale(context);
         Navigator.of(context).pop();
@@ -359,7 +347,7 @@ class SaleItemState extends State<SaleItem> {
   }
 
   Future<void> getImageStream() async {
-    _subscription = Amplify.DataStore.observeQuery(SaleImage.classType,
+    Amplify.DataStore.observeQuery(SaleImage.classType,
             where: SaleImage.SALEID.eq(widget.sale.id))
         .listen((QuerySnapshot<SaleImage> snapshot) {
       setState(() {

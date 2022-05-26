@@ -34,13 +34,9 @@ class _AccountState extends State<Account> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // leading: const BackButton(color: Color.fromARGB(255, 166, 130, 255)),
         title: const Text('Account'),
         backgroundColor: const Color(0xffA682FF),
         actions: [
-          // IconButton(
-          //     //onPressed: (),
-          //     icon: const Icon(Icons.dark_mode_outlined)),
           IconButton(
               onPressed: (() {
                 signOut();

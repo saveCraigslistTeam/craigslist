@@ -1,14 +1,12 @@
 // dart async library we will refer to when setting up real time updates
-import 'dart:async';
 import 'dart:core';
 import 'dart:io';
 // flutter and ui libraries
-import 'package:craigslist/views/sales/services/parse_tags.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // amplify packages we will need to use
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_datastore/amplify_datastore.dart';
-import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:image_picker/image_picker.dart';
 // amplify configuration and models that should have been generated for you
@@ -112,9 +110,13 @@ class _EditSaleFormState extends State<EditSaleForm> {
             .forEach((element) async {
           try {
             await Amplify.DataStore.delete(element);
-            print('Deleted a post');
+            if (kDebugMode) {
+              print('Deleted a post');
+            }
           } on DataStoreException catch (e) {
-            print('Delete failed: $e');
+            if (kDebugMode) {
+              print('Delete failed: $e');
+            }
           }
         });
 
@@ -149,7 +151,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffA682FF),
-        title: Text('Edit Sale'),
+        title: const Text('Edit Sale'),
         actions: <Widget>[
           ElevatedButton(
             onPressed: _saveSale,
@@ -157,7 +159,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
               'Save',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
-            style: ElevatedButton.styleFrom(primary: Color(0xffA682FF)),
+            style: ElevatedButton.styleFrom(primary: const Color(0xffA682FF)),
           ),
         ],
       ),
@@ -167,33 +169,33 @@ class _EditSaleFormState extends State<EditSaleForm> {
 
   Container addSaleForm() {
     return Container(
-      padding: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.0),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             GestureDetector(
-                child: imageDisplay(
+                child: ImageDisplay(
                   saleImages: saleImages,
                   imageFile: imageFile,
                 ),
                 onTap: () => {selectImage()}),
-            textFormField(
+            CustomTextFormField(
                 context: context,
                 controller: _titleController,
                 keyboard: TextInputType.text,
                 label: 'Title'),
-            textFormField(
+            CustomTextFormField(
                 context: context,
                 controller: _descriptionController,
                 keyboard: TextInputType.text,
                 label: 'Description'),
-            textFormField(
+            CustomTextFormField(
                 context: context,
                 controller: _zipcodeController,
                 keyboard: TextInputType.number,
                 label: 'Zipcode'),
-            textFormField(
+            CustomTextFormField(
                 context: context,
                 controller: _priceController,
                 keyboard: const TextInputType.numberWithOptions(decimal: false),
@@ -215,16 +217,17 @@ class _EditSaleFormState extends State<EditSaleForm> {
   }
 
   Container tagLabelList() {
-    if (tagLabels.length >= 1) {
+    if (tagLabels.isNotEmpty) {
       return Container(
         child: Text(
           'Tags: ' + tagLabels.join(", "),
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         margin: const EdgeInsets.all(10.0),
       );
     } else {
-      return Container(child: Text('No tags!'));
+      return Container(child: const Text('No tags!'),
+                      margin: const EdgeInsets.all(10.0),);
     }
   }
 
@@ -256,7 +259,7 @@ class _EditSaleFormState extends State<EditSaleForm> {
               color: Colors.white,
             ),
           ),
-          backgroundColor: const Color(0xffA682FF),
+          backgroundColor: Color(0xffA682FF),
           label: Text(
             'Reset Tags',
             style: TextStyle(
@@ -345,8 +348,8 @@ class _EditSaleFormState extends State<EditSaleForm> {
   }
 }
 
-class textFormField extends StatelessWidget {
-  const textFormField(
+class CustomTextFormField extends StatelessWidget {
+  const CustomTextFormField(
       {Key? key,
       required this.context,
       required this.controller,
@@ -361,8 +364,8 @@ class textFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 4),
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       decoration: BoxDecoration(
         border: Border.all(
           color: Theme.of(context).primaryColor,
@@ -382,27 +385,29 @@ class textFormField extends StatelessWidget {
               disabledBorder: InputBorder.none,
               filled: false,
               labelText: label,
-              labelStyle: TextStyle(fontSize: 17))),
+              labelStyle: const TextStyle(fontSize: 17))),
     );
   }
 }
 
-class imageDisplay extends StatelessWidget {
-  imageDisplay({Key? key, required this.saleImages, required this.imageFile})
+class ImageDisplay extends StatelessWidget {
+  const ImageDisplay({Key? key, required this.saleImages, required this.imageFile})
       : super(key: key);
   final List<SaleImage> saleImages;
   final String imageFile;
 
-  Container image = Container();
+  
   @override
   Widget build(BuildContext context) {
+    Container image = Container();
+    
     if (imageFile != '') {
       image = Container(child: Image.file(File(imageFile)));
-    } else if (saleImages.length >= 1) {
+    } else if (saleImages.isNotEmpty) {
       image = fetchImage(saleImages);
     } else {
       return Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           height: MediaQuery.of(context).size.height * 0.25,
           child: Padding(
               padding: const EdgeInsets.all(8),
@@ -417,7 +422,7 @@ class imageDisplay extends StatelessWidget {
                       )))));
     }
     return Center(
-      child: Container(
+      child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.35,
         child: Padding(
           padding: const EdgeInsets.all(8),
